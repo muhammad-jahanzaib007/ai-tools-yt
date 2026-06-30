@@ -66,6 +66,6 @@ jobs:
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
-          YT_PRIVACY: ${{ vars.YT_PRIVACY || 'private' }}
+          YT_PRIVACY: ${{ vars.YT_PRIVACY || 'public' }}
           YT_CATEGORY: ${{ vars.YT_CATEGORY || '28' }}
         run: python automation/upload_video.py
