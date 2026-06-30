@@ -1,0 +1,81 @@
+{
+  "slug": "use-ai-write-code-faster",
+  "title": "How to Use AI to Write Code Faster (Without Breaking Things)",
+  "hook": "Most developers use AI coding tools completely wrong, and it costs them hours.",
+  "narration": [
+    {
+      "text": "Most developers use AI coding tools completely wrong, and it costs them hours. The fix is simpler than you think.",
+      "broll": "frustrated developer laptop"
+    },
+    {
+      "text": "Tools like GitHub Copilot and Cursor can write code for you in seconds. But if you just accept whatever they generate, bugs pile up fast.",
+      "broll": "AI code suggestions screen"
+    },
+    {
+      "text": "The first rule is to give context, not just commands. Instead of typing 'write a login function', describe the inputs, the expected output, and any constraints.",
+      "broll": "person typing prompt"
+    },
+    {
+      "text": "The more specific your prompt, the less the AI has to guess. Guessing is where errors come from.",
+      "broll": "code editor close up"
+    },
+    {
+      "text": "Second, always ask the AI to explain what it just wrote. If it cannot explain it clearly, the code probably has a flaw.",
+      "broll": "chat interface screen"
+    },
+    {
+      "text": "Third, work in small chunks. Ask for one function at a time, test it, then move on. Generating hundreds of lines at once makes debugging a nightmare.",
+      "broll": "terminal running tests"
+    },
+    {
+      "text": "You can also paste error messages directly into the chat. Tools like ChatGPT and Claude are surprisingly good at diagnosing what went wrong.",
+      "broll": "error message screen"
+    },
+    {
+      "text": "The developers saving the most time treat AI as a junior colleague, not a magic button. You still need to review the output.",
+      "broll": "developer reviewing code"
+    },
+    {
+      "text": "Start with one tool, learn its limits, and build from there. GitHub Copilot is a solid first step if you are already inside an editor.",
+      "broll": "VS Code editor open"
+    },
+    {
+      "text": "AI will not replace good coding habits. But it will make those habits much faster to act on.",
+      "broll": "fast time lapse coding"
+    }
+  ],
+  "description": "AI coding tools can save you hours every week, but only if you use them correctly. This video covers the practical habits that stop AI-generated code from introducing bugs and breaking your projects. Apply these principles from day one and you will get reliable results far sooner.",
+  "links": [
+    {
+      "name": "GitHub Copilot",
+      "url": "https://github.com/features/copilot"
+    },
+    {
+      "name": "Cursor",
+      "url": "https://www.cursor.com"
+    },
+    {
+      "name": "ChatGPT",
+      "url": "https://chatgpt.com"
+    },
+    {
+      "name": "Claude",
+      "url": "https://claude.ai"
+    }
+  ],
+  "tags": [
+    "ai coding",
+    "github copilot",
+    "cursor ai",
+    "code faster",
+    "ai tools for developers",
+    "chatgpt coding",
+    "ai programming",
+    "coding tips",
+    "developer productivity",
+    "ai code generation"
+  ],
+  "thumbnail_text": "Code Faster, Break Less",
+  "topic": "How to use AI to write code faster (without it breaking)",
+  "date": "2026-06-30"
+}
