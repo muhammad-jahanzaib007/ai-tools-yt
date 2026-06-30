@@ -1,0 +1,11 @@
+{
+  "_help": "Paste your affiliate link next to each tool. Empty values are ignored (the tool then links to its official site). Names should match how tools appear in the videos, e.g. 'Jasper', 'ElevenLabs', 'Hostinger', 'Canva', 'Notion', 'Grammarly', 'HubSpot', 'Fiverr', 'Midjourney'. Add more tools as you join their programs. A disclosure line is added to descriptions automatically once any real link is present.",
+  "ElevenLabs": "",
+  "Jasper": "",
+  "Hostinger": "",
+  "HubSpot": "",
+  "Grammarly": "",
+  "Fiverr": "",
+  "Notion": "",
+  "Canva": ""
+}

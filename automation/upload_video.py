@@ -55,13 +55,18 @@ def main():
     aff = ROOT / "automation" / "affiliates.json"
     if aff.exists():
         try:
-            overrides = {k.lower(): v for k, v in json.loads(aff.read_text(encoding="utf-8")).items()}
+            raw = json.loads(aff.read_text(encoding="utf-8"))
+            overrides = {k.lower(): v.strip() for k, v in raw.items()
+                         if not k.startswith("_") and isinstance(v, str) and v.strip()}
         except Exception as e:
             print(f"affiliates.json ignored: {e}", file=sys.stderr)
     links = brief.get("links", [])
     if links:
         rows = [f"{l['name']}: {overrides.get(l['name'].lower(), l['url'])}" for l in links]
         desc = (desc + "\n\nTools mentioned:\n" + "\n".join(rows)).strip()
+        if overrides:   # FTC disclosure, only once real affiliate links are in use
+            desc += ("\n\nSome links above are affiliate links and may earn the channel a "
+                     "commission at no extra cost to you.")
 
     desc = (desc + "\n\n#AI #AItools #technology").strip()[:4900]
     tags = [t for t in brief.get("tags", []) if t][:15]
