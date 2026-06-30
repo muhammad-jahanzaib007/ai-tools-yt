@@ -4,6 +4,9 @@ name: Generate video brief (Phase 1)
 # Manual for now (Run workflow). The schedule is added in Phase 3 with render + upload.
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - ".github/trigger.txt"
 
 permissions:
   contents: write
