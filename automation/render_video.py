@@ -72,12 +72,15 @@ def pick_brief():
     if not files:
         sys.exit("no briefs found")
     slug = os.environ.get("BRIEF_SLUG")
+    if not slug:
+        latest = ROOT / "automation" / "latest.txt"      # written by generate_brief
+        if latest.exists():
+            slug = latest.read_text(encoding="utf-8").strip()
     if slug:
         f = BRIEFS / f"{slug}.json"
-        if not f.exists():
-            sys.exit(f"brief not found: {slug}")
-        return json.loads(f.read_text(encoding="utf-8"))
-    best = max(files, key=lambda f: (json.loads(f.read_text(encoding="utf-8")).get("date", ""), f.name))
+        if f.exists():
+            return json.loads(f.read_text(encoding="utf-8"))
+    best = max(files, key=lambda f: f.stat().st_mtime)    # fallback: newest file on disk
     return json.loads(best.read_text(encoding="utf-8"))
 
 

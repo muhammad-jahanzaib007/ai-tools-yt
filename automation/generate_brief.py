@@ -185,6 +185,7 @@ def main():
     BRIEFS.mkdir(exist_ok=True)
     out = BRIEFS / f"{brief['slug']}.json"
     save(out, brief)
+    (DATA / "latest.txt").write_text(brief["slug"], encoding="utf-8")   # render uses this
 
     topics["published"].append(topic)
     if len(topics["queue"]) < 5:
