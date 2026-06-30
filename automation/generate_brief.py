@@ -119,8 +119,10 @@ def generate_brief(topic):
         '"text" (one or two spoken sentences) and "broll" (a 2-4 word stock-footage search query '
         "that matches the text, e.g. 'person typing laptop', 'data center servers'). The first "
         "segment's text must start with the hook.\n"
-        "- description: a YouTube description (2-4 sentences) ending with the literal line "
-        "'Tools mentioned and links: [AFFILIATE_LINKS]' so links can be slotted in later\n"
+        "- description: a YouTube description, 2 or 3 sentences. Do NOT list links here.\n"
+        "- links: an array of the tools/resources you mention, each an object "
+        '{"name": "Tool Name", "url": "https://official-homepage"} using the real official website. '
+        "3 to 8 items. Only include tools you actually name in the narration.\n"
         "- tags: an array of 8-12 lowercase search tags (do not include any year)\n"
         "- thumbnail_text: 3-5 punchy words for the thumbnail\n"
         "Keep claims general and accurate. No em dashes anywhere."
@@ -139,6 +141,11 @@ def generate_brief(topic):
                           "broll": strip_em(str(seg.get("broll", topic))).strip()})
     b["narration"] = clean
     b["tags"] = [strip_em(str(t)).strip().lower() for t in b.get("tags", []) if str(t).strip()]
+    links = []
+    for it in (b.get("links") or []):
+        if isinstance(it, dict) and it.get("name") and str(it.get("url", "")).startswith("http"):
+            links.append({"name": strip_em(str(it["name"])).strip(), "url": str(it["url"]).strip()})
+    b["links"] = links
     b["slug"] = re.sub(r"[^a-z0-9-]", "", b["slug"].lower().replace(" ", "-")).strip("-")
     if not b["slug"] or not b["narration"]:
         sys.exit("brief unusable after cleaning")

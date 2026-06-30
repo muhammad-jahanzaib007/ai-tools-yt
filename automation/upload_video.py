@@ -48,6 +48,21 @@ def main():
     title = (brief.get("title") or slug)[:100]
     desc = brief.get("description", "")
     desc = desc.replace("Tools mentioned and links: [AFFILIATE_LINKS]", "").strip()
+
+    # Build the "Tools mentioned" section from the brief's links.
+    # Optional: automation/affiliates.json maps a tool name -> your affiliate URL.
+    overrides = {}
+    aff = ROOT / "automation" / "affiliates.json"
+    if aff.exists():
+        try:
+            overrides = {k.lower(): v for k, v in json.loads(aff.read_text(encoding="utf-8")).items()}
+        except Exception as e:
+            print(f"affiliates.json ignored: {e}", file=sys.stderr)
+    links = brief.get("links", [])
+    if links:
+        rows = [f"{l['name']}: {overrides.get(l['name'].lower(), l['url'])}" for l in links]
+        desc = (desc + "\n\nTools mentioned:\n" + "\n".join(rows)).strip()
+
     desc = (desc + "\n\n#AI #AItools #technology").strip()[:4900]
     tags = [t for t in brief.get("tags", []) if t][:15]
 
