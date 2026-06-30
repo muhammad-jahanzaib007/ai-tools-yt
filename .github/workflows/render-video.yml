@@ -1,0 +1,54 @@
+name: Render video (Phase 2)
+
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: "Brief slug to render (leave blank for the newest)"
+        required: false
+  push:
+    paths:
+      - ".github/render-trigger.txt"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: yt-render
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - run: pip install --upgrade requests
+
+      - name: Render video
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          VOICE_ID: ${{ vars.VOICE_ID }}
+          ELEVEN_MODEL: ${{ vars.ELEVEN_MODEL }}
+          BRIEF_SLUG: ${{ inputs.slug }}
+        run: python automation/render_video.py
+
+      - name: Upload video artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: video
+          path: |
+            output/*.mp4
+            output/*.jpg
+          if-no-files-found: error
+          retention-days: 14
