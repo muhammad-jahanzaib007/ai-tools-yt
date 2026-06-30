@@ -120,11 +120,12 @@ def pexels_clip(query, dest):
 
 def make_segment(idx, audio, broll, dur, dest):
     if broll and broll.exists():
-        # Ken Burns: gentle continuous zoom, alternating in/out per segment so nothing is static
-        z = "min(1+0.0011*on,1.22)" if idx % 2 == 0 else "max(1.22-0.0011*on,1.0)"
-        vf = (f"[0:v]scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},"
-              f"zoompan=z='{z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s={W}x{H}:fps={FPS},"
-              f"format=yuv420p[v]")
+        # Ken Burns: continuous zoom using the accumulating `zoom` var (NOT `on`, which is static).
+        # Oversize first so zooming doesn't upscale past source.
+        vf = (f"[0:v]scale={int(W*1.4)}:{int(H*1.4)}:force_original_aspect_ratio=increase,"
+              f"crop={int(W*1.4)}:{int(H*1.4)},"
+              f"zoompan=z='min(zoom+0.0018,1.35)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':"
+              f"d=1:s={W}x{H}:fps={FPS},format=yuv420p[v]")
         run(["ffmpeg", "-y", "-stream_loop", "-1", "-i", str(broll), "-i", str(audio), "-t", f"{dur:.3f}",
              "-filter_complex", vf,
              "-map", "[v]", "-map", "1:a", "-c:v", "libx264", "-preset", "veryfast",
