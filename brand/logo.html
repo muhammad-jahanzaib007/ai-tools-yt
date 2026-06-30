@@ -2,37 +2,18 @@
 <html><head><meta charset="UTF-8"><style>
   *{margin:0;padding:0;box-sizing:border-box}
   html,body{width:1024px;height:1024px;overflow:hidden}
-  body{display:grid;place-items:center;
-    background:radial-gradient(120% 120% at 30% 20%,#10204a 0%,#0a0f24 55%,#05070f 100%);
-    font-family:'Segoe UI',Arial,sans-serif}
-  .chip{width:560px;height:560px;border-radius:140px;position:relative;
-    background:linear-gradient(140deg,#22d3ee 0%,#6366f1 50%,#a855f7 100%);
-    box-shadow:0 40px 120px -20px rgba(99,102,241,.7), inset 0 4px 0 rgba(255,255,255,.35);
-    display:grid;place-items:center}
-  .chip::after{content:"";position:absolute;inset:0;border-radius:140px;
-    background:radial-gradient(80% 60% at 50% 18%,rgba(255,255,255,.45),transparent 60%)}
-  /* byte/bite mark: rounded white square with a circular bite removed */
-  .mark{width:300px;height:300px;position:relative;z-index:2}
-  .sq{width:300px;height:300px;border-radius:78px;background:#fff;
-    -webkit-mask:radial-gradient(circle 92px at 300px 0,transparent 90px,#000 91px);
-            mask:radial-gradient(circle 92px at 300px 0,transparent 90px,#000 91px);
-    box-shadow:0 10px 30px rgba(0,0,0,.2)}
-  .dot{position:absolute;width:70px;height:70px;border-radius:50%;right:-18px;top:-18px;
-    background:#0a0f24;box-shadow:0 0 0 14px rgba(255,255,255,.15)}
-  .spark{position:absolute;left:60px;top:70px;width:120px;height:120px;z-index:3}
-  .word{position:absolute;bottom:78px;width:100%;text-align:center;
-    font-weight:800;letter-spacing:6px;font-size:58px;color:#eaf0ff}
-  .word b{color:#fff}
+  body{background:#D97757;display:grid;place-items:center}
+  .wrap{position:relative;width:760px;height:760px;display:grid;place-items:center}
+  .burst{position:absolute;inset:0;border-radius:50%;
+    background:repeating-conic-gradient(from 7.5deg,#F4F1EA 0deg 3.2deg,transparent 3.2deg 30deg);
+    -webkit-mask:radial-gradient(circle, transparent 0 9%, #000 13% 46%, transparent 51%);
+            mask:radial-gradient(circle, transparent 0 9%, #000 13% 46%, transparent 51%)}
+  .core{width:150px;height:150px;border-radius:50%;background:#F4F1EA;
+    box-shadow:0 6px 24px rgba(120,50,30,.25)}
 </style></head>
 <body>
-  <div class="chip">
-    <div class="mark">
-      <div class="sq"></div>
-      <div class="dot"></div>
-      <svg class="spark" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 3v6M12 15v6M3 12h6M15 12h6"/><circle cx="12" cy="12" r="2.4" fill="#a855f7" stroke="none"/>
-      </svg>
-    </div>
+  <div class="wrap">
+    <div class="burst"></div>
+    <div class="core"></div>
   </div>
-  <div class="word"><b>BYTESIZE</b> AI</div>
 </body></html>
