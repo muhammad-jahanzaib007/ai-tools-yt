@@ -173,9 +173,18 @@ def _ass_header(primary, secondary):
         "OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, "
         "Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n"
         f"Style: Cap,DejaVu Sans,64,{primary},{secondary},&H00000000,&H64000000,-1,0,0,0,"
-        "100,100,0,0,1,6,2,2,90,90,360,1\n\n"
+        "100,100,0,0,1,6,2,2,90,90,360,1\n"
+        "Style: Hook,DejaVu Sans,80,&H00FFFFFF,&H00FFFFFF,&H00000000,&H64000000,-1,0,0,0,"
+        "100,100,0,0,1,7,2,8,120,120,360,1\n\n"
         "[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"
     )
+
+
+def _hook_line(title):
+    if not title:
+        return None
+    safe = title.replace("{", "(").replace("}", ")")
+    return f"Dialogue: 0,0:00:00.00,0:00:02.40,Hook,,0,0,0,,{{\\fad(150,180)}}{safe}"
 
 
 def _ts(t):
@@ -183,10 +192,13 @@ def _ts(t):
     return f"{h:d}:{m:02d}:{s:02d}.{cs:02d}"
 
 
-def build_karaoke_ass(words, path, group=4):
+def build_karaoke_ass(words, path, group=4, title=None):
     """Word-by-word highlight: unsung white, active word pops to yellow, in sync with speech."""
     header = _ass_header("&H0000FFFF", "&H00FFFFFF")     # PrimaryColour=yellow (sung), Secondary=white
     lines = []
+    hook = _hook_line(title)
+    if hook:
+        lines.append(hook)
     for k in range(0, len(words), group):
         chunk = words[k:k + group]
         start, end = chunk[0][1], chunk[-1][2]
@@ -220,7 +232,7 @@ def make_segment(idx, audio, broll, dur, dest):
              "-shortest", str(dest)])
 
 
-def build_ass(segs, durations, path):
+def build_ass(segs, durations, path, title=None):
     """Lower-third captions, sized in real 1080x1920 pixels, split per sentence."""
     header = (
         "[Script Info]\nScriptType: v4.00+\nPlayResX: 1080\nPlayResY: 1920\n"
@@ -229,7 +241,9 @@ def build_ass(segs, durations, path):
         "OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, "
         "Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n"
         "Style: Cap,DejaVu Sans,60,&H00FFFFFF,&H000000FF,&H0000C8FF,&H64000000,-1,0,0,0,"
-        "100,100,0,0,1,6,2,2,90,90,330,1\n\n"
+        "100,100,0,0,1,6,2,2,90,90,330,1\n"
+        "Style: Hook,DejaVu Sans,80,&H00FFFFFF,&H00FFFFFF,&H00000000,&H64000000,-1,0,0,0,"
+        "100,100,0,0,1,7,2,8,120,120,360,1\n\n"
         "[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"
     )
     # pop-in: quick fade + scale bounce so each caption grabs the eye
@@ -240,6 +254,9 @@ def build_ass(segs, durations, path):
         return f"{h:d}:{m:02d}:{s:02d}.{cs:02d}"
 
     lines, t0 = [], 0.0
+    hook = _hook_line(title)
+    if hook:
+        lines.append(hook)
     for seg, d in zip(segs, durations):
         text = " ".join(seg["text"].split())
         parts = [p.strip() for p in re.split(r"(?<=[.!?])\s+", text) if p.strip()] or [text]
@@ -252,6 +269,18 @@ def build_ass(segs, durations, path):
             st = en
         t0 += d
     path.write_text(header + "\n".join(lines) + "\n", encoding="utf-8")
+
+
+def make_outro(dest, seconds=2.6):
+    """Branded 'Subscribe' end card (cream bg, coral wordmark) with silent audio."""
+    vf = (f"drawtext=font=DejaVu Sans:text='Subscribe for daily AI tools':"
+          f"fontcolor=0x1A1915:fontsize=64:x=(w-text_w)/2:y=h*0.42-40,"
+          f"drawtext=font=DejaVu Sans:text='Snackbyte AI':"
+          f"fontcolor=0xD97757:fontsize=80:x=(w-text_w)/2:y=h*0.42+50")
+    run(["ffmpeg", "-y", "-f", "lavfi", "-i", f"color=c=0xF2EEE4:s={W}x{H}:r={FPS}",
+         "-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100",
+         "-t", f"{seconds}", "-vf", vf, "-c:v", "libx264", "-preset", "veryfast",
+         "-pix_fmt", "yuv420p", "-c:a", "aac", "-ar", "44100", "-shortest", str(dest)])
 
 
 def main():
@@ -293,6 +322,11 @@ def main():
         t0 += d
         print(f"  segment {i+1}/{len(segs)} ok ({d:.1f}s)")
 
+    # branded "Subscribe" end card after the narration
+    outro = WORK / "outro.mp4"
+    make_outro(outro)
+    seg_files.append(outro)
+
     # concat
     listf = WORK / "list.txt"
     listf.write_text("".join(f"file '{f.as_posix()}'\n" for f in seg_files), encoding="utf-8")
@@ -301,9 +335,9 @@ def main():
 
     # captions (ASS) + optional music -> final.  Run from WORK so subtitles=subs.ass is a simple path.
     if karaoke and all_words:
-        build_karaoke_ass(all_words, WORK / "subs.ass")
+        build_karaoke_ass(all_words, WORK / "subs.ass", title=brief["title"])
     else:
-        build_ass(segs, durations, WORK / "subs.ass")
+        build_ass(segs, durations, WORK / "subs.ass", title=brief["title"])
     final = OUT / f"{slug}.mp4"
     music = pick_music()
     if music:

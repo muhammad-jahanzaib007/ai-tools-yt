@@ -114,7 +114,8 @@ def generate_brief(topic):
         "Return a single JSON object with these keys:\n"
         "- slug: kebab-case, 3-6 words, no dates\n"
         "- title: a clear, honest, clickable YouTube title, <=70 chars, no clickbait lies\n"
-        "- hook: the spoken first line (<=12 words) that makes someone keep watching\n"
+        "- hook: the spoken opening line (<=14 words). Make it a scroll-stopping pattern-interrupt: "
+        "a surprising claim, a sharp question, or a bold promise. No generic intros like 'In this video'.\n"
         "- narration: an array of 6-10 segments. Each segment is an object with "
         '"text" (one or two spoken sentences) and "broll" (a 2-4 word stock-footage search query '
         "that matches the text, e.g. 'person typing laptop', 'data center servers'). The first "
