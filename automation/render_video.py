@@ -120,9 +120,13 @@ def pexels_clip(query, dest):
 
 def make_segment(idx, audio, broll, dur, dest):
     if broll and broll.exists():
+        # Ken Burns: gentle continuous zoom, alternating in/out per segment so nothing is static
+        z = "min(1+0.0011*on,1.22)" if idx % 2 == 0 else "max(1.22-0.0011*on,1.0)"
+        vf = (f"[0:v]scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},"
+              f"zoompan=z='{z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s={W}x{H}:fps={FPS},"
+              f"format=yuv420p[v]")
         run(["ffmpeg", "-y", "-stream_loop", "-1", "-i", str(broll), "-i", str(audio), "-t", f"{dur:.3f}",
-             "-filter_complex",
-             f"[0:v]scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},fps={FPS},format=yuv420p[v]",
+             "-filter_complex", vf,
              "-map", "[v]", "-map", "1:a", "-c:v", "libx264", "-preset", "veryfast",
              "-c:a", "aac", "-ar", "44100", "-shortest", str(dest)])
     else:
@@ -140,10 +144,12 @@ def build_ass(segs, durations, path):
         "[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, "
         "OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, "
         "Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n"
-        "Style: Cap,DejaVu Sans,54,&H00FFFFFF,&H000000FF,&H00000000,&H64000000,-1,0,0,0,"
-        "100,100,0,0,1,5,1,2,90,90,320,1\n\n"
+        "Style: Cap,DejaVu Sans,60,&H00FFFFFF,&H000000FF,&H0000C8FF,&H64000000,-1,0,0,0,"
+        "100,100,0,0,1,6,2,2,90,90,330,1\n\n"
         "[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"
     )
+    # pop-in: quick fade + scale bounce so each caption grabs the eye
+    pop = r"{\fad(80,50)\fscx72\fscy72\t(0,130,\fscx107\fscy107)\t(130,230,\fscx100\fscy100)}"
 
     def ts(t):
         cs = int(round(t * 100)); h, cs = divmod(cs, 360000); m, cs = divmod(cs, 6000); s, cs = divmod(cs, 100)
@@ -157,7 +163,7 @@ def build_ass(segs, durations, path):
         st = t0
         for j, p in enumerate(parts):
             en = (t0 + d) if j == len(parts) - 1 else st + d * len(p) / tot
-            safe = p.replace("{", "(").replace("}", ")")
+            safe = pop + p.replace("{", "(").replace("}", ")")
             lines.append(f"Dialogue: 0,{ts(st)},{ts(en)},Cap,,0,0,0,,{safe}")
             st = en
         t0 += d
