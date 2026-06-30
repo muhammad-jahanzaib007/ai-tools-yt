@@ -119,7 +119,10 @@ def generate_brief(topic):
         "- narration: an array of 6-10 segments. Each segment is an object with "
         '"text" (one or two spoken sentences) and "broll" (a 2-4 word stock-footage search query '
         "that matches the text, e.g. 'person typing laptop', 'data center servers'). The first "
-        "segment's text must start with the hook.\n"
+        "segment's text must start with the hook. The FINAL segment must be a short, natural "
+        "call-to-action: ask one quick question inviting a comment, then a brief nudge to follow "
+        "for daily AI tools. Keep it to one or two sentences. Do NOT use the generic "
+        "'like, comment, share and subscribe' line.\n"
         "- description: a YouTube description, 2 or 3 sentences. Do NOT list links here.\n"
         "- links: an array of the tools/resources you mention, each an object "
         '{"name": "Tool Name", "url": "https://official-homepage"} using the real official website. '
