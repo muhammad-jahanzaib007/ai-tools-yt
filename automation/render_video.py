@@ -22,6 +22,7 @@ import re
 import sys
 import json
 import math
+import base64
 import shutil
 import subprocess
 from pathlib import Path
@@ -85,6 +86,39 @@ def tts(text, dest):
     dest.write_bytes(r.content)
 
 
+def tts_timed(text, dest):
+    """TTS with word timings. Returns [(word, start_s, end_s)] or raises if unavailable."""
+    r = requests.post(
+        f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}/with-timestamps",
+        params={"output_format": "mp3_44100_128"},
+        headers={"xi-api-key": EL_KEY, "Content-Type": "application/json"},
+        json={"text": text, "model_id": EL_MODEL,
+              "voice_settings": {"stability": 0.4, "similarity_boost": 0.85,
+                                 "style": 0.25, "use_speaker_boost": True}},
+        timeout=120,
+    )
+    if r.status_code >= 400:
+        raise RuntimeError(f"with-timestamps {r.status_code}: {r.text[:200]}")
+    j = r.json()
+    dest.write_bytes(base64.b64decode(j["audio_base64"]))
+    al = j.get("alignment") or j.get("normalized_alignment")
+    chars = al["characters"]
+    st = al["character_start_times_seconds"]
+    en = al["character_end_times_seconds"]
+    words, cur, cs, ce = [], "", None, None
+    for c, s, e in zip(chars, st, en):
+        if c.isspace():
+            if cur:
+                words.append((cur, cs, ce)); cur, cs = "", None
+        else:
+            if not cur:
+                cs = s
+            cur += c; ce = e
+    if cur:
+        words.append((cur, cs, ce))
+    return words
+
+
 def pexels_clip(query, dest):
     for q in (query, "abstract technology background", "digital network motion"):
         try:
@@ -116,6 +150,42 @@ def pexels_clip(query, dest):
             except requests.RequestException:
                 continue
     return False
+
+
+def _ass_header(primary, secondary):
+    return (
+        "[Script Info]\nScriptType: v4.00+\nPlayResX: 1080\nPlayResY: 1920\n"
+        "WrapStyle: 0\nScaledBorderAndShadow: yes\n\n"
+        "[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, "
+        "OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, "
+        "Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n"
+        f"Style: Cap,DejaVu Sans,64,{primary},{secondary},&H00000000,&H64000000,-1,0,0,0,"
+        "100,100,0,0,1,6,2,2,90,90,360,1\n\n"
+        "[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"
+    )
+
+
+def _ts(t):
+    cs = int(round(t * 100)); h, cs = divmod(cs, 360000); m, cs = divmod(cs, 6000); s, cs = divmod(cs, 100)
+    return f"{h:d}:{m:02d}:{s:02d}.{cs:02d}"
+
+
+def build_karaoke_ass(words, path, group=4):
+    """Word-by-word highlight: unsung white, active word pops to yellow, in sync with speech."""
+    header = _ass_header("&H0000FFFF", "&H00FFFFFF")     # PrimaryColour=yellow (sung), Secondary=white
+    lines = []
+    for k in range(0, len(words), group):
+        chunk = words[k:k + group]
+        start, end = chunk[0][1], chunk[-1][2]
+        parts = []
+        for i, (w, s, e) in enumerate(chunk):
+            nxt = chunk[i + 1][1] if i + 1 < len(chunk) else e
+            kcs = max(1, int(round((nxt - s) * 100)))
+            safe = w.replace("{", "(").replace("}", ")")
+            parts.append(f"{{\\k{kcs}}}{safe} ")
+        text = r"{\fad(60,40)}" + "".join(parts).strip()
+        lines.append(f"Dialogue: 0,{_ts(start)},{_ts(end)},Cap,,0,0,0,,{text}")
+    path.write_text(header + "\n".join(lines) + "\n", encoding="utf-8")
 
 
 def make_segment(idx, audio, broll, dur, dest):
@@ -187,17 +257,27 @@ def main():
     WORK.mkdir(parents=True)
     OUT.mkdir(exist_ok=True)
 
-    durations, seg_files = [], []
+    durations, seg_files, all_words, karaoke = [], [], [], True
+    t0 = 0.0
     for i, seg in enumerate(segs):
         audio = WORK / f"a{i}.mp3"
-        tts(seg["text"], audio)
+        words = []
+        try:
+            words = tts_timed(seg["text"], audio)        # natural voice + word timings
+        except Exception as e:
+            print(f"  word timings unavailable ({e}); plain TTS for this segment", file=sys.stderr)
+            karaoke = False
+            tts(seg["text"], audio)
         d = probe_duration(audio) + 0.35           # small tail so captions/cuts don't clip
         broll = WORK / f"b{i}.mp4"
         if not pexels_clip(seg.get("broll", brief["title"]), broll):
             broll = None
         seg_mp4 = WORK / f"s{i}.mp4"
         make_segment(i, audio, broll, d, seg_mp4)
+        for (w, s, e) in words:
+            all_words.append((w, t0 + s, t0 + e))
         durations.append(d); seg_files.append(seg_mp4)
+        t0 += d
         print(f"  segment {i+1}/{len(segs)} ok ({d:.1f}s)")
 
     # concat
@@ -207,7 +287,10 @@ def main():
     run(["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(listf), "-c", "copy", str(body)])
 
     # captions (ASS) + optional music -> final.  Run from WORK so subtitles=subs.ass is a simple path.
-    build_ass(segs, durations, WORK / "subs.ass")
+    if karaoke and all_words:
+        build_karaoke_ass(all_words, WORK / "subs.ass")
+    else:
+        build_ass(segs, durations, WORK / "subs.ass")
     final = OUT / f"{slug}.mp4"
     if MUSIC.exists():
         run(["ffmpeg", "-y", "-i", "body.mp4", "-stream_loop", "-1", "-i", str(MUSIC.resolve()),
