@@ -7,19 +7,16 @@
   .safe{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
     width:1546px;height:423px;display:flex;flex-direction:column;align-items:center;justify-content:center;
     gap:30px;text-align:center}
-  .burst{position:relative;width:150px;height:150px;display:grid;place-items:center}
-  .rays{position:absolute;inset:0;border-radius:50%;
-    background:repeating-conic-gradient(from 7.5deg,#D97757 0deg 3.4deg,transparent 3.4deg 30deg);
-    -webkit-mask:radial-gradient(circle, transparent 0 13%, #000 17% 46%, transparent 52%);
-            mask:radial-gradient(circle, transparent 0 13%, #000 17% 46%, transparent 52%)}
-  .core{width:40px;height:40px;border-radius:50%;background:#D97757}
+  .mark{width:128px;height:128px;border-radius:34px;background:#D97757;position:relative;
+    -webkit-mask:radial-gradient(circle 34px at 128px 0, transparent 33px, #000 34px);
+            mask:radial-gradient(circle 34px at 128px 0, transparent 33px, #000 34px)}
   h1{font-size:148px;font-weight:700;letter-spacing:-2px;color:#1A1915;line-height:1}
   h1 .c{color:#D97757}
   p{font-size:40px;color:#75736B;font-style:italic;letter-spacing:.3px}
 </style></head>
 <body>
   <div class="safe">
-    <div class="burst"><div class="rays"></div><div class="core"></div></div>
+    <div class="mark"></div>
     <h1>Bytesize <span class="c">AI</span></h1>
     <p>Free AI tools, explained in 60 seconds.</p>
   </div>

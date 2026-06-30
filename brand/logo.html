@@ -2,18 +2,22 @@
 <html><head><meta charset="UTF-8"><style>
   *{margin:0;padding:0;box-sizing:border-box}
   html,body{width:1024px;height:1024px;overflow:hidden}
-  body{background:#D97757;display:grid;place-items:center}
-  .wrap{position:relative;width:760px;height:760px;display:grid;place-items:center}
-  .burst{position:absolute;inset:0;border-radius:50%;
-    background:repeating-conic-gradient(from 7.5deg,#F4F1EA 0deg 3.2deg,transparent 3.2deg 30deg);
-    -webkit-mask:radial-gradient(circle, transparent 0 9%, #000 13% 46%, transparent 51%);
-            mask:radial-gradient(circle, transparent 0 9%, #000 13% 46%, transparent 51%)}
-  .core{width:150px;height:150px;border-radius:50%;background:#F4F1EA;
-    box-shadow:0 6px 24px rgba(120,50,30,.25)}
+  body{background:#F2EEE4;display:grid;place-items:center}
+  .wrap{position:relative;width:560px;height:560px}
+  /* "byte" chip with a circular bite removed from the top-right corner */
+  .chip{position:absolute;inset:0;border-radius:150px;background:#D97757;
+    -webkit-mask:radial-gradient(circle 150px at 560px 0, transparent 148px, #000 149px);
+            mask:radial-gradient(circle 150px at 560px 0, transparent 148px, #000 149px)}
+  /* the bitten-off piece, floating near the bite */
+  .bit{position:absolute;width:120px;height:120px;border-radius:50%;background:#D97757;
+    right:-58px;top:-58px;opacity:.55}
+  .bit2{position:absolute;width:58px;height:58px;border-radius:50%;background:#D97757;
+    right:-150px;top:30px;opacity:.32}
 </style></head>
 <body>
   <div class="wrap">
-    <div class="burst"></div>
-    <div class="core"></div>
+    <div class="chip"></div>
+    <div class="bit"></div>
+    <div class="bit2"></div>
   </div>
 </body></html>
