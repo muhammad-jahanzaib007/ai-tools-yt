@@ -1,0 +1,86 @@
+{
+  "slug": "ai-text-to-video-tools-compared",
+  "title": "AI Text-to-Video Tools Compared: Which One Is Worth It?",
+  "hook": "You type a sentence and AI builds a video around it.",
+  "narration": [
+    {
+      "text": "You type a sentence and AI builds a video around it. That is exactly what a new wave of tools promises, and several of them are genuinely impressive.",
+      "broll": "person typing laptop"
+    },
+    {
+      "text": "Runway is one of the most well-known options. It lets you describe a scene in plain text and generates short video clips with strong visual quality.",
+      "broll": "abstract digital video generation"
+    },
+    {
+      "text": "Sora, from OpenAI, caused a lot of excitement when it was revealed. It can produce longer, more coherent clips, though access has been limited and rolling out gradually.",
+      "broll": "futuristic technology screen"
+    },
+    {
+      "text": "Kling, developed by a Chinese AI company, has impressed many creators with its realistic motion and relatively accessible pricing compared to some Western rivals.",
+      "broll": "video production studio"
+    },
+    {
+      "text": "Pika is another strong contender. It focuses on being quick and easy to use, making it a good starting point if you are new to AI video generation.",
+      "broll": "creative person computer screen"
+    },
+    {
+      "text": "Hailuo, also known as MiniMax video, has gained attention for producing smooth and natural-looking motion from simple text prompts.",
+      "broll": "smooth motion animation render"
+    },
+    {
+      "text": "So how do you choose between them? Think about your budget, the length of clips you need, and how much control you want over the output.",
+      "broll": "person comparing options screen"
+    },
+    {
+      "text": "None of these tools are perfect yet. You will often need to prompt carefully, regenerate clips, and do some editing on top.",
+      "broll": "video editing timeline screen"
+    },
+    {
+      "text": "But the pace of improvement is remarkable. What felt like science fiction a couple of years ago is now a realistic part of many creators' workflows.",
+      "broll": "time lapse city progress"
+    },
+    {
+      "text": "Links to all the tools mentioned are in the description below. Try a few free tiers and see which one fits how you work.",
+      "broll": "hand pointing phone screen"
+    }
+  ],
+  "description": "A quick, honest comparison of the leading AI tools that turn text into video, including Runway, Sora, Kling, Pika, and Hailuo. We look at what each one does well and what to consider before choosing one for your workflow. Links to every tool mentioned are listed below.",
+  "links": [
+    {
+      "name": "Runway",
+      "url": "https://runwayml.com"
+    },
+    {
+      "name": "Sora",
+      "url": "https://sora.com"
+    },
+    {
+      "name": "Kling",
+      "url": "https://klingai.com"
+    },
+    {
+      "name": "Pika",
+      "url": "https://pika.art"
+    },
+    {
+      "name": "Hailuo (MiniMax)",
+      "url": "https://hailuoai.video"
+    }
+  ],
+  "tags": [
+    "ai video generator",
+    "text to video ai",
+    "runway ai",
+    "sora openai",
+    "kling ai",
+    "pika ai",
+    "hailuo ai",
+    "ai video tools",
+    "ai content creation",
+    "generative video",
+    "ai for creators"
+  ],
+  "thumbnail_text": "AI Video Tools Compared",
+  "topic": "AI tools that turn text into video, compared",
+  "date": "2026-06-30"
+}
