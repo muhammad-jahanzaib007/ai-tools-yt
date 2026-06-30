@@ -37,7 +37,7 @@ MUSIC = ROOT / "assets" / "music.mp3"
 
 EL_KEY = os.environ.get("ELEVENLABS_API_KEY")
 PX_KEY = os.environ.get("PEXELS_API_KEY")
-VOICE_ID = os.environ.get("VOICE_ID") or "21m00Tcm4TlvDq8ikWAM"      # Rachel
+VOICE_ID = os.environ.get("VOICE_ID") or "Fahco4VZzobUeiPqni1S"      # user-picked library voice
 EL_MODEL = os.environ.get("ELEVEN_MODEL") or "eleven_multilingual_v2"
 W, H, FPS = 1080, 1920, 30
 
