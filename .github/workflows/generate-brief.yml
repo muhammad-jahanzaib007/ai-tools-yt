@@ -1,0 +1,53 @@
+name: Generate video brief (Phase 1)
+
+# Free: uses GitHub Models via the built-in GITHUB_TOKEN. No API key.
+# Manual for now (Run workflow). The schedule is added in Phase 3 with render + upload.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  models: read
+
+concurrency:
+  group: yt-brief
+  cancel-in-progress: false
+
+jobs:
+  brief:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: pip install --upgrade requests anthropic
+
+      - name: Generate brief
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BLOG_MODEL: ${{ vars.BLOG_MODEL || 'openai/gpt-4o-mini' }}
+          # Optional: add an ANTHROPIC_API_KEY secret to use Claude instead of free GitHub Models.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_MODEL: ${{ vars.CLAUDE_MODEL || 'claude-sonnet-4-6' }}
+        run: python automation/generate_brief.py
+
+      - name: Upload brief as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: video-brief
+          path: briefs/*.json
+
+      - name: Commit
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add briefs automation/topics.json
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git commit -m "brief: $(date -u +%Y-%m-%d)"
+            git push
+          fi
