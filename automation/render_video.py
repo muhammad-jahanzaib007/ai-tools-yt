@@ -354,13 +354,14 @@ def main():
              str(final.resolve())], cwd=str(WORK))
 
     # thumbnail: frame + big title text
+    # Thumbnail from body.mp4 (no burned captions/hook) -> clean b-roll + title band only.
     thumb = OUT / f"{slug}.jpg"
     ttext = brief.get("thumbnail_text", "").replace(":", r"\:").replace("'", "")
     p = subprocess.run(
-        ["ffmpeg", "-y", "-i", str(final.resolve()), "-vf",
-         f"select=eq(n\\,30),scale={W}:{H},"
-         f"drawbox=y=ih*0.40:color=black@0.45:width=iw:height=ih*0.2:t=fill,"
-         f"drawtext=font='DejaVu Sans':text='{ttext}':fontcolor=white:fontsize=90:"
+        ["ffmpeg", "-y", "-i", str(body.resolve()), "-vf",
+         f"select=eq(n\\,45),scale={W}:{H},"
+         f"drawbox=y=ih*0.38:color=black@0.5:width=iw:height=ih*0.24:t=fill,"
+         f"drawtext=font='DejaVu Sans':text='{ttext}':fontcolor=white:fontsize=104:"
          f"x=(w-text_w)/2:y=(h-text_h)/2:box=0",
          "-frames:v", "1", str(thumb.resolve())],
         capture_output=True, text=True)
