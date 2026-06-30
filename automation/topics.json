@@ -1,6 +1,5 @@
 {
   "queue": [
-    "5 free AI tools that save hours every week",
     "The best AI tools for students in 2026",
     "ChatGPT vs Claude vs Gemini: which to use for what",
     "AI tools that turn text into video, compared",
@@ -21,5 +20,7 @@
     "How to fact-check AI answers in under a minute",
     "AI tools for learning a new language"
   ],
-  "published": []
+  "published": [
+    "5 free AI tools that save hours every week"
+  ]
 }
