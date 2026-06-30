@@ -41,8 +41,8 @@ EL_MODEL = os.environ.get("ELEVEN_MODEL") or "eleven_turbo_v2_5"
 W, H, FPS = 1080, 1920, 30
 
 
-def run(cmd):
-    p = subprocess.run(cmd, capture_output=True, text=True)
+def run(cmd, cwd=None):
+    p = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd)
     if p.returncode != 0:
         sys.exit(f"command failed: {' '.join(cmd[:6])}...\n{p.stderr[-1500:]}")
     return p.stdout
@@ -131,12 +131,36 @@ def make_segment(idx, audio, broll, dur, dest):
              "-shortest", str(dest)])
 
 
-def srt_time(t):
-    ms = int(round(t * 1000))
-    h, ms = divmod(ms, 3600000)
-    m, ms = divmod(ms, 60000)
-    s, ms = divmod(ms, 1000)
-    return f"{h:02d}:{m:02d}:{s:02d},{ms:03d}"
+def build_ass(segs, durations, path):
+    """Lower-third captions, sized in real 1080x1920 pixels, split per sentence."""
+    header = (
+        "[Script Info]\nScriptType: v4.00+\nPlayResX: 1080\nPlayResY: 1920\n"
+        "WrapStyle: 0\nScaledBorderAndShadow: yes\n\n"
+        "[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, "
+        "OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, "
+        "Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n"
+        "Style: Cap,DejaVu Sans,54,&H00FFFFFF,&H000000FF,&H00000000,&H64000000,-1,0,0,0,"
+        "100,100,0,0,1,5,1,2,90,90,320,1\n\n"
+        "[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"
+    )
+
+    def ts(t):
+        cs = int(round(t * 100)); h, cs = divmod(cs, 360000); m, cs = divmod(cs, 6000); s, cs = divmod(cs, 100)
+        return f"{h:d}:{m:02d}:{s:02d}.{cs:02d}"
+
+    lines, t0 = [], 0.0
+    for seg, d in zip(segs, durations):
+        text = " ".join(seg["text"].split())
+        parts = [p.strip() for p in re.split(r"(?<=[.!?])\s+", text) if p.strip()] or [text]
+        tot = sum(len(p) for p in parts) or 1
+        st = t0
+        for j, p in enumerate(parts):
+            en = (t0 + d) if j == len(parts) - 1 else st + d * len(p) / tot
+            safe = p.replace("{", "(").replace("}", ")")
+            lines.append(f"Dialogue: 0,{ts(st)},{ts(en)},Cap,,0,0,0,,{safe}")
+            st = en
+        t0 += d
+    path.write_text(header + "\n".join(lines) + "\n", encoding="utf-8")
 
 
 def main():
@@ -155,8 +179,7 @@ def main():
     WORK.mkdir(parents=True)
     OUT.mkdir(exist_ok=True)
 
-    durations, seg_files, srt = [], [], []
-    t0 = 0.0
+    durations, seg_files = [], []
     for i, seg in enumerate(segs):
         audio = WORK / f"a{i}.mp3"
         tts(seg["text"], audio)
@@ -167,8 +190,6 @@ def main():
         seg_mp4 = WORK / f"s{i}.mp4"
         make_segment(i, audio, broll, d, seg_mp4)
         durations.append(d); seg_files.append(seg_mp4)
-        srt.append(f"{i+1}\n{srt_time(t0)} --> {srt_time(t0 + d)}\n{seg['text'].strip()}\n")
-        t0 += d
         print(f"  segment {i+1}/{len(segs)} ok ({d:.1f}s)")
 
     # concat
@@ -177,27 +198,19 @@ def main():
     body = WORK / "body.mp4"
     run(["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(listf), "-c", "copy", str(body)])
 
-    # captions + optional music -> final
-    (WORK / "subs.srt").write_text("\n".join(srt), encoding="utf-8")
-    style = ("FontName=DejaVu Sans,Bold=1,FontSize=15,PrimaryColour=&H00FFFFFF&,"
-             "OutlineColour=&H00000000&,BorderStyle=1,Outline=3,Shadow=0,Alignment=2,MarginV=210")
+    # captions (ASS) + optional music -> final.  Run from WORK so subtitles=subs.ass is a simple path.
+    build_ass(segs, durations, WORK / "subs.ass")
     final = OUT / f"{slug}.mp4"
-    cwd = str(WORK)
     if MUSIC.exists():
         run(["ffmpeg", "-y", "-i", "body.mp4", "-stream_loop", "-1", "-i", str(MUSIC.resolve()),
              "-filter_complex",
-             f"[0:v]subtitles=subs.srt:force_style='{style}'[v];"
-             f"[1:a]volume=0.07[m];[0:a][m]amix=inputs=2:duration=first[a]",
+             "[0:v]subtitles=subs.ass[v];[1:a]volume=0.07[m];[0:a][m]amix=inputs=2:duration=first[a]",
              "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-preset", "medium", "-crf", "21",
-             "-c:a", "aac", "-ar", "44100", "-shortest", str(final.resolve())], )
+             "-c:a", "aac", "-ar", "44100", "-shortest", str(final.resolve())], cwd=str(WORK))
     else:
-        # run from WORK so the subtitles filter sees a simple relative path
-        p = subprocess.run(
-            ["ffmpeg", "-y", "-i", "body.mp4", "-vf", f"subtitles=subs.srt:force_style='{style}'",
-             "-c:v", "libx264", "-preset", "medium", "-crf", "21", "-c:a", "copy", str(final.resolve())],
-            cwd=cwd, capture_output=True, text=True)
-        if p.returncode != 0:
-            sys.exit(f"final render failed:\n{p.stderr[-1500:]}")
+        run(["ffmpeg", "-y", "-i", "body.mp4", "-vf", "subtitles=subs.ass",
+             "-c:v", "libx264", "-preset", "medium", "-crf", "21", "-c:a", "copy",
+             str(final.resolve())], cwd=str(WORK))
 
     # thumbnail: frame + big title text
     thumb = OUT / f"{slug}.jpg"
