@@ -17,6 +17,7 @@ import os
 import re
 import sys
 import json
+import time
 import datetime as dt
 from pathlib import Path
 
@@ -68,22 +69,32 @@ def _raw_completion(user, max_tokens):
         return "".join(b.text for b in msg.content if b.type == "text")
     if not TOKEN:
         sys.exit("Set ANTHROPIC_API_KEY (Claude), or run in GitHub Actions (free GitHub Models).")
-    resp = requests.post(
-        ENDPOINT,
-        headers={"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json",
-                 "Accept": "application/json"},
-        json={
-            "model": MODEL,
-            "messages": [{"role": "system", "content": SYSTEM}, {"role": "user", "content": user}],
-            "temperature": 0.8,
-            "max_tokens": max_tokens,
-            "response_format": {"type": "json_object"},
-        },
-        timeout=120,
-    )
-    if resp.status_code >= 400:
-        sys.exit(f"GitHub Models request failed ({resp.status_code}): {resp.text[:500]}")
-    return resp.json()["choices"][0]["message"]["content"]
+    last = ""
+    for attempt in range(4):
+        try:
+            resp = requests.post(
+                ENDPOINT,
+                headers={"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json",
+                         "Accept": "application/json"},
+                json={
+                    "model": MODEL,
+                    "messages": [{"role": "system", "content": SYSTEM},
+                                 {"role": "user", "content": user}],
+                    "temperature": 0.8,
+                    "max_tokens": max_tokens,
+                    "response_format": {"type": "json_object"},
+                },
+                timeout=120,
+            )
+        except requests.RequestException as e:
+            last = str(e); time.sleep(2 * (attempt + 1)); continue
+        if resp.status_code < 400:
+            return resp.json()["choices"][0]["message"]["content"]
+        last = f"{resp.status_code}: {resp.text[:300]}"
+        if resp.status_code in (429, 500, 502, 503, 504):
+            time.sleep(3 * (attempt + 1)); continue
+        break
+    sys.exit(f"GitHub Models request failed after retries ({last})")
 
 
 def chat_json(user, max_tokens=3000):
