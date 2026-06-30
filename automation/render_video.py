@@ -23,6 +23,7 @@ import sys
 import json
 import math
 import base64
+import random
 import shutil
 import subprocess
 from pathlib import Path
@@ -33,7 +34,16 @@ ROOT = Path(__file__).resolve().parent.parent
 BRIEFS = ROOT / "briefs"
 OUT = ROOT / "output"
 WORK = ROOT / ".render"
-MUSIC = ROOT / "assets" / "music.mp3"
+MUSIC_DIR = ROOT / "assets" / "music"          # drop several .mp3 here -> a random one per video
+MUSIC_FILE = ROOT / "assets" / "music.mp3"     # or a single track as fallback
+
+
+def pick_music():
+    if MUSIC_DIR.is_dir():
+        tracks = sorted(MUSIC_DIR.glob("*.mp3")) + sorted(MUSIC_DIR.glob("*.m4a"))
+        if tracks:
+            return random.choice(tracks)
+    return MUSIC_FILE if MUSIC_FILE.exists() else None
 
 EL_KEY = os.environ.get("ELEVENLABS_API_KEY")
 PX_KEY = os.environ.get("PEXELS_API_KEY")
@@ -292,8 +302,10 @@ def main():
     else:
         build_ass(segs, durations, WORK / "subs.ass")
     final = OUT / f"{slug}.mp4"
-    if MUSIC.exists():
-        run(["ffmpeg", "-y", "-i", "body.mp4", "-stream_loop", "-1", "-i", str(MUSIC.resolve()),
+    music = pick_music()
+    if music:
+        print(f"music: {music.name}")
+        run(["ffmpeg", "-y", "-i", "body.mp4", "-stream_loop", "-1", "-i", str(music.resolve()),
              "-filter_complex",
              "[0:v]subtitles=subs.ass[v];[1:a]volume=0.06[m];"
              "[0:a][m]amix=inputs=2:duration=first:normalize=0[a]",
