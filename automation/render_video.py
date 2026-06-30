@@ -295,7 +295,8 @@ def main():
     if MUSIC.exists():
         run(["ffmpeg", "-y", "-i", "body.mp4", "-stream_loop", "-1", "-i", str(MUSIC.resolve()),
              "-filter_complex",
-             "[0:v]subtitles=subs.ass[v];[1:a]volume=0.07[m];[0:a][m]amix=inputs=2:duration=first[a]",
+             "[0:v]subtitles=subs.ass[v];[1:a]volume=0.06[m];"
+             "[0:a][m]amix=inputs=2:duration=first:normalize=0[a]",
              "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-preset", "medium", "-crf", "21",
              "-c:a", "aac", "-ar", "44100", "-shortest", str(final.resolve())], cwd=str(WORK))
     else:

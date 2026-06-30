@@ -1,0 +1,68 @@
+name: Publish (full pipeline)
+
+# Fully automated: generate a brief, render the video, upload to YouTube.
+# 4x/week (Mon, Wed, Fri, Sun at 09:00 UTC). Also runnable on demand.
+on:
+  schedule:
+    - cron: "0 9 * * 1,3,5,0"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  models: read
+
+concurrency:
+  group: yt-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - run: pip install --upgrade requests anthropic google-api-python-client google-auth google-auth-httplib2
+
+      - name: Generate brief
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BLOG_MODEL: ${{ vars.BLOG_MODEL || 'openai/gpt-4o-mini' }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_MODEL: ${{ vars.CLAUDE_MODEL || 'claude-sonnet-4-6' }}
+        run: python automation/generate_brief.py
+
+      - name: Save brief
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add briefs automation/topics.json
+          if ! git diff --cached --quiet; then
+            git commit -m "brief: $(date -u +%Y-%m-%d)"
+            git push
+          fi
+
+      - name: Render video
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          VOICE_ID: ${{ vars.VOICE_ID }}
+          ELEVEN_MODEL: ${{ vars.ELEVEN_MODEL }}
+        run: python automation/render_video.py
+
+      - name: Upload to YouTube
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          YT_PRIVACY: ${{ vars.YT_PRIVACY || 'private' }}
+          YT_CATEGORY: ${{ vars.YT_CATEGORY || '28' }}
+        run: python automation/upload_video.py
