@@ -1,0 +1,74 @@
+{
+  "slug": "chatgpt-claude-gemini-which-to-use",
+  "title": "ChatGPT vs Claude vs Gemini: Which One Should You Use?",
+  "hook": "Three AI chatbots, but they are not all the same.",
+  "narration": [
+    {
+      "text": "Three AI chatbots, but they are not all the same. Picking the right one can save you a lot of time.",
+      "broll": "three screens comparison"
+    },
+    {
+      "text": "ChatGPT is the most versatile of the three. It handles coding, image generation, web browsing, and general tasks with a huge library of plugins and tools.",
+      "broll": "person typing laptop"
+    },
+    {
+      "text": "If you need an all-in-one assistant and you want the widest range of features, ChatGPT is usually the safest starting point.",
+      "broll": "AI assistant interface"
+    },
+    {
+      "text": "Claude is the one to reach for when you need to write or analyse long documents. It tends to produce cleaner, more natural prose and handles large amounts of text very well.",
+      "broll": "reading long document"
+    },
+    {
+      "text": "If you are drafting reports, summarising research, or editing creative writing, Claude is worth trying first.",
+      "broll": "person writing desk"
+    },
+    {
+      "text": "Gemini is built into Google's ecosystem, so it connects naturally with Search, Gmail, and Google Docs. That makes it useful if your work already lives inside Google's tools.",
+      "broll": "Google workspace apps"
+    },
+    {
+      "text": "Gemini also handles multimodal tasks well, meaning it can reason across text, images, and other formats in one conversation.",
+      "broll": "image and text screen"
+    },
+    {
+      "text": "All three have free tiers, and all three have paid plans that unlock more power. The best move is to try the free version of each for your specific use case.",
+      "broll": "free trial signup screen"
+    },
+    {
+      "text": "There is no single winner. Use ChatGPT for variety, Claude for writing and long documents, and Gemini when you are deep inside Google's world.",
+      "broll": "decision making arrows"
+    }
+  ],
+  "description": "ChatGPT, Claude, and Gemini each have genuine strengths, and knowing which to use can make a real difference to your workflow. This video breaks down the key differences in plain language so you can pick the right tool for the job. No hype, just practical guidance.",
+  "links": [
+    {
+      "name": "ChatGPT",
+      "url": "https://chat.openai.com"
+    },
+    {
+      "name": "Claude",
+      "url": "https://claude.ai"
+    },
+    {
+      "name": "Gemini",
+      "url": "https://gemini.google.com"
+    }
+  ],
+  "tags": [
+    "chatgpt",
+    "claude",
+    "gemini",
+    "ai chatbot comparison",
+    "best ai tool",
+    "ai for productivity",
+    "openai",
+    "google ai",
+    "anthropic",
+    "ai tools",
+    "chatbot guide"
+  ],
+  "thumbnail_text": "Which AI Wins?",
+  "topic": "ChatGPT vs Claude vs Gemini: which to use for what",
+  "date": "2026-06-30"
+}
