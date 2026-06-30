@@ -121,7 +121,7 @@ def generate_brief(topic):
         "segment's text must start with the hook.\n"
         "- description: a YouTube description (2-4 sentences) ending with the literal line "
         "'Tools mentioned and links: [AFFILIATE_LINKS]' so links can be slotted in later\n"
-        "- tags: an array of 8-12 lowercase search tags\n"
+        "- tags: an array of 8-12 lowercase search tags (do not include any year)\n"
         "- thumbnail_text: 3-5 punchy words for the thumbnail\n"
         "Keep claims general and accurate. No em dashes anywhere."
     )
