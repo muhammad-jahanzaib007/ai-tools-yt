@@ -37,7 +37,7 @@ MUSIC = ROOT / "assets" / "music.mp3"
 EL_KEY = os.environ.get("ELEVENLABS_API_KEY")
 PX_KEY = os.environ.get("PEXELS_API_KEY")
 VOICE_ID = os.environ.get("VOICE_ID") or "21m00Tcm4TlvDq8ikWAM"      # Rachel
-EL_MODEL = os.environ.get("ELEVEN_MODEL") or "eleven_turbo_v2_5"
+EL_MODEL = os.environ.get("ELEVEN_MODEL") or "eleven_multilingual_v2"
 W, H, FPS = 1080, 1920, 30
 
 
@@ -76,7 +76,8 @@ def tts(text, dest):
         params={"output_format": "mp3_44100_128"},
         headers={"xi-api-key": EL_KEY, "Content-Type": "application/json"},
         json={"text": text, "model_id": EL_MODEL,
-              "voice_settings": {"stability": 0.5, "similarity_boost": 0.75}},
+              "voice_settings": {"stability": 0.4, "similarity_boost": 0.85,
+                                 "style": 0.25, "use_speaker_boost": True}},
         timeout=120,
     )
     if r.status_code >= 400:
