@@ -1,0 +1,77 @@
+{
+  "slug": "ai-note-taking-tools-that-work",
+  "title": "AI Note-Taking Tools That Actually Save You Time",
+  "hook": "You are probably forgetting half of every meeting you attend.",
+  "narration": [
+    {
+      "text": "You are probably forgetting half of every meeting you attend. AI note-taking tools are changing that, and a few of them are genuinely impressive.",
+      "broll": "person distracted meeting"
+    },
+    {
+      "text": "Otter.ai has been around for a while and it remains one of the most reliable options. It transcribes your conversations in real time and lets you search through the text afterwards.",
+      "broll": "real time transcription screen"
+    },
+    {
+      "text": "Fireflies.ai goes a step further by joining your video calls automatically. It produces a summary, pulls out action items, and lets your whole team access the notes in one place.",
+      "broll": "video call office team"
+    },
+    {
+      "text": "Notion AI sits inside a tool many people already use for notes and documents. It can summarise, rewrite, and help you organise anything you throw at it.",
+      "broll": "person typing notes laptop"
+    },
+    {
+      "text": "Microsoft OneNote now has Copilot built in, so if your organisation already runs on Microsoft 365, you may already have access to AI-assisted note features without paying extra.",
+      "broll": "microsoft office workspace"
+    },
+    {
+      "text": "Mem is worth a look if you want something built around AI from the ground up. It automatically links related notes together, so your ideas connect without you having to organise them manually.",
+      "broll": "connected ideas network screen"
+    },
+    {
+      "text": "The honest truth is that none of these tools are perfect. They work best when you pick one that fits how you already work, rather than forcing a new habit.",
+      "broll": "person choosing app phone"
+    },
+    {
+      "text": "Which of these tools have you tried, and did it actually stick? Drop your answer in the comments, and follow the channel for a daily look at AI tools worth knowing about.",
+      "broll": "person commenting on phone"
+    }
+  ],
+  "description": "AI note-taking tools promise to save you time, but not all of them deliver. This video breaks down the options that are genuinely useful, from real-time transcription to automatic meeting summaries. Find the one that fits your workflow and stop losing track of important information.",
+  "links": [
+    {
+      "name": "Otter.ai",
+      "url": "https://otter.ai"
+    },
+    {
+      "name": "Fireflies.ai",
+      "url": "https://fireflies.ai"
+    },
+    {
+      "name": "Notion AI",
+      "url": "https://www.notion.so"
+    },
+    {
+      "name": "Microsoft OneNote with Copilot",
+      "url": "https://www.microsoft.com/en-gb/microsoft-365/onenote/digital-note-taking-app"
+    },
+    {
+      "name": "Mem",
+      "url": "https://mem.ai"
+    }
+  ],
+  "tags": [
+    "ai note taking",
+    "best note taking apps",
+    "otter ai",
+    "fireflies ai",
+    "notion ai",
+    "ai productivity tools",
+    "meeting transcription",
+    "ai tools",
+    "productivity apps",
+    "smart notes"
+  ],
+  "thumbnail_text": "Notes That Write Themselves",
+  "topic": "AI note-taking tools that actually work",
+  "date": "2026-07-01"
+}
