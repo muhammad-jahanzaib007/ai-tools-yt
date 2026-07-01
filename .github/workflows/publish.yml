@@ -1,10 +1,11 @@
 name: Publish (full pipeline)
 
 # Fully automated: generate a brief, render the video, upload to YouTube.
-# 4x/week (Mon, Wed, Fri, Sun at 09:00 UTC). Also runnable on demand.
+# PAUSED 2026-07-01 while the music library is being made copyright-safe.
+# To resume, uncomment the schedule block below.
 on:
-  schedule:
-    - cron: "0 9 * * 1-6"
+  # schedule:
+  #   - cron: "0 9 * * 1-6"
   workflow_dispatch:
   push:
     paths:
