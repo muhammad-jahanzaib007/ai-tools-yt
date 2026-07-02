@@ -2,7 +2,9 @@ import React from "react";
 import {
   AbsoluteFill,
   Easing,
+  Img,
   interpolate,
+  staticFile,
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
@@ -12,20 +14,40 @@ import { slide } from "@remotion/transitions/slide";
 import { COLORS, TRANSITION_FRAMES } from "../battle/types";
 import { fontFamily } from "../battle/font";
 import { Confetti, Grain, SparkBurst, Vignette, glass } from "../battle/fx";
+import { Emblem } from "./emblems";
 
 export type ComicHero = {
   tool: string;
   alias: string;
   color: string;
   power: string;
+  slug: string;            // art file key: hero-<slug>-idle/action.png
 };
 
 export type ComicProps = {
   episodeTitle: string;
   threat: string;
+  threatSlug: string;      // art file key: villain-<slug>-menace/defeated.png
   heroes: ComicHero[];
   resolution: string;
   sceneFrames?: { intro: number; rounds: number[]; verdict: number };
+};
+
+// A transparent-keyed character PNG placed in public/toolverse/ by the render
+// script. Returns null if no slug (keeps the text-only look as a fallback).
+const Character: React.FC<{
+  file?: string;
+  style?: React.CSSProperties;
+}> = ({ file, style }) => {
+  if (!file) {
+    return null;
+  }
+  return (
+    <Img
+      src={staticFile(`toolverse/${file}`)}
+      style={{ objectFit: "contain", ...style }}
+    />
+  );
 };
 
 const MIN_SCENE = 2 * TRANSITION_FRAMES + 5;
@@ -211,7 +233,7 @@ const Burst: React.FC<{
   );
 };
 
-const ThreatScene: React.FC<{ threat: string }> = ({ threat }) => {
+const ThreatScene: React.FC<{ threat: string; threatSlug?: string }> = ({ threat, threatSlug }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const slamAt = 0.5 * fps;
@@ -256,19 +278,31 @@ const ThreatScene: React.FC<{ threat: string }> = ({ threat }) => {
         >
           A threat appears
         </div>
+        <Character
+          file={threatSlug ? `villain-${threatSlug}-menace.png` : undefined}
+          style={{
+            width: "82%",
+            height: 900,
+            scale: String(slam * menace),
+            translate: `0px ${(1 - slam) * -260}px`,
+            rotate: `${Math.sin(frame / 7) * 1.4}deg`,
+            filter: "drop-shadow(0 0 50px rgba(255,60,50,0.6))",
+          }}
+        />
         <div
           style={{
-            scale: String(slam * menace),
-            rotate: `${(1 - slam) * -6 - 2 + Math.sin(frame / 7) * 1.1}deg`,
+            scale: String(slam),
+            rotate: `${(1 - slam) * -4 - 2}deg`,
             fontFamily,
             fontWeight: 900,
-            fontSize: 128,
+            fontSize: threatSlug ? 84 : 128,
             lineHeight: 1.02,
             textAlign: "center",
             maxWidth: "92%",
             color: "#FFF3EE",
-            textShadow: "0 0 60px rgba(255,80,60,0.55), 8px 8px 0 #7A1410",
+            textShadow: "0 0 60px rgba(255,80,60,0.55), 6px 6px 0 #7A1410",
             textTransform: "uppercase",
+            marginTop: threatSlug ? -40 : 0,
           }}
         >
           {threat}
@@ -285,85 +319,127 @@ const ThreatScene: React.FC<{ threat: string }> = ({ threat }) => {
 
 const HeroScene: React.FC<{ hero: ComicHero; index: number }> = ({ hero, index }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const inAt = 0.4 * fps;
-  const arrive = interpolate(frame, [inAt, inAt + 0.4 * fps], [0, 1], {
+  const { fps, width } = useVideoConfig();
+  const fromLeft = index % 2 === 0;
+  const inAt = 0.35 * fps;
+  const actionAt = 1.4 * fps;                 // pose swap: idle -> attack + lunge
+
+  // fly in from the side, settle, then lunge forward on the attack beat
+  const arrive = interpolate(frame, [inAt, inAt + 0.45 * fps], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     easing: pop,
   });
-  const bubbleAt = 1.2 * fps;
+  const lunge = interpolate(frame, [actionAt, actionAt + 0.28 * fps], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+    easing: pop,
+  });
+  const startX = fromLeft ? -width : width;
+  const x = startX * (1 - arrive) + lunge * (fromLeft ? 70 : -70);
+  const attacking = frame >= actionAt;
+  const breathe = 1 + 0.02 * Math.sin(frame / 6);
+  const bob = Math.sin(frame / 9) * 8;
+  const bubbleAt = 0.6 * fps;
   const bubble = interpolate(frame, [bubbleAt, bubbleAt + 0.35 * fps], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     easing: pop,
   });
-  const breathe = 1 + 0.018 * Math.sin(frame / 6);
-  const bob = Math.sin(frame / 9) * 6;
+
   return (
     <AbsoluteFill style={{ backgroundColor: "#0b0b14", scale: String(1 + frame * 0.0009) }}>
-      <ActionRays color={hero.color} opacity={0.3} />
+      <ActionRays color={hero.color} opacity={0.32} />
       <Halftone tint="rgba(255,255,255,0.10)" />
-      <SpeedLines from={inAt} duration={1.1 * fps} />
-      <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", gap: 40 }}>
+      <SpeedLines from={actionAt} duration={0.8 * fps} color={`${hero.color}55`} />
+
+      {/* the hero body: flies in, swaps idle -> action pose on the attack beat */}
+      <AbsoluteFill style={{ alignItems: "center", justifyContent: "flex-end" }}>
         <div
           style={{
             position: "relative",
-            zIndex: 3,
+            width: "94%",
+            height: 1250,
+            translate: `${x}px ${bob}px`,
+            scale: String((0.9 + 0.1 * arrive) * (attacking ? 1.04 : breathe)),
+          }}
+        >
+          <Character
+            file={hero.slug ? `hero-${hero.slug}-${attacking ? "action" : "idle"}.png` : undefined}
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              filter: `drop-shadow(0 0 55px ${hero.color}bb)`,
+              transform: fromLeft ? "none" : "scaleX(-1)",
+            }}
+          />
+          {/* emblem crest over the chest */}
+          <div style={{ position: "absolute", top: "27%", left: "50%", translate: "-50% 0", opacity: arrive }}>
+            <Emblem slug={hero.slug} color={hero.color} size={150} />
+          </div>
+        </div>
+      </AbsoluteFill>
+
+      <Burst text="" color={hero.color} at={actionAt} size={620} />
+      <SparkBurst at={actionAt} color={hero.color} size={360} count={12} seed={`h${index}`} />
+
+      {/* nameplate: alias + tool */}
+      <AbsoluteFill style={{ alignItems: "center", justifyContent: "flex-start", paddingTop: 90 }}>
+        <div
+          style={{
+            opacity: interpolate(frame, [0, 0.3 * fps], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }),
             fontFamily,
             fontWeight: 900,
-            fontSize: 42,
-            letterSpacing: "0.35em",
+            fontSize: 40,
+            letterSpacing: "0.3em",
             color: hero.color,
             textShadow: "3px 3px 0 #1A1915",
             textTransform: "uppercase",
-            opacity: interpolate(frame, [0, 0.3 * fps], [0, 1], {
-              extrapolateLeft: "clamp",
-              extrapolateRight: "clamp",
-            }),
           }}
         >
           Summoning
         </div>
-        <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <Burst text="" color={hero.color} at={inAt} size={470} />
-          <div
-            style={{
-              position: "relative",
-              scale: String(arrive * breathe),
-              rotate: `${(1 - arrive) * 8 + Math.sin(frame / 8) * 0.8}deg`,
-              fontFamily,
-              fontWeight: 900,
-              fontSize: 108,
-              textAlign: "center",
-              color: "#FFFFFF",
-              textShadow: `0 0 70px ${hero.color}, 6px 6px 0 #1A1915`,
-              textTransform: "uppercase",
-              maxWidth: "90%",
-            }}
-          >
-            {hero.alias}
-          </div>
+        <div
+          style={{
+            scale: String(arrive),
+            fontFamily,
+            fontWeight: 900,
+            fontSize: 104,
+            color: "#FFFFFF",
+            textShadow: `0 0 70px ${hero.color}, 5px 5px 0 #1A1915`,
+            textTransform: "uppercase",
+            textAlign: "center",
+            maxWidth: "92%",
+            marginTop: 6,
+          }}
+        >
+          {hero.alias}
         </div>
         <div
           style={{
-            ...glass(`${hero.color}99`, 22),
+            ...glass(`${hero.color}CC`, 22),
             opacity: arrive,
             fontFamily,
             fontWeight: 800,
-            fontSize: 46,
+            fontSize: 44,
             color: COLORS.white,
-            padding: "12px 36px",
+            padding: "10px 34px",
             borderRadius: 999,
+            marginTop: 14,
           }}
         >
           {hero.tool}
         </div>
+      </AbsoluteFill>
+
+      {/* speech bubble: the hero's power line */}
+      <AbsoluteFill style={{ alignItems: "center", justifyContent: "flex-end", paddingBottom: 150 }}>
         <div
           style={{
             opacity: bubble,
-            scale: String(0.75 + 0.25 * bubble),
-            translate: `0px ${bob}px`,
+            scale: String(0.8 + 0.2 * bubble),
             position: "relative",
             backgroundColor: "#FFFFFF",
             color: "#1A1915",
@@ -372,9 +448,9 @@ const HeroScene: React.FC<{ hero: ComicHero; index: number }> = ({ hero, index }
             boxShadow: "10px 10px 0 rgba(0,0,0,0.5)",
             fontFamily,
             fontWeight: 800,
-            fontSize: 44,
-            padding: "24px 38px",
-            maxWidth: "84%",
+            fontSize: 42,
+            padding: "22px 36px",
+            maxWidth: "82%",
             textAlign: "center",
           }}
         >
@@ -383,7 +459,7 @@ const HeroScene: React.FC<{ hero: ComicHero; index: number }> = ({ hero, index }
             style={{
               position: "absolute",
               bottom: -26,
-              left: "18%",
+              left: fromLeft ? "18%" : "72%",
               width: 0,
               height: 0,
               borderLeft: "16px solid transparent",
@@ -393,16 +469,17 @@ const HeroScene: React.FC<{ hero: ComicHero; index: number }> = ({ hero, index }
           />
         </div>
       </AbsoluteFill>
-      <Flash at={inAt} />
+      <Flash at={actionAt} />
       <Grain opacity={0.06} />
       <Vignette strength={0.45} />
     </AbsoluteFill>
   );
 };
 
-const VictoryScene: React.FC<{ heroes: ComicHero[]; resolution: string }> = ({
+const VictoryScene: React.FC<{ heroes: ComicHero[]; resolution: string; threatSlug?: string }> = ({
   heroes,
   resolution,
+  threatSlug,
 }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
@@ -410,6 +487,12 @@ const VictoryScene: React.FC<{ heroes: ComicHero[]; resolution: string }> = ({
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     easing: pop,
+  });
+  // the beaten villain fades and sinks as it crumbles away
+  const crumble = interpolate(frame, [0, 0.9 * fps], [1, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+    easing: ease,
   });
   const textIn = interpolate(frame, [0.9 * fps, 1.4 * fps], [0, 1], {
     extrapolateLeft: "clamp",
@@ -426,6 +509,22 @@ const VictoryScene: React.FC<{ heroes: ComicHero[]; resolution: string }> = ({
     <AbsoluteFill style={{ backgroundColor: COLORS.cream }}>
       <Halftone tint="rgba(26,25,21,0.08)" />
       <Confetti colors={[COLORS.coral, COLORS.teal, "#FFE24A", COLORS.dark]} />
+      {/* the defeated villain crumbling away behind the victory stamp */}
+      {threatSlug ? (
+        <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
+          <Character
+            file={`villain-${threatSlug}-defeated.png`}
+            style={{
+              width: "70%",
+              height: 820,
+              opacity: crumble * 0.5,
+              scale: String(0.8 + crumble * 0.2),
+              translate: `0px ${(1 - crumble) * 120}px`,
+              filter: "grayscale(0.3)",
+            }}
+          />
+        </AbsoluteFill>
+      ) : null}
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", gap: 36 }}>
         <div
           style={{
@@ -511,11 +610,11 @@ const VictoryScene: React.FC<{ heroes: ComicHero[]; resolution: string }> = ({
 };
 
 export const ComicVideo: React.FC<ComicProps> = (props) => {
-  const { threat, heroes, resolution } = props;
+  const { threat, threatSlug, heroes, resolution } = props;
   const frames = framesOfComic(props);
   const items: React.ReactNode[] = [
     <TransitionSeries.Sequence key="intro" durationInFrames={frames.intro}>
-      <ThreatScene threat={threat} />
+      <ThreatScene threat={threat} threatSlug={threatSlug} />
     </TransitionSeries.Sequence>,
   ];
   heroes.forEach((hero, i) => {
@@ -537,7 +636,7 @@ export const ComicVideo: React.FC<ComicProps> = (props) => {
       timing={linearTiming({ durationInFrames: TRANSITION_FRAMES })}
     />,
     <TransitionSeries.Sequence key="victory" durationInFrames={frames.verdict}>
-      <VictoryScene heroes={heroes} resolution={resolution} />
+      <VictoryScene heroes={heroes} resolution={resolution} threatSlug={threatSlug} />
     </TransitionSeries.Sequence>,
   );
   return <TransitionSeries>{items}</TransitionSeries>;

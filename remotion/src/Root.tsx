@@ -41,18 +41,21 @@ const battleMetadata: CalculateMetadataFunction<BattleProps> = ({ props }) => ({
 const sampleComic: ComicProps = {
   episodeTitle: "The Blank Page strikes. Two heroes answer.",
   threat: "The Blank Page",
+  threatSlug: "the-blank-page",
   heroes: [
     {
       tool: "Writesonic",
       alias: "Scribe",
       color: "#4F8EF7",
       power: "Floods the empty page with copy at lightspeed",
+      slug: "writesonic",
     },
     {
       tool: "ChatGPT",
       alias: "The Oracle",
       color: "#74AA9C",
       power: "Outlines the whole piece before the villain can blink",
+      slug: "chatgpt",
     },
   ],
   resolution:

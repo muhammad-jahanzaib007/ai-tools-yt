@@ -28,12 +28,20 @@ ROSTER = ROOT / "automation" / "roster.json"
 MODEL = os.environ.get("POLLINATIONS_MODEL", "flux")
 W = H = 1024
 
-STYLE = (
-    "Bold comic book illustration, single full-body character, dynamic heroic pose, thick black "
-    "ink outlines, cel shading, dramatic rim lighting, halftone accents, vibrant saturated colors, "
-    "highly detailed, centered composition, plain solid white background, no text, no words, "
-    "no logos, no watermark, no signature."
+BASE = (
+    "Bold comic book illustration, single full-body character, thick black ink outlines, "
+    "cel shading, halftone accents, highly detailed, centered composition, plain solid white "
+    "background, no text, no words, no real brand logos, no watermark, no signature."
 )
+# Heroes: sleek modern tech-armor (deliberately NOT the Superman/Batman
+# cape-and-trunks silhouette Flux defaults to), bright and hopeful.
+HERO_STYLE = (BASE + " A sleek modern high-tech superhero in a form-fitting armored suit with "
+    "glowing neon energy lines and a smooth helmet with a glowing visor. NO cape, NO trunks, "
+    "not Superman, not Batman, an original futuristic design. Uplifting hopeful mood, bright "
+    "optimistic lighting, radiant glow, cool confident and inspiring.")
+# Villains: the opposite. Dark, ominous, hopeless.
+VILLAIN_STYLE = (BASE + " Dark ominous menacing mood, grim shadows, cold sinister lighting, "
+    "hopeless and threatening atmosphere.")
 
 
 def _seed(name):
@@ -95,15 +103,15 @@ def main():
         s = slugify(h["tool"])
         col = color_name(h["color"])
         power = powers.get(h["tool"]) or f"the powers of the {h['tool']} AI tool"
-        base = (f"{STYLE} An original superhero character called {h['alias']}, the heroic "
-                f"personification of the {h['tool']} AI tool. Costume and cape are primarily {col} "
-                f"(a {col} colour scheme). Their power: {power}. An original character, "
-                "NOT a company logo or mascot.")
-        jobs.append((OUT / f"hero-{s}-idle.png", base + " Confident heroic idle stance, facing the viewer."))
-        jobs.append((OUT / f"hero-{s}-action.png", base + " Explosive mid-attack action pose, unleashing their power."))
+        base = (f"{HERO_STYLE} An original superhero character called {h['alias']}. Costume and "
+                f"cape are primarily {col} (a {col} colour scheme), with a clean plain chest and "
+                "no chest logo (an emblem is added separately). Not Superman, not a diamond crest, "
+                f"a fully original hero design. Their power: {power}.")
+        jobs.append((OUT / f"hero-{s}-idle.png", base + " Confident, calm, hopeful heroic stance, facing the viewer, standing tall."))
+        jobs.append((OUT / f"hero-{s}-action.png", base + " Dynamic mid-action pose, unleashing their power with a bright energy burst."))
     for v in uni["villains"]:
         s = slugify(v["name"])
-        base = (f"{STYLE} An original comic supervillain called {v['name']}, a monstrous "
+        base = (f"{VILLAIN_STYLE} An original comic supervillain called {v['name']}, a monstrous "
                 f"embodiment of this menace: {v['menace']}. Dark, ominous palette with sickly accents.")
         jobs.append((OUT / f"villain-{s}-menace.png", base + " Towering menacing pose, attacking toward the viewer."))
         jobs.append((OUT / f"villain-{s}-defeated.png", base + " Defeated: collapsed, crumbling and dissolving away, drained of power."))

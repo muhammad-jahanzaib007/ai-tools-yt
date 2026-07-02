@@ -569,8 +569,46 @@ def render_battle(brief):
                    f"Battle render: {battle['toolA']} vs {battle['toolB']}")
 
 
+def _art_slug(name):
+    return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+
+
+def _key_white(src, dest):
+    """Copy a character PNG with its near-white background made transparent,
+    so it composites cleanly onto the comic scenes."""
+    from PIL import Image
+    im = Image.open(src).convert("RGBA")
+    px = im.load()
+    w, h = im.size
+    for y in range(h):
+        for x in range(w):
+            r, g, b, a = px[x, y]
+            if r > 238 and g > 238 and b > 238:
+                px[x, y] = (r, g, b, 0)
+    im.save(dest)
+
+
+def _stage_art(slugs_files):
+    """Key out white + copy the needed art into remotion/public/toolverse/.
+    Returns the set of successfully staged filenames."""
+    art_dir = ROOT / "assets" / "toolverse"
+    pub = REMOTION_DIR / "public" / "toolverse"
+    pub.mkdir(parents=True, exist_ok=True)
+    staged = set()
+    for fname in slugs_files:
+        src = art_dir / fname
+        if src.exists():
+            try:
+                _key_white(src, pub / fname)
+                staged.add(fname)
+            except Exception as e:
+                print(f"  art stage failed {fname}: {e}", file=sys.stderr)
+    return staged
+
+
 def render_comic(brief):
-    """AI Toolverse episode: narrator + per-hero character voices, ComicShort."""
+    """AI Toolverse episode: narrator + per-hero character voices, animated
+    character avatars fighting, ComicShort."""
     comic = brief["comic"]
     uni_file = ROOT / "automation" / "universe.json"
     vmap = {}
@@ -585,8 +623,21 @@ def render_comic(brief):
                  "with theatrical superhero energy: ") if persona else None
         voices.append((v, style))
     voices.append(narrator)
+
+    # stage the avatar art (white keyed to transparent) and attach slugs
+    threat_slug = _art_slug(comic["threat"])
+    heroes = []
+    want = [f"villain-{threat_slug}-menace.png", f"villain-{threat_slug}-defeated.png"]
+    for h in comic["heroes"]:
+        hs = _art_slug(h["tool"])
+        heroes.append({**h, "slug": hs})
+        want += [f"hero-{hs}-idle.png", f"hero-{hs}-action.png"]
+    staged = _stage_art(want)
+    print(f"  staged {len(staged)}/{len(want)} avatar files")
+
     props = {"episodeTitle": brief["title"], "threat": comic["threat"],
-             "heroes": comic["heroes"], "resolution": comic["resolution"]}
+             "threatSlug": threat_slug, "heroes": heroes,
+             "resolution": comic["resolution"]}
     _render_scenes(brief, "ComicShort", props,
                    f"Toolverse episode: {comic['threat']}", voices=voices)
 
