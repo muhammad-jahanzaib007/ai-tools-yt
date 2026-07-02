@@ -1,0 +1,53 @@
+{
+  "slug": "camera-fright-avatar-strikes",
+  "title": "Camera Fright strikes. Avatar answers the call.",
+  "hook": "A creator's voice silenced. Fear grips the lens.",
+  "comic": {
+    "threat": "Camera Fright",
+    "heroes": [
+      {
+        "tool": "Synthesia",
+        "alias": "Avatar",
+        "color": "#6C5CE7",
+        "power": "Spawns digital humans to speak any script, face-free."
+      }
+    ],
+    "resolution": "Synthesia creates a digital human presenter from a script, allowing the creator to produce video without showing their face."
+  },
+  "narration": [
+    {
+      "text": "The dreaded Camera Fright strikes. Creators freeze, unable to film themselves. Their message remains unheard, their passion trapped within. Who will answer the call?",
+      "broll": "person looking scared at camera"
+    },
+    {
+      "text": "I am Avatar. Watch: Synthesia spawns a digital human. It speaks the script perfectly, delivering the message. Camera Fright vanishes, powerless against my digital presence!",
+      "broll": "AI avatar speaking"
+    },
+    {
+      "text": "Victory is ours. You can create engaging video content without ever showing your face. Which hero should join the fight next? Follow for more Toolverse adventures!",
+      "broll": "celebration digital heroes"
+    }
+  ],
+  "description": "When Camera Fright stops creators from filming, only one hero can save the day. See how Synthesia, the Avatar, enables anyone to create video with a digital human. Conquer your fear of the camera with AI.",
+  "links": [
+    {
+      "name": "Synthesia",
+      "url": "https://www.synthesia.io/"
+    }
+  ],
+  "tags": [
+    "ai tools",
+    "youtube shorts",
+    "ai video",
+    "synthesia",
+    "camera fright",
+    "content creation",
+    "digital human",
+    "ai avatar",
+    "faceless youtube",
+    "ai explained"
+  ],
+  "thumbnail_text": "AI Beats Camera Fright",
+  "topic": "Toolverse episode: Camera Fright",
+  "date": "2026-07-02"
+}
