@@ -152,6 +152,53 @@ def tts_timed(text, dest):
     return words
 
 
+def _pitch_std(path):
+    """Voice pitch variation in semitones, or None if unmeasurable.
+    Uses librosa (available in CI); silently skips where its DLLs are broken."""
+    try:
+        import numpy as np
+        import librosa
+        p = subprocess.run(["ffmpeg", "-v", "error", "-i", str(path), "-f", "f32le",
+                            "-ac", "1", "-ar", "22050", "-"], capture_output=True)
+        if p.returncode != 0:
+            return None
+        y = np.frombuffer(p.stdout, dtype=np.float32)
+        f0 = librosa.yin(y, fmin=60, fmax=350, sr=22050)
+        f0 = f0[(f0 > 65) & (f0 < 340)]
+        if len(f0) < 30:
+            return None
+        return float(np.std(12 * np.log2(f0 / np.median(f0))))
+    except Exception:
+        return None
+
+
+FLAT_TAKE = 1.2      # semitone std below this = flat delivery, worth one retry
+
+
+def tts_take(text, dest):
+    """TTS with word timings, re-taking flat deliveries once (ElevenLabs is
+    non-deterministic; a second take usually has more life). Keeps the
+    livelier take. Returns (words, pitch_std_or_None)."""
+    words = tts_timed(text, dest)
+    ps = _pitch_std(dest)
+    if ps is None or ps >= FLAT_TAKE:
+        return words, ps
+    alt = dest.with_suffix(".retake.mp3")
+    try:
+        words2 = tts_timed(text, alt)
+        ps2 = _pitch_std(alt)
+        if ps2 is not None and ps2 > ps:
+            shutil.move(str(alt), str(dest))
+            print(f"    flat take ({ps:.2f}st) replaced by retake ({ps2:.2f}st)")
+            return words2, ps2
+        print(f"    retake no better ({ps:.2f}st vs {ps2}); keeping first")
+    except Exception as e:
+        print(f"    retake failed ({e}); keeping first take", file=sys.stderr)
+    finally:
+        alt.unlink(missing_ok=True)
+    return words, ps
+
+
 def pexels_clip(query, dest):
     for q in (query, "abstract technology background", "digital network motion"):
         try:
@@ -348,15 +395,18 @@ def render_battle(brief):
     for i, seg in enumerate(segs):
         audio = WORK / f"a{i}.mp3"
         try:
-            words_per.append(tts_timed(seg["text"], audio))
+            words, ps = tts_take(seg["text"], audio)
+            words_per.append(words)
         except Exception as e:
             print(f"  word timings unavailable ({e}); plain TTS", file=sys.stderr)
             karaoke = False
             tts(seg["text"], audio)
             words_per.append([])
+            ps = None
         audios.append(audio)
         durs.append(probe_duration(audio))
-        print(f"  scene {i+1}/{n} voiced ({durs[-1]:.1f}s)")
+        note = f", pitch {ps:.2f}st" if ps is not None else ""
+        print(f"  scene {i+1}/{n} voiced ({durs[-1]:.1f}s{note})")
 
     # 2. scene lengths: lead-in (covers the 0.5s transition) + narration + tail
     leads = [0.30 if i == 0 else 0.65 for i in range(n)]
@@ -456,7 +506,7 @@ def main():
         audio = WORK / f"a{i}.mp3"
         words = []
         try:
-            words = tts_timed(seg["text"], audio)        # natural voice + word timings
+            words, _ = tts_take(seg["text"], audio)      # natural voice + word timings + flat-take retry
         except Exception as e:
             print(f"  word timings unavailable ({e}); plain TTS for this segment", file=sys.stderr)
             karaoke = False
