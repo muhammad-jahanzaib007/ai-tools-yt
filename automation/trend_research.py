@@ -17,6 +17,7 @@ Quota: ~100 units per search x len(QUERIES) + 1 videos.list call
 """
 
 import os
+import re
 import sys
 import json
 import datetime as dt
@@ -92,6 +93,13 @@ def main():
                 "viewsPerDay": round(views / days),
                 "videoId": v["id"],
             })
+
+    # Keep only clearly AI-related titles; search matches loosely otherwise
+    # (e.g. generic "I tested ..." videos in any language).
+    ai_re = re.compile(
+        r"\b(ai|a\.i\.|gpt|chatgpt|gemini|claude|copilot|midjourney|llm|"
+        r"artificial intelligence)\b", re.I)
+    items = [it for it in items if ai_re.search(it["title"])]
 
     items.sort(key=lambda x: x["viewsPerDay"], reverse=True)
     top = items[:25]
