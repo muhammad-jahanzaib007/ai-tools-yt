@@ -9,7 +9,7 @@ import {
 import { COLORS, RoundData, scoreAfter } from "./types";
 import { fontFamily } from "./font";
 import { AnimatedBg } from "./AnimatedBg";
-import { Confetti, Grain, ShineSweep } from "./fx";
+import { Confetti, Grain, ShineSweep, glass } from "./fx";
 
 const ease = Easing.bezier(0.16, 1, 0.3, 1);
 const bounce = Easing.bezier(0.34, 1.8, 0.5, 1);
@@ -113,14 +113,13 @@ export const VerdictScene: React.FC<{
         <div
           style={{
             opacity: nameOpacity,
+            ...glass("rgba(26,25,21,0.92)", 20),
             fontFamily,
             fontWeight: 800,
             fontSize: vertical ? 50 : 44,
             color: COLORS.cream,
-            background: "linear-gradient(135deg, #2B2A24 0%, #1A1915 100%)",
             padding: "12px 38px",
             borderRadius: 999,
-            boxShadow: "0 16px 40px rgba(26,25,21,0.35)",
           }}
         >
           wins {Math.max(final.a, final.b)}–{Math.min(final.a, final.b)}
@@ -143,17 +142,15 @@ export const VerdictScene: React.FC<{
           style={{
             opacity: ctaOpacity,
             translate: `0px ${ctaRise}px`,
+            ...glass("rgba(200,95,60,0.93)", 20),
             position: "relative",
             overflow: "hidden",
             fontFamily,
             fontWeight: 700,
             fontSize: vertical ? 44 : 38,
             color: COLORS.cream,
-            background: "linear-gradient(135deg, #E8926B 0%, #C2603D 100%)",
-            border: "1.5px solid rgba(255,255,255,0.35)",
             padding: "22px 44px",
             borderRadius: 999,
-            boxShadow: "0 20px 50px rgba(217,119,87,0.45)",
           }}
         >
           <ShineSweep at={ctaAt + fps} duration={0.7 * fps} strength={0.45} />

@@ -39,6 +39,36 @@ def pitch_std_semitones(y):
     return float(np.std(12 * np.log2(f0 / np.median(f0))))
 
 
+def script_wer():
+    """Word error rate of all kept takes vs the brief narration. None = skip."""
+    try:
+        import json
+        import re
+        from faster_whisper import WhisperModel
+        slug = (ROOT / "automation" / "latest.txt").read_text(encoding="utf-8").strip()
+        brief = json.loads((ROOT / "briefs" / f"{slug}.json").read_text(encoding="utf-8"))
+        expected = " ".join(s["text"] for s in brief["narration"])
+        model = WhisperModel("tiny.en", device="cpu", compute_type="int8")
+        heard = []
+        for v in sorted((ROOT / ".render").glob("a*.mp3")):
+            segs, _ = model.transcribe(str(v), language="en", beam_size=1)
+            heard.append(" ".join(s.text for s in segs))
+        norm = lambda s: re.sub(r"[^a-z0-9' ]+", " ", s.lower()).split()
+        r, h = norm(expected), norm(" ".join(heard))
+        if not r:
+            return None
+        d = list(range(len(h) + 1))
+        for i, rw in enumerate(r, 1):
+            prev, d[0] = d[0], i
+            for j, hw in enumerate(h, 1):
+                cur = d[j]
+                d[j] = min(d[j] + 1, d[j - 1] + 1, prev + (rw != hw))
+                prev = cur
+        return d[len(h)] / len(r)
+    except Exception:
+        return None
+
+
 def main():
     parts = []
     voice = sorted((ROOT / ".render").glob("a*.mp3"))
@@ -51,6 +81,10 @@ def main():
                 parts.append(f"voice_pitch_std={ps:.2f}st({verdict})")
         except Exception as e:
             parts.append(f"voice_qa_error={str(e)[:80]}")
+        wer = script_wer()
+        if wer is not None:
+            verdict = "GARBLED" if wer > 0.35 else ("ok" if wer > 0.15 else "clear")
+            parts.append(f"script_wer={wer:.2f}({verdict})")
     outs = sorted((ROOT / "output").glob("*.mp4"), key=lambda p: p.stat().st_mtime)
     if outs:
         try:

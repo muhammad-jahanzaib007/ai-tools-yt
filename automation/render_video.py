@@ -67,7 +67,7 @@ EL_MODEL = os.environ.get("ELEVEN_MODEL") or "eleven_multilingual_v2"
 # Expressive delivery: low stability = more variation between sentences, high
 # style = more emotion. The old 0.4/0.25 sounded like reading from a book.
 VOICE_SETTINGS = {
-    "stability": float(os.environ.get("VOICE_STABILITY", "0.30")),
+    "stability": float(os.environ.get("VOICE_STABILITY", "0.35")),
     "similarity_boost": float(os.environ.get("VOICE_SIMILARITY", "0.75")),
     "style": float(os.environ.get("VOICE_STYLE", "0.55")),
     "use_speaker_boost": True,
@@ -173,30 +173,86 @@ def _pitch_std(path):
 
 
 FLAT_TAKE = 1.2      # semitone std below this = flat delivery, worth one retry
+MAX_WER = 0.35       # word error rate above this = garbled take, worth one retry
+
+_WHISPER = None
+
+
+def _transcribe(path):
+    """Speech-to-text via faster-whisper (tiny.en). None if unavailable."""
+    global _WHISPER
+    try:
+        from faster_whisper import WhisperModel
+        if _WHISPER is None:
+            _WHISPER = WhisperModel("tiny.en", device="cpu", compute_type="int8")
+        segs, _ = _WHISPER.transcribe(str(path), language="en", beam_size=1)
+        return " ".join(s.text for s in segs)
+    except Exception as e:
+        print(f"    transcription unavailable ({e})", file=sys.stderr)
+        return None
+
+
+def _wer(expected, path):
+    """Word error rate of the spoken take vs the script. None if unmeasurable.
+    Catches garbled TTS: pitch checks can't hear mangled words, Whisper can."""
+    hyp = _transcribe(path)
+    if hyp is None:
+        return None
+
+    def norm(s):
+        return re.sub(r"[^a-z0-9' ]+", " ", s.lower()).split()
+
+    r, h = norm(expected), norm(hyp)
+    if not r:
+        return None
+    d = list(range(len(h) + 1))
+    for i, rw in enumerate(r, 1):
+        prev, d[0] = d[0], i
+        for j, hw in enumerate(h, 1):
+            cur = d[j]
+            d[j] = min(d[j] + 1, d[j - 1] + 1, prev + (rw != hw))
+            prev = cur
+    return d[len(h)] / len(r)
+
+
+def _take_score(ps, wer):
+    """Rank takes: intelligibility dominates, liveliness breaks ties."""
+    w = (1.0 - min(wer, 1.0)) if wer is not None else 0.6
+    p = min((ps or 0) / 3.0, 1.0)
+    return w * 10 + p
 
 
 def tts_take(text, dest):
-    """TTS with word timings, re-taking flat deliveries once (ElevenLabs is
-    non-deterministic; a second take usually has more life). Keeps the
-    livelier take. Returns (words, pitch_std_or_None)."""
-    words = tts_timed(text, dest)
-    ps = _pitch_std(dest)
-    if ps is None or ps >= FLAT_TAKE:
-        return words, ps
-    alt = dest.with_suffix(".retake.mp3")
-    try:
-        words2 = tts_timed(text, alt)
-        ps2 = _pitch_std(alt)
-        if ps2 is not None and ps2 > ps:
-            shutil.move(str(alt), str(dest))
-            print(f"    flat take ({ps:.2f}st) replaced by retake ({ps2:.2f}st)")
-            return words2, ps2
-        print(f"    retake no better ({ps:.2f}st vs {ps2}); keeping first")
-    except Exception as e:
-        print(f"    retake failed ({e}); keeping first take", file=sys.stderr)
-    finally:
-        alt.unlink(missing_ok=True)
-    return words, ps
+    """TTS with word timings, re-taking weak deliveries once. A take is weak
+    when it is garbled (high WER vs the script) or flat (low pitch variation).
+    ElevenLabs is non-deterministic, so a second take usually fixes it; the
+    better take wins. Returns (words, pitch_std_or_None)."""
+    takes = []                                   # (path, words, ps, wer)
+    for attempt in range(2):
+        f = dest if attempt == 0 else dest.with_suffix(".take2.mp3")
+        try:
+            words = tts_timed(text, f)
+        except Exception:
+            if attempt == 0:
+                raise
+            break
+        ps, wer = _pitch_std(f), _wer(text, f)
+        takes.append((f, words, ps, wer))
+        garbled = wer is not None and wer > MAX_WER
+        flat = ps is not None and ps < FLAT_TAKE
+        if not garbled and not flat:
+            break
+        if attempt == 0:
+            why = f"wer={wer:.2f}" if garbled else f"pitch={ps:.2f}st"
+            print(f"    weak take ({why}); re-taking")
+    best = max(takes, key=lambda t: _take_score(t[2], t[3]))
+    if best[0] != dest:
+        shutil.move(str(best[0]), str(dest))
+        print(f"    retake wins (wer={best[3]}, pitch={best[2]})")
+    for f, *_ in takes:
+        if f != dest:
+            Path(f).unlink(missing_ok=True)
+    return best[1], best[2]
 
 
 def pexels_clip(query, dest):

@@ -16,6 +16,19 @@ const GRAIN =
       "<rect width='300' height='300' filter='url(#n)' opacity='0.6'/></svg>",
   );
 
+// Apple liquid-glass material: saturated frosted blur, translucent white
+// gradient, and specular top edge. Tint shifts the glass toward a colour.
+export const glass = (tint?: string, blur = 28): React.CSSProperties => ({
+  background: tint
+    ? `linear-gradient(135deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 55%), linear-gradient(${tint}, ${tint})`
+    : "linear-gradient(135deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.05) 100%)",
+  backdropFilter: `blur(${blur}px) saturate(180%)`,
+  WebkitBackdropFilter: `blur(${blur}px) saturate(180%)`,
+  border: "1px solid rgba(255,255,255,0.28)",
+  boxShadow:
+    "inset 0 1px 0 rgba(255,255,255,0.42), inset 0 -1px 0 rgba(255,255,255,0.08), 0 24px 60px rgba(0,0,0,0.35)",
+});
+
 export const Grain: React.FC<{ opacity?: number }> = ({ opacity = 0.05 }) => (
   <AbsoluteFill
     style={{

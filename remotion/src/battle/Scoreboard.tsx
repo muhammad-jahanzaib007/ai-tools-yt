@@ -2,6 +2,7 @@ import React from "react";
 import { Easing, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { COLORS } from "./types";
 import { fontFamily } from "./font";
+import { glass } from "./fx";
 
 const pop = Easing.bezier(0.34, 1.56, 0.64, 1);
 
@@ -25,7 +26,8 @@ export const Scoreboard: React.FC<{
           easing: pop,
         });
 
-  const chip = (bg: string): React.CSSProperties => ({
+  const chip = (tint: string): React.CSSProperties => ({
+    ...glass(tint, 24),
     position: "relative",
     overflow: "hidden",
     display: "flex",
@@ -37,14 +39,11 @@ export const Scoreboard: React.FC<{
     color: COLORS.cream,
     padding: "16px 32px",
     borderRadius: 999,
-    background: bg,
-    border: "1.5px solid rgba(255,255,255,0.25)",
-    boxShadow: "0 14px 40px rgba(0,0,0,0.45)",
   });
   const glossline: React.CSSProperties = {
     position: "absolute",
     inset: 0,
-    background: "linear-gradient(180deg, rgba(255,255,255,0.28) 0%, transparent 45%)",
+    background: "linear-gradient(180deg, rgba(255,255,255,0.22) 0%, transparent 45%)",
     borderRadius: 999,
     pointerEvents: "none",
   };
@@ -67,12 +66,12 @@ export const Scoreboard: React.FC<{
         gap: 30,
       }}
     >
-      <div style={chip("linear-gradient(135deg, #E8926B 0%, #C2603D 100%)")}>
+      <div style={chip("rgba(217,119,87,0.55)")}>
         <div style={glossline} />
         <span>{toolA}</span>
         <span style={score}>{scoreA}</span>
       </div>
-      <div style={chip("linear-gradient(315deg, #35B5AA 0%, #1E7C74 100%)")}>
+      <div style={chip("rgba(42,161,152,0.55)")}>
         <div style={glossline} />
         <span style={score}>{scoreB}</span>
         <span>{toolB}</span>

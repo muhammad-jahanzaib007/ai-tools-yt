@@ -10,7 +10,7 @@ import { COLORS, RoundData, scoreAfter } from "./types";
 import { fontFamily } from "./font";
 import { Scoreboard } from "./Scoreboard";
 import { AnimatedBg } from "./AnimatedBg";
-import { Grain, SparkBurst, Vignette } from "./fx";
+import { Grain, SparkBurst, Vignette, glass } from "./fx";
 
 const ease = Easing.bezier(0.16, 1, 0.3, 1);
 const pop = Easing.bezier(0.34, 1.56, 0.64, 1);
@@ -66,21 +66,21 @@ export const RoundScene: React.FC<{
     isWinner: boolean,
   ): React.CSSProperties => {
     const dim = !isWinner && winnerPop > 0;
+    const g = glass(undefined, 30);
     return {
+      ...g,
       position: "relative",
       overflow: "hidden",
       opacity: progress * (dim ? 0.55 : 1),
       translate: `0px ${(1 - progress) * 90}px`,
       rotate: `${(1 - progress) * (isWinner ? -2.5 : 2.5)}deg`,
       scale: String(dim ? 0.97 : 1 + winnerPop * (isWinner ? 0.03 : 0)),
-      background: "rgba(255,255,255,0.07)",
-      backdropFilter: "blur(18px)",
-      border: `5px solid ${isWinner && winnerPop > 0 ? color : "rgba(255,255,255,0.14)"}`,
+      border: isWinner && winnerPop > 0 ? `4px solid ${color}` : g.border,
       boxShadow:
         isWinner && winnerPop > 0
-          ? `0 0 ${70 * winnerPop * glowPulse}px ${color}, 0 24px 60px rgba(0,0,0,0.45)`
-          : "0 24px 60px rgba(0,0,0,0.35)",
-      borderRadius: 32,
+          ? `${g.boxShadow}, 0 0 ${70 * winnerPop * glowPulse}px ${color}`
+          : g.boxShadow,
+      borderRadius: 36,
       padding: vertical ? "42px 46px" : "48px 56px",
       width: vertical ? "84%" : "42%",
       fontFamily,
@@ -92,7 +92,7 @@ export const RoundScene: React.FC<{
     position: "absolute",
     inset: 0,
     background:
-      "linear-gradient(180deg, rgba(255,255,255,0.10) 0%, transparent 40%)",
+      "radial-gradient(140% 70% at 18% 0%, rgba(255,255,255,0.14) 0%, transparent 55%)",
     pointerEvents: "none",
   };
 
@@ -127,12 +127,11 @@ export const RoundScene: React.FC<{
         >
           <div
             style={{
+              ...glass("rgba(217,119,87,0.55)", 24),
               fontFamily,
               fontWeight: 900,
               fontSize: vertical ? 46 : 52,
               color: COLORS.cream,
-              background: "linear-gradient(135deg, #E8926B 0%, #C2603D 100%)",
-              boxShadow: "0 12px 34px rgba(217,119,87,0.45)",
               padding: "14px 34px",
               borderRadius: 999,
               letterSpacing: "0.04em",

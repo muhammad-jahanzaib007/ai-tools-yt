@@ -8,7 +8,7 @@ import {
 } from "remotion";
 import { COLORS } from "./types";
 import { fontFamily } from "./font";
-import { Grain, ShineSweep, SparkBurst, Vignette } from "./fx";
+import { Grain, ShineSweep, SparkBurst, Vignette, glass } from "./fx";
 
 const ease = Easing.bezier(0.16, 1, 0.3, 1);
 const pop = Easing.bezier(0.34, 1.56, 0.64, 1);
@@ -156,16 +156,13 @@ export const VsIntro: React.FC<{
           style={{
             opacity: tagOpacity,
             translate: `0px ${tagRise}px`,
+            ...glass("rgba(26,25,21,0.55)", 26),
             fontFamily,
             fontWeight: 700,
             fontSize: vertical ? 52 : 56,
             color: COLORS.cream,
-            backgroundColor: "rgba(26,25,21,0.62)",
-            backdropFilter: "blur(18px)",
-            border: "1.5px solid rgba(255,255,255,0.18)",
-            boxShadow: "0 24px 60px rgba(0,0,0,0.45)",
             padding: "26px 52px",
-            borderRadius: 24,
+            borderRadius: 28,
             marginBottom: vertical ? 220 : 90,
             maxWidth: "85%",
             textAlign: "center",

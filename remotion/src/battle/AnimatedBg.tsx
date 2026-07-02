@@ -53,9 +53,9 @@ export const AnimatedBg: React.FC<{
         </>
       ) : (
         <>
-          {blob("a", "rgba(217,119,87,0.22)", 950, 20, 22, 70, 45, 0.5, p)}
-          {blob("b", "rgba(42,161,152,0.20)", 1050, 82, 76, 80, 55, 0.4, p + 2)}
-          {blob("c", "rgba(242,238,228,0.05)", 700, 55, 45, 55, 65, 0.3, p + 4)}
+          {blob("a", "rgba(217,119,87,0.32)", 950, 20, 22, 70, 45, 0.5, p)}
+          {blob("b", "rgba(42,161,152,0.30)", 1050, 82, 76, 80, 55, 0.4, p + 2)}
+          {blob("c", "rgba(242,238,228,0.07)", 700, 55, 45, 55, 65, 0.3, p + 4)}
           {/* slow rotating sheen so the darks feel glossy, not dead */}
           <AbsoluteFill
             style={{
