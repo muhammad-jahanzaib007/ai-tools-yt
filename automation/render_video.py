@@ -63,9 +63,10 @@ def pick_music(vibe="battle"):
 EL_KEY = os.environ.get("ELEVENLABS_API_KEY")
 PX_KEY = os.environ.get("PEXELS_API_KEY")
 GEM_KEY = os.environ.get("GEMINI_API_KEY")
-# Voice provider: ElevenLabs (paid, default when its key exists) or Gemini TTS
-# (free tier). Override with repo var VOICE_PROVIDER=eleven|gemini for A/B runs.
-VOICE_PROVIDER = os.environ.get("VOICE_PROVIDER") or ("eleven" if EL_KEY else "gemini")
+# Voice provider: Gemini TTS (free tier) is the default — it beat ElevenLabs
+# on the 2026-07-02 A/B (pitch variation AND word accuracy, user-confirmed by
+# ear). ElevenLabs remains a manual override / automatic fallback.
+VOICE_PROVIDER = os.environ.get("VOICE_PROVIDER") or ("gemini" if GEM_KEY else "eleven")
 VOICE_ID = os.environ.get("VOICE_ID") or "Fahco4VZzobUeiPqni1S"      # user-picked library voice
 EL_MODEL = os.environ.get("ELEVEN_MODEL") or "eleven_multilingual_v2"
 GEMINI_TTS_MODEL = os.environ.get("GEMINI_TTS_MODEL", "gemini-2.5-flash-preview-tts")
@@ -172,7 +173,12 @@ def _whisper_words(path):
 
 def tts(text, dest):
     if VOICE_PROVIDER == "gemini":
-        return tts_gemini(text, dest)
+        try:
+            return tts_gemini(text, dest)
+        except Exception as e:
+            if not EL_KEY:
+                raise
+            print(f"  gemini voice failed ({e}); falling back to ElevenLabs", file=sys.stderr)
     r = requests.post(
         f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}",
         params={"output_format": "mp3_44100_128"},
@@ -188,11 +194,18 @@ def tts(text, dest):
 def tts_timed(text, dest):
     """TTS with word timings. Returns [(word, start_s, end_s)] or raises if unavailable."""
     if VOICE_PROVIDER == "gemini":
-        tts_gemini(text, dest)
-        words = _whisper_words(dest)
-        if not words:
-            raise RuntimeError("no word timings recoverable from gemini audio")
-        return words
+        try:
+            tts_gemini(text, dest)
+            words = _whisper_words(dest)
+            if not words:
+                raise RuntimeError("no word timings recoverable from gemini audio")
+            return words
+        except Exception as e:
+            # Gemini free tier can hit daily quota; fall back to ElevenLabs
+            # while its key still exists so the cron never misses a day.
+            if not EL_KEY:
+                raise
+            print(f"  gemini voice failed ({e}); falling back to ElevenLabs", file=sys.stderr)
     r = requests.post(
         f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}/with-timestamps",
         params={"output_format": "mp3_44100_128"},
