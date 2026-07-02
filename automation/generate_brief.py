@@ -34,7 +34,9 @@ TOKEN = os.environ.get("GITHUB_TOKEN") or os.environ.get("MODELS_TOKEN")
 # Provider chain: Gemini free tier -> Claude -> free GitHub Models.
 ANTHROPIC_KEY = os.environ.get("ANTHROPIC_API_KEY")
 CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-5")
-GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
+GEMINI_KEYS = [k for k in (os.environ.get("GEMINI_API_KEY"),
+                           os.environ.get("GEMINI_API_KEY_2")) if k]
+GEMINI_KEY = GEMINI_KEYS[0] if GEMINI_KEYS else None
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 EM_DASH = "—"
 
@@ -62,11 +64,11 @@ def save(p, obj):
 
 def _gemini_completion(user, max_tokens):
     last = ""
-    for attempt in range(3):
+    for attempt in range(3 * max(1, len(GEMINI_KEYS))):
         try:
             r = requests.post(
                 f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent",
-                params={"key": GEMINI_KEY},
+                params={"key": GEMINI_KEYS[attempt % len(GEMINI_KEYS)]},
                 json={
                     "systemInstruction": {"parts": [{"text": SYSTEM}]},
                     "contents": [{"role": "user", "parts": [{"text": user}]}],

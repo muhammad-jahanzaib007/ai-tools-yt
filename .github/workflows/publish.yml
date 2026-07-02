@@ -1,10 +1,11 @@
 name: Publish (full pipeline)
 
 # Fully automated: generate a brief, render the video, upload to YouTube.
-# 6x/week (Mon-Sat at 09:00 UTC). Also runnable on demand.
+# 2x/day (12:00 + 21:00 UTC = US morning and evening scroll). On demand too.
 on:
   schedule:
-    - cron: "0 9 * * 1-6"
+    - cron: "0 12 * * *"
+    - cron: "0 21 * * *"
   workflow_dispatch:
   push:
     paths:
@@ -51,6 +52,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           CLAUDE_MODEL: ${{ vars.CLAUDE_MODEL || 'claude-sonnet-5' }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
           GEMINI_MODEL: ${{ vars.GEMINI_MODEL || 'gemini-2.5-flash' }}
         run: python automation/generate_brief.py
 
@@ -71,6 +73,7 @@ jobs:
           VOICE_ID: ${{ vars.VOICE_ID }}
           ELEVEN_MODEL: ${{ vars.ELEVEN_MODEL }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
           VOICE_PROVIDER: ${{ vars.VOICE_PROVIDER }}
           GEMINI_VOICE: ${{ vars.GEMINI_VOICE }}
         run: python automation/render_video.py

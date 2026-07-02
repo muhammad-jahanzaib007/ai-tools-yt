@@ -50,6 +50,7 @@ jobs:
           VOICE_ID: ${{ vars.VOICE_ID }}
           ELEVEN_MODEL: ${{ vars.ELEVEN_MODEL }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
           VOICE_PROVIDER: ${{ vars.VOICE_PROVIDER }}
           GEMINI_VOICE: ${{ vars.GEMINI_VOICE }}
           BRIEF_SLUG: ${{ inputs.slug }}

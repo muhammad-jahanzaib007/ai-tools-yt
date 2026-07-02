@@ -62,7 +62,11 @@ def pick_music(vibe="battle"):
 
 EL_KEY = os.environ.get("ELEVENLABS_API_KEY")
 PX_KEY = os.environ.get("PEXELS_API_KEY")
-GEM_KEY = os.environ.get("GEMINI_API_KEY")
+# Key pool: two free-tier keys (separate Google accounts) double the daily
+# TTS quota; rotation happens automatically on quota errors.
+GEM_KEYS = [k for k in (os.environ.get("GEMINI_API_KEY"),
+                        os.environ.get("GEMINI_API_KEY_2")) if k]
+GEM_KEY = GEM_KEYS[0] if GEM_KEYS else None
 # Voice provider: Gemini TTS (free tier) is the default — it beat ElevenLabs
 # on the 2026-07-02 A/B (pitch variation AND word accuracy, user-confirmed by
 # ear). ElevenLabs remains a manual override / automatic fallback.
@@ -70,10 +74,37 @@ VOICE_PROVIDER = os.environ.get("VOICE_PROVIDER") or ("gemini" if GEM_KEY else "
 VOICE_ID = os.environ.get("VOICE_ID") or "Fahco4VZzobUeiPqni1S"      # user-picked library voice
 EL_MODEL = os.environ.get("ELEVEN_MODEL") or "eleven_multilingual_v2"
 GEMINI_TTS_MODEL = os.environ.get("GEMINI_TTS_MODEL", "gemini-2.5-flash-preview-tts")
-GEMINI_VOICE = os.environ.get("GEMINI_VOICE", "Puck")
-GEMINI_STYLE = os.environ.get(
-    "GEMINI_STYLE",
-    "Say this like an excited sports commentator calling a match, fast and punchy: ")
+
+# Voice roster: a different presenter per video (deterministic by slug), mixed
+# genders, each with its own delivery style. GEMINI_VOICE/GEMINI_STYLE repo
+# vars override the rotation with a single fixed voice.
+VOICE_ROSTER = [
+    ("Puck",   "Say this like an excited sports commentator calling a match, fast and punchy: "),
+    ("Fenrir", "Say this with deep intense hype, like a boxing ring announcer building to a knockout: "),
+    ("Orus",   "Say this fast and confident, like a tech reviewer dropping hot takes: "),
+    ("Kore",   "Say this with sharp energetic confidence, like a host about to reveal a winner: "),
+    ("Aoede",  "Say this bright, playful and fast-paced, like an excited friend sharing a secret: "),
+    ("Leda",   "Say this crisp and punchy, like a sports desk anchor calling the highlights: "),
+]
+GEMINI_VOICE = os.environ.get("GEMINI_VOICE")            # optional fixed override
+GEMINI_STYLE = os.environ.get("GEMINI_STYLE")            # optional fixed override
+_gem_voice = VOICE_ROSTER[0][0]
+_gem_style = VOICE_ROSTER[0][1]
+
+
+def select_gemini_voice(slug):
+    """Pick this video's presenter: seeded by slug so retries of the same
+    video keep the same voice while different videos rotate."""
+    global _gem_voice, _gem_style
+    if GEMINI_VOICE:
+        _gem_voice = GEMINI_VOICE
+        _gem_style = GEMINI_STYLE or VOICE_ROSTER[0][1]
+    else:
+        _gem_voice, _gem_style = random.Random(slug).choice(VOICE_ROSTER)
+        if GEMINI_STYLE:
+            _gem_style = GEMINI_STYLE
+    if VOICE_PROVIDER == "gemini":
+        print(f"gemini voice: {_gem_voice}")
 # Expressive delivery: low stability = more variation between sentences, high
 # style = more emotion. The old 0.4/0.25 sounded like reading from a book.
 VOICE_SETTINGS = {
@@ -118,20 +149,26 @@ def pick_brief():
     return json.loads(best.read_text(encoding="utf-8"))
 
 
+_gem_key_idx = 0
+
+
 def tts_gemini(text, dest):
-    """Gemini TTS (free tier): returns 24kHz PCM, converted to mp3 via ffmpeg."""
+    """Gemini TTS (free tier): returns 24kHz PCM, converted to mp3 via ffmpeg.
+    Rotates across the key pool on quota errors."""
+    global _gem_key_idx
     last = ""
-    for attempt in range(3):
+    for attempt in range(2 * max(1, len(GEM_KEYS))):
+        key = GEM_KEYS[_gem_key_idx % len(GEM_KEYS)]
         try:
             r = requests.post(
                 f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_TTS_MODEL}:generateContent",
-                params={"key": GEM_KEY},
+                params={"key": key},
                 json={
-                    "contents": [{"parts": [{"text": GEMINI_STYLE + text}]}],
+                    "contents": [{"parts": [{"text": _gem_style + text}]}],
                     "generationConfig": {
                         "responseModalities": ["AUDIO"],
                         "speechConfig": {"voiceConfig": {
-                            "prebuiltVoiceConfig": {"voiceName": GEMINI_VOICE}}},
+                            "prebuiltVoiceConfig": {"voiceName": _gem_voice}}},
                     },
                 },
                 timeout=180,
@@ -147,6 +184,10 @@ def tts_gemini(text, dest):
             raw.unlink(missing_ok=True)
             return
         last = f"{r.status_code}: {r.text[:200]}"
+        if r.status_code == 429 and len(GEM_KEYS) > 1:
+            _gem_key_idx += 1                      # quota hit: next key in pool
+            print(f"    gemini key quota hit; rotating key", file=sys.stderr)
+            continue
         if r.status_code in (429, 500, 502, 503):
             import time; time.sleep(5 * (attempt + 1)); continue
         break
@@ -630,6 +671,7 @@ def main():
     brief = pick_brief()
     slug = brief["slug"]
     segs = brief["narration"]
+    select_gemini_voice(slug)
     print(f"Rendering: {brief['title']}  ({len(segs)} segments)")
 
     if brief.get("battle") and (REMOTION_DIR / "package.json").exists():
