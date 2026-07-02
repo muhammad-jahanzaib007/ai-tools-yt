@@ -2,6 +2,7 @@ import "./index.css";
 import { CalculateMetadataFunction, Composition } from "remotion";
 import { BattleVideo } from "./battle/BattleVideo";
 import { BattleProps, FPS, battleDuration, totalFrames } from "./battle/types";
+import { ComicProps, ComicVideo, totalComicFrames } from "./comic/ComicVideo";
 
 const sampleBattle: BattleProps = {
   toolA: "ElevenLabs",
@@ -37,6 +38,31 @@ const battleMetadata: CalculateMetadataFunction<BattleProps> = ({ props }) => ({
   durationInFrames: totalFrames(props),
 });
 
+const sampleComic: ComicProps = {
+  episodeTitle: "The Blank Page strikes. Two heroes answer.",
+  threat: "The Blank Page",
+  heroes: [
+    {
+      tool: "Writesonic",
+      alias: "Scribe",
+      color: "#4F8EF7",
+      power: "Floods the empty page with copy at lightspeed",
+    },
+    {
+      tool: "ChatGPT",
+      alias: "The Oracle",
+      color: "#74AA9C",
+      power: "Outlines the whole piece before the villain can blink",
+    },
+  ],
+  resolution:
+    "The page fills itself. Writesonic drafts, the Oracle plans, and the deadline never stood a chance.",
+};
+
+const comicMetadata: CalculateMetadataFunction<ComicProps> = ({ props }) => ({
+  durationInFrames: totalComicFrames(props),
+});
+
 export const RemotionRoot: React.FC = () => {
   return (
     <>
@@ -59,6 +85,16 @@ export const RemotionRoot: React.FC = () => {
         height={1920}
         defaultProps={sampleBattle}
         calculateMetadata={battleMetadata}
+      />
+      <Composition
+        id="ComicShort"
+        component={ComicVideo}
+        durationInFrames={totalComicFrames(sampleComic)}
+        fps={FPS}
+        width={1080}
+        height={1920}
+        defaultProps={sampleComic}
+        calculateMetadata={comicMetadata}
       />
     </>
   );

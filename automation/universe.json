@@ -1,0 +1,145 @@
+{
+  "_about": "The AI Toolverse: the universe bible for the comic episode format. Heroes = real AI tools (powers = real features, keeps episodes useful + affiliate-relevant). Villains = real problems. published_threats grows as episodes air so plots don't repeat.",
+  "universe": "The Toolverse: a digital realm where every creator's work lives. When a Threat attacks someone's workflow, the Tools answer the call.",
+  "heroes": [
+    {
+      "tool": "ChatGPT",
+      "alias": "The Oracle",
+      "color": "#74AA9C",
+      "power": "Answers anything, plans everything; conjures words and code from thin air",
+      "voice": "Charon",
+      "speak": "a wise, calm, all-knowing sage"
+    },
+    {
+      "tool": "Claude",
+      "alias": "The Strategist",
+      "color": "#D97757",
+      "power": "Deep reasoning; devours entire documents and sees the whole battlefield",
+      "voice": "Iapetus",
+      "speak": "a measured, confident master tactician"
+    },
+    {
+      "tool": "Midjourney",
+      "alias": "Mirage",
+      "color": "#8A7CFF",
+      "power": "Paints any image imaginable into existence in seconds",
+      "voice": "Callirrhoe",
+      "speak": "a dreamy, mysterious illusionist"
+    },
+    {
+      "tool": "ElevenLabs",
+      "alias": "Echo",
+      "color": "#E8B93C",
+      "power": "Commands every voice ever spoken; narrates worlds into being",
+      "voice": "Algieba",
+      "speak": "a smooth, theatrical voice of a thousand voices"
+    },
+    {
+      "tool": "Writesonic",
+      "alias": "Scribe",
+      "color": "#4F8EF7",
+      "power": "Floods empty pages with copy at lightspeed, SEO-charged",
+      "voice": "Puck",
+      "speak": "a quick, clever, energetic scribe"
+    },
+    {
+      "tool": "Jasper",
+      "alias": "The Campaigner",
+      "color": "#FF5C8A",
+      "power": "Brand-voice armor; fires marketing campaigns that never miss",
+      "voice": "Orus",
+      "speak": "a bold, charismatic campaign commander"
+    },
+    {
+      "tool": "Pictory",
+      "alias": "The Cutter",
+      "color": "#35B5AA",
+      "power": "Slices raw text and footage into finished video reels",
+      "voice": "Fenrir",
+      "speak": "a gruff, no-nonsense action hero"
+    },
+    {
+      "tool": "Synthesia",
+      "alias": "Avatar",
+      "color": "#6C5CE7",
+      "power": "Spawns digital humans who speak any script in any language",
+      "voice": "Schedar",
+      "speak": "a polished, uncanny digital presenter"
+    },
+    {
+      "tool": "Speechify",
+      "alias": "The Listener",
+      "color": "#FFA502",
+      "power": "Turns any wall of text into voice, feeding knowledge on the move",
+      "voice": "Umbriel",
+      "speak": "a chill, effortless narrator on the move"
+    },
+    {
+      "tool": "Grammarly",
+      "alias": "The Warden",
+      "color": "#15C39A",
+      "power": "An unbreakable shield that no typo or clumsy sentence can pass",
+      "voice": "Alnilam",
+      "speak": "a stern, protective guardian"
+    },
+    {
+      "tool": "Canva",
+      "alias": "The Forge",
+      "color": "#00C4CC",
+      "power": "Hammers out designs, decks and posts faster than thought",
+      "voice": "Aoede",
+      "speak": "a bright, playful, fast-handed artisan"
+    },
+    {
+      "tool": "Notion AI",
+      "alias": "The Archivist",
+      "color": "#9B9B9B",
+      "power": "The universe's memory; order out of any chaos of notes",
+      "voice": "Vindemiatrix",
+      "speak": "a gentle, wise keeper of records"
+    }
+  ],
+  "villains": [
+    {
+      "name": "The Blank Page",
+      "menace": "freezes creators mid-thought; nothing gets written"
+    },
+    {
+      "name": "Deadline Dragon",
+      "menace": "devours hours; the clock burns faster near it"
+    },
+    {
+      "name": "The Typo Swarm",
+      "menace": "infests writing with errors that slip past tired eyes"
+    },
+    {
+      "name": "The Blur",
+      "menace": "makes every design and thumbnail forgettable"
+    },
+    {
+      "name": "Monotone",
+      "menace": "drains all life from voiceovers; audiences sleep"
+    },
+    {
+      "name": "The Tab Hydra",
+      "menace": "a hundred open tabs; notes scattered, nothing findable"
+    },
+    {
+      "name": "Budget Reaper",
+      "menace": "bleeds wallets dry with bloated software bills"
+    },
+    {
+      "name": "Burnout Wraith",
+      "menace": "feeds on creators doing everything by hand"
+    },
+    {
+      "name": "The Algorithm Phantom",
+      "menace": "buries good content where no viewer can find it"
+    },
+    {
+      "name": "Camera Fright",
+      "menace": "no one dares to film their own face"
+    }
+  ],
+  "published_threats": []
+}

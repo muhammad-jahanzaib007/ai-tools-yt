@@ -28,8 +28,19 @@ jobs:
 
       - run: pip install --upgrade requests anthropic
 
+      # trigger.txt containing the word "comic" fires a Toolverse episode brief
+      - name: Pick format
+        id: fmt
+        run: |
+          if grep -qi comic .github/trigger.txt 2>/dev/null; then
+            echo "format=comic" >> "$GITHUB_OUTPUT"
+          else
+            echo "format=battle" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Generate brief
         env:
+          FORMAT: ${{ steps.fmt.outputs.format }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BLOG_MODEL: ${{ vars.BLOG_MODEL || 'openai/gpt-4o-mini' }}
           # Optional: add an ANTHROPIC_API_KEY secret to use Claude instead of free GitHub Models.
@@ -50,7 +61,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add briefs automation/topics.json automation/latest.txt
+          git add briefs automation/topics.json automation/latest.txt automation/universe.json
           if git diff --cached --quiet; then
             echo "No changes."
           else

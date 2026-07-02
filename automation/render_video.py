@@ -152,9 +152,10 @@ def pick_brief():
 _gem_key_idx = 0
 
 
-def tts_gemini(text, dest):
+def tts_gemini(text, dest, voice=None, style=None):
     """Gemini TTS (free tier): returns 24kHz PCM, converted to mp3 via ffmpeg.
-    Rotates across the key pool on quota errors."""
+    Rotates across the key pool on quota errors. voice/style override the
+    video-level presenter (used for per-character hero voices)."""
     global _gem_key_idx
     last = ""
     for attempt in range(2 * max(1, len(GEM_KEYS))):
@@ -164,11 +165,11 @@ def tts_gemini(text, dest):
                 f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_TTS_MODEL}:generateContent",
                 params={"key": key},
                 json={
-                    "contents": [{"parts": [{"text": _gem_style + text}]}],
+                    "contents": [{"parts": [{"text": (style or _gem_style) + text}]}],
                     "generationConfig": {
                         "responseModalities": ["AUDIO"],
                         "speechConfig": {"voiceConfig": {
-                            "prebuiltVoiceConfig": {"voiceName": _gem_voice}}},
+                            "prebuiltVoiceConfig": {"voiceName": voice or _gem_voice}}},
                     },
                 },
                 timeout=180,
@@ -212,10 +213,10 @@ def _whisper_words(path):
     return words
 
 
-def tts(text, dest):
+def tts(text, dest, voice=None, style=None):
     if VOICE_PROVIDER == "gemini":
         try:
-            return tts_gemini(text, dest)
+            return tts_gemini(text, dest, voice, style)
         except Exception as e:
             if not EL_KEY:
                 raise
@@ -232,11 +233,11 @@ def tts(text, dest):
     dest.write_bytes(r.content)
 
 
-def tts_timed(text, dest):
+def tts_timed(text, dest, voice=None, style=None):
     """TTS with word timings. Returns [(word, start_s, end_s)] or raises if unavailable."""
     if VOICE_PROVIDER == "gemini":
         try:
-            tts_gemini(text, dest)
+            tts_gemini(text, dest, voice, style)
             words = _whisper_words(dest)
             if not words:
                 raise RuntimeError("no word timings recoverable from gemini audio")
@@ -346,16 +347,16 @@ def _take_score(ps, wer):
     return w * 10 + p
 
 
-def tts_take(text, dest):
+def tts_take(text, dest, voice=None, style=None):
     """TTS with word timings, re-taking weak deliveries once. A take is weak
     when it is garbled (high WER vs the script) or flat (low pitch variation).
-    ElevenLabs is non-deterministic, so a second take usually fixes it; the
+    TTS is non-deterministic, so a second take usually fixes it; the
     better take wins. Returns (words, pitch_std_or_None)."""
     takes = []                                   # (path, words, ps, wer)
     for attempt in range(2):
         f = dest if attempt == 0 else dest.with_suffix(".take2.mp3")
         try:
-            words = tts_timed(text, f)
+            words = tts_timed(text, f, voice, style)
         except Exception:
             if attempt == 0:
                 raise
@@ -561,26 +562,57 @@ def build_ass_at(segs, delays, durs, path):
 
 
 def render_battle(brief):
-    """Battle path: TTS per scene -> Remotion motion graphics sized to the
-    narration audio -> mux delayed narration + captions + music. Any failure
-    raises; the caller falls back to the classic b-roll render."""
+    """Battle format: one presenter voice, BattleShort composition."""
     battle = brief["battle"]
+    props = dict(battle)
+    _render_scenes(brief, "BattleShort", props,
+                   f"Battle render: {battle['toolA']} vs {battle['toolB']}")
+
+
+def render_comic(brief):
+    """AI Toolverse episode: narrator + per-hero character voices, ComicShort."""
+    comic = brief["comic"]
+    uni_file = ROOT / "automation" / "universe.json"
+    vmap = {}
+    if uni_file.exists():
+        uni = json.loads(uni_file.read_text(encoding="utf-8"))
+        vmap = {h["tool"]: (h.get("voice"), h.get("speak")) for h in uni.get("heroes", [])}
+    narrator = (None, "Narrate this like an epic anime trailer, dark and dramatic: ")
+    voices = [narrator]
+    for h in comic["heroes"]:
+        v, persona = vmap.get(h["tool"], (None, None))
+        style = (f"You are {h['alias']}, {persona}. Say this fully in character, "
+                 "with theatrical superhero energy: ") if persona else None
+        voices.append((v, style))
+    voices.append(narrator)
+    props = {"episodeTitle": brief["title"], "threat": comic["threat"],
+             "heroes": comic["heroes"], "resolution": comic["resolution"]}
+    _render_scenes(brief, "ComicShort", props,
+                   f"Toolverse episode: {comic['threat']}", voices=voices)
+
+
+def _render_scenes(brief, comp, props, label, voices=None):
+    """Shared scene renderer: TTS per scene -> Remotion motion graphics sized
+    to the narration audio -> mux delayed narration + captions + music.
+    voices = optional per-scene [(voice, style)] for multi-character episodes.
+    Any failure raises; the caller falls back to the classic b-roll render."""
     slug = brief["slug"]
-    segs = brief["narration"]        # len == rounds+2, validated at brief time
+    segs = brief["narration"]        # scene count validated at brief time
     n = len(segs)
-    print(f"Battle render: {battle['toolA']} vs {battle['toolB']}  ({n} scenes)")
+    print(f"{label}  ({n} scenes)")
 
     # 1. narration audio per scene (+ word timings for karaoke captions)
     audios, words_per, durs, karaoke = [], [], [], True
     for i, seg in enumerate(segs):
         audio = WORK / f"a{i}.mp3"
+        v, style = (voices[i] if voices and i < len(voices) else (None, None))
         try:
-            words, ps = tts_take(seg["text"], audio)
+            words, ps = tts_take(seg["text"], audio, voice=v, style=style)
             words_per.append(words)
         except Exception as e:
             print(f"  word timings unavailable ({e}); plain TTS", file=sys.stderr)
             karaoke = False
-            tts(seg["text"], audio)
+            tts(seg["text"], audio, voice=v, style=style)
             words_per.append([])
             ps = None
         audios.append(audio)
@@ -604,12 +636,12 @@ def render_battle(brief):
     delays = [starts[i] + leads[i] for i in range(n)]
 
     # 3. Remotion render (silent motion graphics, duration driven by sceneFrames)
-    props = dict(battle)
+    props = dict(props)
     props["sceneFrames"] = {"intro": frames[0], "rounds": frames[1:-1], "verdict": frames[-1]}
     props_file = WORK / "props.json"
     props_file.write_text(json.dumps(props, ensure_ascii=False), encoding="utf-8")
     graphics = WORK / "battle.mp4"
-    run([NPX, "remotion", "render", "src/index.ts", "BattleShort", str(graphics.resolve()),
+    run([NPX, "remotion", "render", "src/index.ts", comp, str(graphics.resolve()),
          f"--props={props_file.resolve()}", "--log=error"], cwd=str(REMOTION_DIR))
 
     # 4. captions timed to the delayed narration
@@ -677,15 +709,21 @@ def main():
     select_gemini_voice(slug)
     print(f"Rendering: {brief['title']}  ({len(segs)} segments)")
 
-    if brief.get("battle") and (REMOTION_DIR / "package.json").exists():
+    scene_render = None
+    if (REMOTION_DIR / "package.json").exists():
+        if brief.get("comic"):
+            scene_render = render_comic
+        elif brief.get("battle"):
+            scene_render = render_battle
+    if scene_render:
         try:
             _reset_work()
-            render_battle(brief)
+            scene_render(brief)
             return
         except KeyboardInterrupt:
             raise
         except BaseException as e:      # incl. SystemExit from run(): keep the cron alive
-            print(f"battle render failed ({e}); falling back to b-roll render", file=sys.stderr)
+            print(f"scene render failed ({e}); falling back to b-roll render", file=sys.stderr)
 
     _reset_work()
 

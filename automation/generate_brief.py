@@ -18,6 +18,7 @@ import re
 import sys
 import json
 import time
+import random
 import datetime as dt
 from pathlib import Path
 
@@ -27,6 +28,8 @@ ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "automation"
 BRIEFS = ROOT / "briefs"
 TOPICS_JSON = DATA / "topics.json"
+UNIVERSE_JSON = DATA / "universe.json"
+FORMAT = os.environ.get("FORMAT", "battle")   # battle | comic (AI Toolverse episode)
 
 MODEL = os.environ.get("BLOG_MODEL", "openai/gpt-4o-mini")
 ENDPOINT = os.environ.get("MODELS_ENDPOINT", "https://models.github.ai/inference/chat/completions")
@@ -246,7 +249,46 @@ def _generate_once(topic, extra=""):
         "Keep claims general and accurate. No em dashes anywhere."
         + extra
     )
-    b = chat_json(user)
+    b = _clean_common(chat_json(user))
+    battle = _clean_battle(b.get("battle"), b["narration"])
+    if battle:
+        b["battle"] = battle
+    else:
+        b.pop("battle", None)
+    return b
+
+
+def _clean_comic(cm, narration, uni):
+    """Validate the comic block against the universe bible. None = drop
+    (render then falls back to the b-roll format, narration still works)."""
+    if not isinstance(cm, dict):
+        return None
+    try:
+        by_name = {h["tool"].lower(): h for h in uni["heroes"]}
+        heroes = []
+        for h in cm.get("heroes") or []:
+            base = by_name.get(str(h.get("tool", "")).strip().lower())
+            if not base:
+                raise ValueError(f"unknown hero {h.get('tool')!r}")
+            heroes.append({"tool": base["tool"], "alias": base["alias"],
+                           "color": base["color"],
+                           "power": strip_em(str(h.get("powerLine") or base["power"])).strip()})
+        if not 1 <= len(heroes) <= 2:
+            raise ValueError(f"{len(heroes)} heroes")
+        if len(narration) != len(heroes) + 2:
+            raise ValueError(f"narration {len(narration)} segs != heroes+2")
+        threat = strip_em(str(cm["threat"])).strip()
+        res = strip_em(str(cm["resolution"])).strip()
+        if not threat or not res:
+            raise ValueError("empty field")
+        return {"threat": threat, "heroes": heroes, "resolution": res}
+    except (KeyError, ValueError, TypeError) as e:
+        print(f"comic block dropped ({e}); render falls back to b-roll", file=sys.stderr)
+        return None
+
+
+def _clean_common(b):
+    """Shared brief cleaning: required keys, narration, links, tags, slug."""
     for k in ("slug", "title", "hook", "description", "thumbnail_text"):
         if k not in b:
             sys.exit(f"brief missing key: {k}")
@@ -257,7 +299,7 @@ def _generate_once(topic, extra=""):
     for seg in b["narration"]:
         if isinstance(seg, dict) and seg.get("text"):
             clean.append({"text": strip_em(str(seg["text"])).strip(),
-                          "broll": strip_em(str(seg.get("broll", topic))).strip()})
+                          "broll": strip_em(str(seg.get("broll", b["title"]))).strip()})
     b["narration"] = clean
     b["tags"] = [strip_em(str(t)).strip().lower() for t in b.get("tags", []) if str(t).strip()]
     links = []
@@ -265,14 +307,55 @@ def _generate_once(topic, extra=""):
         if isinstance(it, dict) and it.get("name") and str(it.get("url", "")).startswith("http"):
             links.append({"name": strip_em(str(it["name"])).strip(), "url": str(it["url"]).strip()})
     b["links"] = links
-    battle = _clean_battle(b.get("battle"), b["narration"])
-    if battle:
-        b["battle"] = battle
-    else:
-        b.pop("battle", None)
     b["slug"] = re.sub(r"[^a-z0-9-]", "", b["slug"].lower().replace(" ", "-")).strip("-")
     if not b["slug"] or not b["narration"]:
         sys.exit("brief unusable after cleaning")
+    return b
+
+
+def generate_comic_brief(villain, uni):
+    heroes_txt = "\n".join(f"- {h['tool']} ({h['alias']}): {h['power']}" for h in uni["heroes"])
+    user = (
+        'Write one episode of "The AI Toolverse", a superhero comic told as a 60-90 second '
+        f"faceless YouTube Short. Universe: {uni['universe']}\n"
+        f"Tonight's villain: {villain['name']}: {villain['menace']}.\n"
+        f"The heroes are real AI tools; their powers are their REAL features:\n{heroes_txt}\n\n"
+        "Return a single JSON object with these keys:\n"
+        "- slug: kebab-case, 3-6 words\n"
+        "- title: episode-style, <=70 chars (e.g. 'The Blank Page strikes. Two heroes answer.')\n"
+        "- hook: <=14 words, dramatic movie-trailer opener\n"
+        '- comic: {"threat": "the villain name", "heroes": [1 or 2 of {"tool": "EXACT tool name '
+        'from the list", "powerLine": "<=10 words: the move they use, grounded in the real '
+        'feature"}], "resolution": "<=25 words: how the day was saved and why that tool"}\n'
+        "- narration: EXACTLY heroes+2 segments, each {\"text\", \"broll\" (2-4 word stock query)}. "
+        "Segment 1 = NARRATOR: the threat strikes, a REAL relatable creator scenario told like a "
+        "movie trailer (2-3 short sentences). One segment per hero = THE HERO SPEAKS, first person, "
+        "fully in character (each hero has its own voice actor): announce themselves by alias, name "
+        "their real tool, and describe the move they use on the threat, concrete and accurate "
+        "(e.g. 'I am Scribe. Watch: Writesonic floods this empty page with copy before the Dragon "
+        "can blink.'). Final segment = NARRATOR: victory, one practical takeaway, then ask which "
+        "hero viewers want in the next episode and a follow nudge. Max 35 words per segment. Epic "
+        "anime-trailer energy, spoken and punchy, never flat.\n"
+        "- description: 2-3 sentences. No links in it.\n"
+        '- links: the hero tools only, [{"name", "url": official homepage}]\n'
+        "- tags: 8-12 lowercase search tags\n"
+        "- thumbnail_text: 3-5 punchy words\n"
+        "Accurate about what the tools actually do. No em dashes anywhere."
+    )
+    b = _clean_common(chat_json(user))
+    comic = _clean_comic(b.get("comic"), b["narration"], uni)
+    if not comic:
+        b2 = _clean_common(chat_json(
+            user + "\n\nYOUR PREVIOUS ATTEMPT FAILED validation: the comic object was missing/"
+            "invalid, a hero was not an EXACT tool name from the list, or narration was not "
+            "exactly heroes+2 segments. Fix all of that. Count the segments before answering."))
+        comic = _clean_comic(b2.get("comic"), b2["narration"], uni)
+        if comic:
+            b = b2
+    if comic:
+        b["comic"] = comic
+    else:
+        b.pop("comic", None)
     return b
 
 
@@ -327,15 +410,31 @@ def replenish(topics, want=12):
 
 
 def main():
-    topics = load(TOPICS_JSON)
-    if not topics["queue"]:
-        replenish(topics, want=12)
+    if FORMAT == "comic" and UNIVERSE_JSON.exists():
+        uni = load(UNIVERSE_JSON)
+        used = set(uni.get("published_threats", []))
+        pool = [v for v in uni["villains"] if v["name"] not in used]
+        if not pool:                                   # season over: start again
+            uni["published_threats"], pool = [], list(uni["villains"])
+        villain = random.choice(pool)
+        topic = f"Toolverse episode: {villain['name']}"
+        print(f"Generating comic episode: {villain['name']}")
+        brief = generate_comic_brief(villain, uni)
+        uni.setdefault("published_threats", []).append(villain["name"])
+        save(UNIVERSE_JSON, uni)
+    else:
+        topics = load(TOPICS_JSON)
         if not topics["queue"]:
-            sys.exit("no topics available and replenish failed")
-
-    topic = topics["queue"].pop(0)
-    print(f"Generating brief for: {topic}")
-    brief = generate_brief(topic)
+            replenish(topics, want=12)
+            if not topics["queue"]:
+                sys.exit("no topics available and replenish failed")
+        topic = topics["queue"].pop(0)
+        print(f"Generating brief for: {topic}")
+        brief = generate_brief(topic)
+        topics["published"].append(topic)
+        if len(topics["queue"]) < 5:
+            replenish(topics)
+        save(TOPICS_JSON, topics)
 
     today = os.environ.get("POST_DATE") or dt.datetime.now(dt.timezone.utc).date().isoformat()
     brief["topic"] = topic
@@ -345,11 +444,6 @@ def main():
     out = BRIEFS / f"{brief['slug']}.json"
     save(out, brief)
     (DATA / "latest.txt").write_text(brief["slug"], encoding="utf-8")   # render uses this
-
-    topics["published"].append(topic)
-    if len(topics["queue"]) < 5:
-        replenish(topics)
-    save(TOPICS_JSON, topics)
 
     secs = sum(max(2, len(s["text"].split()) / 2.6) for s in brief["narration"])
     print(f"Wrote {out.relative_to(ROOT)}  ({len(brief['narration'])} segments, ~{int(secs)}s)")

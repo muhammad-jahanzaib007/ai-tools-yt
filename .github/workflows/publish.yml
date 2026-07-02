@@ -45,8 +45,19 @@ jobs:
 
       - run: pip install --upgrade requests anthropic google-api-python-client google-auth google-auth-httplib2 librosa soundfile faster-whisper
 
+      # Slot decides the format: midday = tool battle, evening = Toolverse comic.
+      - name: Pick format by slot
+        id: fmt
+        run: |
+          if [ "$(date -u +%H)" -lt 16 ]; then
+            echo "format=battle" >> "$GITHUB_OUTPUT"
+          else
+            echo "format=comic" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Generate brief
         env:
+          FORMAT: ${{ steps.fmt.outputs.format }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BLOG_MODEL: ${{ vars.BLOG_MODEL || 'openai/gpt-4o-mini' }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -60,7 +71,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add briefs automation/topics.json automation/latest.txt
+          git add briefs automation/topics.json automation/latest.txt automation/universe.json
           if ! git diff --cached --quiet; then
             git commit -m "brief: $(date -u +%Y-%m-%d)"
             git push
