@@ -1,7 +1,7 @@
 import "./index.css";
-import { Composition } from "remotion";
+import { CalculateMetadataFunction, Composition } from "remotion";
 import { BattleVideo } from "./battle/BattleVideo";
-import { BattleProps, FPS, battleDuration } from "./battle/types";
+import { BattleProps, FPS, battleDuration, totalFrames } from "./battle/types";
 
 const sampleBattle: BattleProps = {
   toolA: "ElevenLabs",
@@ -31,6 +31,12 @@ const sampleBattle: BattleProps = {
     "ElevenLabs wins for creators who need human-sounding narration. Speechify is still the better pick for listening to documents on the go.",
 };
 
+// Duration follows the props: the render script passes per-scene frame counts
+// (sceneFrames) computed from the narration audio lengths.
+const battleMetadata: CalculateMetadataFunction<BattleProps> = ({ props }) => ({
+  durationInFrames: totalFrames(props),
+});
+
 export const RemotionRoot: React.FC = () => {
   return (
     <>
@@ -42,6 +48,7 @@ export const RemotionRoot: React.FC = () => {
         width={1920}
         height={1080}
         defaultProps={sampleBattle}
+        calculateMetadata={battleMetadata}
       />
       <Composition
         id="BattleShort"
@@ -51,6 +58,7 @@ export const RemotionRoot: React.FC = () => {
         width={1080}
         height={1920}
         defaultProps={sampleBattle}
+        calculateMetadata={battleMetadata}
       />
     </>
   );

@@ -36,6 +36,9 @@ OUT = ROOT / "output"
 WORK = ROOT / ".render"
 MUSIC_DIR = ROOT / "assets" / "music"          # drop several .mp3 here -> a random one per video
 MUSIC_FILE = ROOT / "assets" / "music.mp3"     # or a single track as fallback
+REMOTION_DIR = ROOT / "remotion"
+TRANS = 15                                     # = TRANSITION_FRAMES in remotion/src/battle/types.ts
+NPX = "npx.cmd" if os.name == "nt" else "npx"
 
 
 def pick_music():
@@ -290,6 +293,125 @@ def make_outro(dest, seconds=1.6):
          "-pix_fmt", "yuv420p", "-c:a", "aac", "-ar", "44100", "-shortest", str(dest)])
 
 
+def _reset_work():
+    if WORK.exists():
+        shutil.rmtree(WORK)
+    WORK.mkdir(parents=True)
+    OUT.mkdir(exist_ok=True)
+
+
+def build_ass_at(segs, delays, durs, path):
+    """Fallback battle captions without word timings: sentences spread over
+    each scene's narration window."""
+    header = _ass_header("&H00FFFFFF", "&H000000FF")
+    lines = []
+    for seg, t0, d in zip(segs, delays, durs):
+        text = " ".join(seg["text"].split())
+        parts = [p.strip() for p in re.split(r"(?<=[.!?])\s+", text) if p.strip()] or [text]
+        tot = sum(len(p) for p in parts) or 1
+        st = t0
+        for j, p in enumerate(parts):
+            en = (t0 + d) if j == len(parts) - 1 else st + d * len(p) / tot
+            safe = r"{\fad(80,50)}" + p.replace("{", "(").replace("}", ")")
+            lines.append(f"Dialogue: 0,{_ts(st)},{_ts(en)},Cap,,0,0,0,,{safe}")
+            st = en
+    path.write_text(header + "\n".join(lines) + "\n", encoding="utf-8")
+
+
+def render_battle(brief):
+    """Battle path: TTS per scene -> Remotion motion graphics sized to the
+    narration audio -> mux delayed narration + captions + music. Any failure
+    raises; the caller falls back to the classic b-roll render."""
+    battle = brief["battle"]
+    slug = brief["slug"]
+    segs = brief["narration"]        # len == rounds+2, validated at brief time
+    n = len(segs)
+    print(f"Battle render: {battle['toolA']} vs {battle['toolB']}  ({n} scenes)")
+
+    # 1. narration audio per scene (+ word timings for karaoke captions)
+    audios, words_per, durs, karaoke = [], [], [], True
+    for i, seg in enumerate(segs):
+        audio = WORK / f"a{i}.mp3"
+        try:
+            words_per.append(tts_timed(seg["text"], audio))
+        except Exception as e:
+            print(f"  word timings unavailable ({e}); plain TTS", file=sys.stderr)
+            karaoke = False
+            tts(seg["text"], audio)
+            words_per.append([])
+        audios.append(audio)
+        durs.append(probe_duration(audio))
+        print(f"  scene {i+1}/{n} voiced ({durs[-1]:.1f}s)")
+
+    # 2. scene lengths: lead-in (covers the 0.5s transition) + narration + tail
+    leads = [0.30 if i == 0 else 0.65 for i in range(n)]
+    frames = []
+    for i, d in enumerate(durs):
+        tail = 2.2 if i == n - 1 else 0.8        # hold the verdict card at the end
+        frames.append(int(round((leads[i] + d + tail) * FPS)))
+
+    # absolute scene starts on the final timeline (transitions overlap by TRANS)
+    starts, acc = [], 0
+    for f in frames:
+        starts.append(acc / FPS)
+        acc += f - TRANS
+    total_sec = (acc + TRANS) / FPS
+    delays = [starts[i] + leads[i] for i in range(n)]
+
+    # 3. Remotion render (silent motion graphics, duration driven by sceneFrames)
+    props = dict(battle)
+    props["sceneFrames"] = {"intro": frames[0], "rounds": frames[1:-1], "verdict": frames[-1]}
+    props_file = WORK / "props.json"
+    props_file.write_text(json.dumps(props, ensure_ascii=False), encoding="utf-8")
+    graphics = WORK / "battle.mp4"
+    run([NPX, "remotion", "render", "src/index.ts", "BattleShort", str(graphics.resolve()),
+         f"--props={props_file.resolve()}", "--log=error"], cwd=str(REMOTION_DIR))
+
+    # 4. captions timed to the delayed narration
+    all_words = [(w, delays[i] + s, delays[i] + e)
+                 for i, ws in enumerate(words_per) for (w, s, e) in ws]
+    if karaoke and all_words:
+        build_karaoke_ass(all_words, WORK / "subs.ass")     # no hook overlay: VsIntro is the hook
+    else:
+        build_ass_at(segs, delays, durs, WORK / "subs.ass")
+
+    # 5. mux graphics + per-scene delayed narration + music, burn captions
+    inputs = ["-i", "battle.mp4"]
+    filters, alabels = [], []
+    for i, a in enumerate(audios):
+        inputs += ["-i", str(a.resolve())]
+        ms = int(round(delays[i] * 1000))
+        filters.append(f"[{i+1}:a]adelay={ms}|{ms}[n{i}]")
+        alabels.append(f"[n{i}]")
+    music = pick_music()
+    if music:
+        print(f"music: {music.name}")
+        inputs += ["-stream_loop", "-1", "-i", str(music.resolve())]
+        filters.append(f"[{n+1}:a]volume=0.06[m]")
+        alabels.append("[m]")
+    filters.append("".join(alabels) + f"amix=inputs={len(alabels)}:duration=longest:normalize=0[a]")
+    filters.append("[0:v]subtitles=subs.ass[v]")
+    final = OUT / f"{slug}.mp4"
+    run(["ffmpeg", "-y"] + inputs + [
+        "-filter_complex", ";".join(filters),
+        "-map", "[v]", "-map", "[a]",
+        "-c:v", "libx264", "-preset", "medium", "-crf", "21",
+        "-c:a", "aac", "-ar", "44100",
+        "-t", f"{total_sec:.3f}", str(final.resolve())], cwd=str(WORK))
+
+    # 6. thumbnail: the VS intro frame (tool names + VS + tagline, no captions)
+    thumb = OUT / f"{slug}.jpg"
+    p = subprocess.run(
+        ["ffmpeg", "-y", "-i", str(graphics.resolve()), "-vf",
+         f"select=eq(n\\,{min(70, frames[0] - 1)})", "-frames:v", "1",
+         str(thumb.resolve())], capture_output=True, text=True)
+    if p.returncode != 0:
+        print("thumbnail step skipped:", p.stderr[-300:], file=sys.stderr)
+
+    dur = probe_duration(final)
+    print(f"DONE (battle): {final.relative_to(ROOT)}  ({dur:.1f}s, {final.stat().st_size//1024} KB)")
+
+
 def main():
     if not EL_KEY or not PX_KEY:
         sys.exit("ELEVENLABS_API_KEY and PEXELS_API_KEY must be set")
@@ -301,10 +423,17 @@ def main():
     segs = brief["narration"]
     print(f"Rendering: {brief['title']}  ({len(segs)} segments)")
 
-    if WORK.exists():
-        shutil.rmtree(WORK)
-    WORK.mkdir(parents=True)
-    OUT.mkdir(exist_ok=True)
+    if brief.get("battle") and (REMOTION_DIR / "package.json").exists():
+        try:
+            _reset_work()
+            render_battle(brief)
+            return
+        except KeyboardInterrupt:
+            raise
+        except BaseException as e:      # incl. SystemExit from run(): keep the cron alive
+            print(f"battle render failed ({e}); falling back to b-roll render", file=sys.stderr)
+
+    _reset_work()
 
     durations, seg_files, all_words, karaoke = [], [], [], True
     t0 = 0.0
@@ -323,11 +452,15 @@ def main():
             broll = None
         seg_mp4 = WORK / f"s{i}.mp4"
         make_segment(i, audio, broll, d, seg_mp4)
+        # Caption offsets must use the clip's REAL duration: -shortest ends the
+        # clip at the audio length, not at d, so accumulating d drifts the subs
+        # ~0.12s late per segment (voice ends up ahead of the captions).
+        actual = probe_duration(seg_mp4)
         for (w, s, e) in words:
             all_words.append((w, t0 + s, t0 + e))
-        durations.append(d); seg_files.append(seg_mp4)
-        t0 += d
-        print(f"  segment {i+1}/{len(segs)} ok ({d:.1f}s)")
+        durations.append(actual); seg_files.append(seg_mp4)
+        t0 += actual
+        print(f"  segment {i+1}/{len(segs)} ok ({actual:.1f}s)")
 
     # branded "Subscribe" end card after the narration
     outro = WORK / "outro.mp4"

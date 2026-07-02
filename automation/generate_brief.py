@@ -112,6 +112,37 @@ def chat_json(user, max_tokens=3000):
         return json.loads(m.group(0))
 
 
+def _clean_battle(bt, narration):
+    """Validate the optional battle block. None = unusable -> b-roll fallback."""
+    if not isinstance(bt, dict):
+        return None
+    try:
+        rounds = []
+        for r in bt.get("rounds") or []:
+            w = str(r.get("winner", "")).strip().lower()
+            if w not in ("a", "b"):
+                raise ValueError("bad winner")
+            rounds.append({"title": strip_em(str(r["title"])).strip(),
+                           "aPoint": strip_em(str(r["aPoint"])).strip(),
+                           "bPoint": strip_em(str(r["bPoint"])).strip(),
+                           "winner": w})
+        if not 2 <= len(rounds) <= 3:
+            raise ValueError(f"{len(rounds)} rounds")
+        if len(narration) != len(rounds) + 2:
+            raise ValueError(f"narration {len(narration)} segs != rounds+2")
+        out = {"toolA": strip_em(str(bt["toolA"])).strip(),
+               "toolB": strip_em(str(bt["toolB"])).strip(),
+               "tagline": strip_em(str(bt["tagline"])).strip(),
+               "rounds": rounds,
+               "verdict": strip_em(str(bt["verdict"])).strip()}
+        if not all([out["toolA"], out["toolB"], out["tagline"], out["verdict"]]):
+            raise ValueError("empty field")
+        return out
+    except (KeyError, ValueError, TypeError) as e:
+        print(f"battle block dropped ({e}); render falls back to b-roll", file=sys.stderr)
+        return None
+
+
 def generate_brief(topic):
     user = (
         f'Write the script and metadata for a 60-90 second faceless YouTube video on: "{topic}".\n\n'
@@ -120,19 +151,26 @@ def generate_brief(topic):
         "- title: a clear, honest, clickable YouTube title, <=70 chars, no clickbait lies\n"
         "- hook: the spoken opening line (<=14 words). Make it a scroll-stopping pattern-interrupt: "
         "a surprising claim, a sharp question, or a bold promise. No generic intros like 'In this video'.\n"
-        "- narration: an array of 9-14 segments. Each segment is an object with "
-        '"text" (ONE short spoken sentence, max 14 words, punchy and fast-paced; no filler, '
-        'no throat-clearing) and "broll" (a 2-4 word stock-footage search query '
-        "that matches the text, e.g. 'person typing laptop', 'data center servers'). The first "
-        "segment's text must start with the hook. If the topic is a comparison or battle "
-        "(X vs Y), structure the narration as a verdict-driven battle: hook, one-line intro of "
-        "each tool, then 2 or 3 quick rounds (each round compares ONE thing, e.g. quality, price, "
-        "speed, and names the round winner), then a final verdict naming the overall winner and "
-        "who the loser is still better for. The FINAL segment must be a short, natural "
-        "call-to-action: ask one quick question inviting a comment (for battles: ask viewers "
-        "which tool they would pick), then a brief nudge to follow for daily AI tool battles. "
-        "Keep it to one or two sentences. Do NOT use the generic "
-        "'like, comment, share and subscribe' line.\n"
+        "- narration: an array of segments, each an object with "
+        '"text" and "broll" (a 2-4 word stock-footage search query that matches the text, '
+        "e.g. 'person typing laptop', 'data center servers'). For a NON-battle topic: 9-14 "
+        "segments, each ONE short spoken sentence (max 14 words, punchy, no filler); the first "
+        "segment's text must start with the hook, and the FINAL segment is a short natural "
+        "call-to-action: one quick question inviting a comment, then a nudge to follow for "
+        "daily AI tools. Never the generic 'like, comment, share and subscribe' line.\n"
+        "- battle: ONLY when the topic is an 'X vs Y' comparison, also return this object: "
+        '{"toolA": "Name", "toolB": "Name", "tagline": "a question of 8 words or fewer for the '
+        'intro card", "rounds": [2 or 3 items of {"title": "1-3 words, e.g. Price", '
+        '"aPoint": "toolA in this round, 9 words or fewer", "bPoint": "same for toolB", '
+        '"winner": "a" or "b"}], "verdict": "28 words or fewer naming the overall winner and '
+        'what the loser is still better for"}. For battle topics the narration must instead '
+        "have EXACTLY rounds+2 segments, mirroring the on-screen scenes: segment 1 = the hook "
+        "plus a one-line setup of the matchup (plays over the VS intro); one segment per round "
+        "(say what the round tests, compare the two tools concretely, declare the round winner; "
+        "2 or 3 short sentences, max 35 words); final segment = the verdict spoken naturally, "
+        "then ask viewers which tool they would pick in the comments and nudge them to follow "
+        "for daily AI battles. Spoken round winners MUST match the winner fields and the spoken "
+        "verdict MUST match the verdict text.\n"
         "- description: a YouTube description, 2 or 3 sentences. Do NOT list links here.\n"
         "- links: an array of the tools/resources you mention, each an object "
         '{"name": "Tool Name", "url": "https://official-homepage"} using the real official website. '
@@ -160,6 +198,11 @@ def generate_brief(topic):
         if isinstance(it, dict) and it.get("name") and str(it.get("url", "")).startswith("http"):
             links.append({"name": strip_em(str(it["name"])).strip(), "url": str(it["url"]).strip()})
     b["links"] = links
+    battle = _clean_battle(b.get("battle"), b["narration"])
+    if battle:
+        b["battle"] = battle
+    else:
+        b.pop("battle", None)
     b["slug"] = re.sub(r"[^a-z0-9-]", "", b["slug"].lower().replace(" ", "-")).strip("-")
     if not b["slug"] or not b["narration"]:
         sys.exit("brief unusable after cleaning")

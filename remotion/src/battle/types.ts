@@ -5,12 +5,21 @@ export type RoundData = {
   winner: "a" | "b";
 };
 
+export type SceneFrames = {
+  intro: number;
+  rounds: number[];
+  verdict: number;
+};
+
 export type BattleProps = {
   toolA: string;
   toolB: string;
   tagline: string;
   rounds: RoundData[];
   verdict: string;
+  // Per-scene durations in frames, computed by the render script from the
+  // narration audio lengths. Absent = the fixed preview defaults below.
+  sceneFrames?: SceneFrames;
 };
 
 export const COLORS = {
@@ -33,6 +42,34 @@ export const battleDuration = (rounds: number) =>
   rounds * ROUND_FRAMES +
   VERDICT_FRAMES -
   (rounds + 1) * TRANSITION_FRAMES;
+
+const MIN_SCENE = 2 * TRANSITION_FRAMES + 5;
+
+export const framesOf = (p: BattleProps): SceneFrames => {
+  const f =
+    p.sceneFrames && p.sceneFrames.rounds.length === p.rounds.length
+      ? p.sceneFrames
+      : {
+          intro: INTRO_FRAMES,
+          rounds: p.rounds.map(() => ROUND_FRAMES),
+          verdict: VERDICT_FRAMES,
+        };
+  return {
+    intro: Math.max(MIN_SCENE, f.intro),
+    rounds: f.rounds.map((r) => Math.max(MIN_SCENE, r)),
+    verdict: Math.max(MIN_SCENE, f.verdict),
+  };
+};
+
+export const totalFrames = (p: BattleProps) => {
+  const f = framesOf(p);
+  return (
+    f.intro +
+    f.rounds.reduce((a, b) => a + b, 0) +
+    f.verdict -
+    (p.rounds.length + 1) * TRANSITION_FRAMES
+  );
+};
 
 export const scoreAfter = (rounds: RoundData[], uptoIndex: number) => {
   let a = 0;

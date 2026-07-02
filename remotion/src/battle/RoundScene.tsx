@@ -19,7 +19,7 @@ export const RoundScene: React.FC<{
   index: number;
 }> = ({ toolA, toolB, rounds, index }) => {
   const frame = useCurrentFrame();
-  const { fps, width, height } = useVideoConfig();
+  const { fps, width, height, durationInFrames } = useVideoConfig();
   const vertical = height > width;
   const round = rounds[index];
 
@@ -42,8 +42,9 @@ export const RoundScene: React.FC<{
     extrapolateRight: "clamp",
     easing: ease,
   });
-  // winner highlight kicks in for the last ~3s of the round
-  const winnerAt = 5 * fps;
+  // winner highlight kicks in near the end of the round, however long the
+  // narration made it (durationInFrames = this Sequence's duration)
+  const winnerAt = Math.max(2.2 * fps, durationInFrames - 2.6 * fps);
   const winnerPop = interpolate(frame, [winnerAt, winnerAt + 0.5 * fps], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",

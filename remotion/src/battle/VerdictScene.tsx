@@ -18,7 +18,7 @@ export const VerdictScene: React.FC<{
   verdict: string;
 }> = ({ toolA, toolB, rounds, verdict }) => {
   const frame = useCurrentFrame();
-  const { fps, width, height } = useVideoConfig();
+  const { fps, width, height, durationInFrames } = useVideoConfig();
   const vertical = height > width;
 
   const final = scoreAfter(rounds, rounds.length - 1);
@@ -41,7 +41,8 @@ export const VerdictScene: React.FC<{
     extrapolateRight: "clamp",
     easing: ease,
   });
-  const ctaOpacity = interpolate(frame, [3 * fps, 3.6 * fps], [0, 1], {
+  const ctaAt = Math.max(2 * fps, Math.min(3 * fps, durationInFrames * 0.35));
+  const ctaOpacity = interpolate(frame, [ctaAt, ctaAt + 0.6 * fps], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     easing: ease,
@@ -120,7 +121,7 @@ export const VerdictScene: React.FC<{
           color: COLORS.dark,
         }}
       >
-        Snackbyte AI — new battle every week
+        Snackbyte AI · new AI battle every day
       </div>
     </AbsoluteFill>
   );
