@@ -166,6 +166,28 @@ def generate_brief(topic):
     return b
 
 
+def _trend_lines(limit=12):
+    """Recent high-performing niche videos from trend_research.py, if present."""
+    f = DATA / "trends.json"
+    if not f.exists():
+        return ""
+    try:
+        data = json.loads(f.read_text(encoding="utf-8"))
+        items = data.get("items", [])[:limit]
+        if not items:
+            return ""
+        rows = [f"- {it['title']} ({it['viewsPerDay']} views/day)" for it in items]
+        return (
+            "\nFor market signal, these videos in the niche performed best over "
+            f"the last 30 days (as of {data.get('generated', 'recently')}). Use them "
+            "to infer which tools and angles viewers currently care about; do NOT "
+            "copy titles:\n" + "\n".join(rows) + "\n"
+        )
+    except Exception as e:
+        print(f"trends.json ignored: {e}", file=sys.stderr)
+        return ""
+
+
 def replenish(topics, want=12):
     try:
         used = topics["published"] + topics["queue"]
@@ -177,7 +199,8 @@ def replenish(topics, want=12):
             "include at least one of: Writesonic, Jasper, Pictory, Synthesia, ElevenLabs, "
             "Speechify, TubeBuddy, HeyGen, InVideo, Descript, Murf, Copy.ai, Rytr. "
             "Practical, evergreen, search-friendly titles. "
-            "Avoid overlapping these existing ideas:\n- " + "\n- ".join(used)
+            + _trend_lines()
+            + "Avoid overlapping these existing ideas:\n- " + "\n- ".join(used)
             + '\nReturn a single JSON object: {"topics": ["idea 1", ...]}. No em dashes.'
         )
         data = chat_json(user, max_tokens=1200)

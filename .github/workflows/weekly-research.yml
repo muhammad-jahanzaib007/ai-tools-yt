@@ -1,0 +1,55 @@
+name: Weekly research (trends + analytics)
+
+# Sundays 08:00 UTC: refresh niche trend data (feeds topic replenishment)
+# and generate the channel analytics report.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 8 * * 0"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: yt-research
+  cancel-in-progress: false
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: pip install --upgrade requests google-auth google-api-python-client
+
+      - name: Trend research (Data API, key only)
+        env:
+          YT_API_KEY: ${{ secrets.YT_API_KEY }}
+        run: python automation/trend_research.py
+
+      - name: Analytics report
+        # Fails with 403 until YT_REFRESH_TOKEN is re-minted with the
+        # youtube.readonly + yt-analytics.readonly scopes (see
+        # automation/analytics_report.py docstring). Trend data still commits.
+        continue-on-error: true
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+        run: python automation/analytics_report.py
+
+      - name: Commit
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add automation/trends.json analytics || true
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git commit -m "research: $(date -u +%Y-%m-%d) trends + analytics"
+            git push
+          fi
