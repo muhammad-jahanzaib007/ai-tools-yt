@@ -1,0 +1,48 @@
+name: Generate character art (Toolverse)
+
+# Idempotent batch: generates any missing hero/villain art via Gemini image
+# generation and commits it. Fire by bumping .github/art-trigger.txt.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/art-trigger.txt"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: toolverse-art
+  cancel-in-progress: false
+
+jobs:
+  art:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: pip install --upgrade requests
+
+      - name: Generate missing art
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
+          GEMINI_IMAGE_MODEL: ${{ vars.GEMINI_IMAGE_MODEL }}
+        run: python automation/make_character_art.py
+
+      - name: Commit art
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase --quiet || true
+          git add assets/toolverse
+          if git diff --cached --quiet; then
+            echo "No new art."
+          else
+            git commit -m "art: Toolverse characters"
+            git push
+          fi
