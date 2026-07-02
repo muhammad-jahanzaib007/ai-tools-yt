@@ -1,1 +1,1 @@
-2026-07-02T14:54:51Z success output/synthesia-vs-heygen.mp4 59s
+2026-07-02T15:23:53Z success output/chatgpt-vs-writesonic-blog-posts.mp4 66s
