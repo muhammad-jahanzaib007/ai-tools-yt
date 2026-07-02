@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
-"""Phase B: generate the Toolverse character art via Gemini image generation.
+"""Phase B: generate the Toolverse character art via Pollinations (free Flux).
 
 One-time batch (idempotent: existing files are skipped). For every hero in
 automation/universe.json: an idle pose and an attack pose. For every villain:
 a menacing pose and a defeated pose. Committed to assets/toolverse/ so
-episodes reuse the same art forever = consistent characters at zero cost.
+episodes reuse the same art forever = high quality, zero cost, no API key.
 
-Env: GEMINI_API_KEY (+ optional GEMINI_API_KEY_2), GEMINI_IMAGE_MODEL.
+Pollinations serves Flux with no auth. Deterministic per file via a seed so
+reruns reproduce the same character. Env: POLLINATIONS_MODEL (default flux).
 """
-import base64
 import json
 import os
 import re
 import sys
 import time
+import zlib
 from pathlib import Path
+from urllib.parse import quote
 
 import requests
 
@@ -22,50 +24,56 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "assets" / "toolverse"
 UNIVERSE = ROOT / "automation" / "universe.json"
 
-KEYS = [k for k in (os.environ.get("GEMINI_API_KEY"),
-                    os.environ.get("GEMINI_API_KEY_2")) if k]
-MODEL = os.environ.get("GEMINI_IMAGE_MODEL", "gemini-2.5-flash-image")
+MODEL = os.environ.get("POLLINATIONS_MODEL", "flux")
+W = H = 1024
 
 STYLE = (
-    "Bold comic book illustration, single full-body character, dynamic pose, thick black "
-    "outlines, cel shading, halftone accents, vibrant colors, centered composition, "
-    "PLAIN SOLID WHITE background, no text, no words, no logos, no watermark."
+    "Bold comic book illustration, single full-body character, dynamic heroic pose, thick black "
+    "ink outlines, cel shading, dramatic rim lighting, halftone accents, vibrant saturated colors, "
+    "highly detailed, centered composition, plain solid white background, no text, no words, "
+    "no logos, no watermark, no signature."
 )
 
-_key_idx = 0
+
+def _seed(name):
+    return zlib.crc32(name.encode("utf-8")) % 1_000_000
 
 
-def gen_image(prompt, dest, retries=4):
-    global _key_idx
+# Flux follows colour NAMES far better than hex codes.
+_NAMED = {
+    "red": (220, 40, 40), "orange": (230, 130, 60), "coral": (217, 119, 87),
+    "gold": (232, 185, 60), "yellow": (250, 210, 70), "green": (30, 180, 100),
+    "teal": (42, 161, 152), "blue": (70, 130, 240), "indigo": (100, 90, 220),
+    "purple": (150, 90, 230), "pink": (250, 100, 150), "silver": (170, 170, 175),
+    "cyan": (0, 196, 204),
+}
+
+
+def color_name(hexstr):
+    try:
+        h = hexstr.lstrip("#")
+        r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    except (ValueError, IndexError):
+        return "bright"
+    return min(_NAMED, key=lambda n: sum((a - c) ** 2 for a, c in zip(_NAMED[n], (r, g, b))))
+
+
+def gen_image(prompt, dest, retries=5):
+    """Pollinations Flux: GET the prompt URL, save the returned image bytes."""
+    url = (f"https://image.pollinations.ai/prompt/{quote(prompt)}"
+           f"?width={W}&height={H}&nologo=true&model={MODEL}&seed={_seed(dest.stem)}")
     last = ""
-    for attempt in range(retries * max(1, len(KEYS))):
-        key = KEYS[_key_idx % len(KEYS)]
+    for attempt in range(retries):
         try:
-            r = requests.post(
-                f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent",
-                params={"key": key},
-                json={"contents": [{"parts": [{"text": prompt}]}],
-                      "generationConfig": {"responseModalities": ["IMAGE"]}},
-                timeout=180,
-            )
+            r = requests.get(url, timeout=240)
         except requests.RequestException as e:
-            last = str(e); time.sleep(5); continue
-        if r.status_code < 400:
-            try:
-                parts = r.json()["candidates"][0]["content"]["parts"]
-                data = next(p["inlineData"]["data"] for p in parts if "inlineData" in p)
-            except (KeyError, IndexError, StopIteration):
-                last = "no image in response"; time.sleep(4); continue
-            dest.write_bytes(base64.b64decode(data))
+            last = str(e); time.sleep(6 * (attempt + 1)); continue
+        ct = r.headers.get("content-type", "")
+        if r.status_code < 400 and ct.startswith("image") and len(r.content) > 10000:
+            dest.write_bytes(r.content)
             return True
-        last = f"{r.status_code}: {r.text[:160]}"
-        if r.status_code == 429 and len(KEYS) > 1:
-            _key_idx += 1
-            print(f"  quota hit; rotating key", file=sys.stderr)
-            continue
-        if r.status_code in (429, 500, 502, 503):
-            time.sleep(10 * (attempt + 1)); continue
-        break
+        last = f"{r.status_code} {ct} {len(r.content)}b"
+        time.sleep(8 * (attempt + 1))
     print(f"  FAILED {dest.name}: {last}", file=sys.stderr)
     return False
 
@@ -82,9 +90,11 @@ def main():
     jobs = []
     for h in uni["heroes"]:
         s = slugify(h["tool"])
+        col = color_name(h["color"])
         base = (f"{STYLE} An original superhero character called {h['alias']}, the heroic "
-                f"personification of an AI tool. Costume dominated by the color {h['color']}. "
-                f"Their power: {h['power']}. An original character, NOT a company logo or mascot.")
+                f"personification of an AI tool. Costume and cape are primarily {col} "
+                f"(a {col} colour scheme). Their power: {h['power']}. An original character, "
+                "NOT a company logo or mascot.")
         jobs.append((OUT / f"hero-{s}-idle.png", base + " Confident heroic idle stance, facing the viewer."))
         jobs.append((OUT / f"hero-{s}-action.png", base + " Explosive mid-attack action pose, unleashing their power."))
     for v in uni["villains"]:
