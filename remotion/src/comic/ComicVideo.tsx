@@ -54,6 +54,39 @@ export const totalComicFrames = (p: ComicProps) => {
   );
 };
 
+// White impact flash at a beat: sells the hit.
+const Flash: React.FC<{ at: number }> = ({ at }) => {
+  const frame = useCurrentFrame();
+  if (frame < at || frame > at + 7) {
+    return null;
+  }
+  const o = interpolate(frame, [at, at + 7], [0.85, 0]);
+  return <AbsoluteFill style={{ backgroundColor: "#FFFFFF", opacity: o, pointerEvents: "none" }} />;
+};
+
+// Anime speed lines racing across the frame during action beats.
+const SpeedLines: React.FC<{ from: number; duration: number; color?: string }> = ({
+  from,
+  duration,
+  color = "rgba(255,255,255,0.22)",
+}) => {
+  const frame = useCurrentFrame();
+  if (frame < from || frame > from + duration) {
+    return null;
+  }
+  const fade = interpolate(frame, [from, from + 6, from + duration - 6, from + duration], [0, 1, 1, 0]);
+  return (
+    <AbsoluteFill
+      style={{
+        opacity: fade,
+        background: `repeating-linear-gradient(104deg, transparent 0px, transparent 46px, ${color} 46px, ${color} 52px)`,
+        backgroundPositionX: `${-frame * 38}px`,
+        pointerEvents: "none",
+      }}
+    />
+  );
+};
+
 // Classic comic halftone dot field, drifting slowly.
 const Halftone: React.FC<{ tint?: string }> = ({ tint = "rgba(0,0,0,0.3)" }) => {
   const frame = useCurrentFrame();
@@ -196,10 +229,12 @@ const ThreatScene: React.FC<{ threat: string }> = ({ threat }) => {
     extrapolateRight: "clamp",
     easing: ease,
   });
+  const menace = 1 + 0.02 * Math.sin(frame / 5);           // idle pulse after the slam
   return (
-    <AbsoluteFill style={{ backgroundColor: "#160A0C" }}>
+    <AbsoluteFill style={{ backgroundColor: "#160A0C", scale: String(1 + frame * 0.0009) }}>
       <ActionRays color="#B3261E" opacity={0.25} />
       <Halftone tint="rgba(255,80,60,0.16)" />
+      <SpeedLines from={slamAt} duration={0.9 * fps} color="rgba(255,90,70,0.20)" />
       <AbsoluteFill
         style={{
           alignItems: "center",
@@ -223,8 +258,8 @@ const ThreatScene: React.FC<{ threat: string }> = ({ threat }) => {
         </div>
         <div
           style={{
-            scale: String(slam),
-            rotate: `${(1 - slam) * -6 - 2}deg`,
+            scale: String(slam * menace),
+            rotate: `${(1 - slam) * -6 - 2 + Math.sin(frame / 7) * 1.1}deg`,
             fontFamily,
             fontWeight: 900,
             fontSize: 128,
@@ -241,6 +276,7 @@ const ThreatScene: React.FC<{ threat: string }> = ({ threat }) => {
         <SparkBurst at={slamAt + 2} color="#FF6B5E" size={420} count={14} seed="threat" />
         <CaptionBox at={1.1 * fps}>THE TOOLVERSE · TONIGHT'S EPISODE</CaptionBox>
       </AbsoluteFill>
+      <Flash at={slamAt} />
       <Grain opacity={0.07} />
       <Vignette strength={0.55} />
     </AbsoluteFill>
@@ -262,10 +298,13 @@ const HeroScene: React.FC<{ hero: ComicHero; index: number }> = ({ hero, index }
     extrapolateRight: "clamp",
     easing: pop,
   });
+  const breathe = 1 + 0.018 * Math.sin(frame / 6);
+  const bob = Math.sin(frame / 9) * 6;
   return (
-    <AbsoluteFill style={{ backgroundColor: "#0b0b14" }}>
+    <AbsoluteFill style={{ backgroundColor: "#0b0b14", scale: String(1 + frame * 0.0009) }}>
       <ActionRays color={hero.color} opacity={0.3} />
       <Halftone tint="rgba(255,255,255,0.10)" />
+      <SpeedLines from={inAt} duration={1.1 * fps} />
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", gap: 40 }}>
         <div
           style={{
@@ -291,8 +330,8 @@ const HeroScene: React.FC<{ hero: ComicHero; index: number }> = ({ hero, index }
           <div
             style={{
               position: "relative",
-              scale: String(arrive),
-              rotate: `${(1 - arrive) * 8}deg`,
+              scale: String(arrive * breathe),
+              rotate: `${(1 - arrive) * 8 + Math.sin(frame / 8) * 0.8}deg`,
               fontFamily,
               fontWeight: 900,
               fontSize: 108,
@@ -324,6 +363,7 @@ const HeroScene: React.FC<{ hero: ComicHero; index: number }> = ({ hero, index }
           style={{
             opacity: bubble,
             scale: String(0.75 + 0.25 * bubble),
+            translate: `0px ${bob}px`,
             position: "relative",
             backgroundColor: "#FFFFFF",
             color: "#1A1915",
@@ -353,6 +393,7 @@ const HeroScene: React.FC<{ hero: ComicHero; index: number }> = ({ hero, index }
           />
         </div>
       </AbsoluteFill>
+      <Flash at={inAt} />
       <Grain opacity={0.06} />
       <Vignette strength={0.45} />
     </AbsoluteFill>
