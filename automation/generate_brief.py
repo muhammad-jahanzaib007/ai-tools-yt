@@ -120,9 +120,14 @@ def generate_brief(topic):
         '"text" (ONE short spoken sentence, max 14 words, punchy and fast-paced; no filler, '
         'no throat-clearing) and "broll" (a 2-4 word stock-footage search query '
         "that matches the text, e.g. 'person typing laptop', 'data center servers'). The first "
-        "segment's text must start with the hook. The FINAL segment must be a short, natural "
-        "call-to-action: ask one quick question inviting a comment, then a brief nudge to follow "
-        "for daily AI tools. Keep it to one or two sentences. Do NOT use the generic "
+        "segment's text must start with the hook. If the topic is a comparison or battle "
+        "(X vs Y), structure the narration as a verdict-driven battle: hook, one-line intro of "
+        "each tool, then 2 or 3 quick rounds (each round compares ONE thing, e.g. quality, price, "
+        "speed, and names the round winner), then a final verdict naming the overall winner and "
+        "who the loser is still better for. The FINAL segment must be a short, natural "
+        "call-to-action: ask one quick question inviting a comment (for battles: ask viewers "
+        "which tool they would pick), then a brief nudge to follow for daily AI tool battles. "
+        "Keep it to one or two sentences. Do NOT use the generic "
         "'like, comment, share and subscribe' line.\n"
         "- description: a YouTube description, 2 or 3 sentences. Do NOT list links here.\n"
         "- links: an array of the tools/resources you mention, each an object "
@@ -161,8 +166,13 @@ def replenish(topics, want=12):
     try:
         used = topics["published"] + topics["queue"]
         user = (
-            f"Suggest {want} distinct, specific YouTube video ideas for a faceless channel about AI "
-            "tools and AI news for a general audience. Practical, evergreen, search-friendly titles. "
+            f"Suggest {want} distinct, specific YouTube video ideas for a faceless channel whose "
+            "format is AI tool battles: verdict-driven 'X vs Y' comparisons of AI tools, for a "
+            "general audience. Every idea must be a specific 'X vs Y' matchup with a concrete "
+            "angle (e.g. 'for blog posts', 'on a budget', 'for beginners'). Prefer matchups that "
+            "include at least one of: Writesonic, Jasper, Pictory, Synthesia, ElevenLabs, "
+            "Speechify, TubeBuddy, HeyGen, InVideo, Descript, Murf, Copy.ai, Rytr. "
+            "Practical, evergreen, search-friendly titles. "
             "Avoid overlapping these existing ideas:\n- " + "\n- ".join(used)
             + '\nReturn a single JSON object: {"topics": ["idea 1", ...]}. No em dashes.'
         )
