@@ -137,7 +137,10 @@ BATTLE_BULLETS = (
     "max 35 words); final segment = the verdict spoken naturally, then ask viewers which tool "
     "they would pick in the comments and nudge them to follow for daily AI battles. Spoken "
     'round winners MUST match the "winner" fields and the spoken verdict MUST match "verdict". '
-    "Do not add extra segments.\n"
+    "Do not add extra segments. WRITE THE NARRATION LIKE AN EXCITED SPORTS COMMENTATOR CALLING "
+    "A MATCH: high energy, short punchy sentences, exclamation marks where natural, a rhetorical "
+    "question or two, real reactions ('Ouch.', 'That one hurts.', 'No contest here!'). It must "
+    "sound spoken, never like an article being read aloud.\n"
 )
 
 

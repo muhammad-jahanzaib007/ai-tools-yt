@@ -52,6 +52,15 @@ EL_KEY = os.environ.get("ELEVENLABS_API_KEY")
 PX_KEY = os.environ.get("PEXELS_API_KEY")
 VOICE_ID = os.environ.get("VOICE_ID") or "Fahco4VZzobUeiPqni1S"      # user-picked library voice
 EL_MODEL = os.environ.get("ELEVEN_MODEL") or "eleven_multilingual_v2"
+# Expressive delivery: low stability = more variation between sentences, high
+# style = more emotion. The old 0.4/0.25 sounded like reading from a book.
+VOICE_SETTINGS = {
+    "stability": float(os.environ.get("VOICE_STABILITY", "0.30")),
+    "similarity_boost": float(os.environ.get("VOICE_SIMILARITY", "0.75")),
+    "style": float(os.environ.get("VOICE_STYLE", "0.55")),
+    "use_speaker_boost": True,
+    "speed": float(os.environ.get("VOICE_SPEED", "1.09")),
+}
 W, H, FPS = 1080, 1920, 30
 
 
@@ -92,10 +101,7 @@ def tts(text, dest):
         f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}",
         params={"output_format": "mp3_44100_128"},
         headers={"xi-api-key": EL_KEY, "Content-Type": "application/json"},
-        json={"text": text, "model_id": EL_MODEL,
-              "voice_settings": {"stability": 0.4, "similarity_boost": 0.85,
-                                 "style": 0.25, "use_speaker_boost": True,
-                                 "speed": 1.09}},
+        json={"text": text, "model_id": EL_MODEL, "voice_settings": VOICE_SETTINGS},
         timeout=120,
     )
     if r.status_code >= 400:
@@ -109,10 +115,7 @@ def tts_timed(text, dest):
         f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}/with-timestamps",
         params={"output_format": "mp3_44100_128"},
         headers={"xi-api-key": EL_KEY, "Content-Type": "application/json"},
-        json={"text": text, "model_id": EL_MODEL,
-              "voice_settings": {"stability": 0.4, "similarity_boost": 0.85,
-                                 "style": 0.25, "use_speaker_boost": True,
-                                 "speed": 1.09}},
+        json={"text": text, "model_id": EL_MODEL, "voice_settings": VOICE_SETTINGS},
         timeout=120,
     )
     if r.status_code >= 400:

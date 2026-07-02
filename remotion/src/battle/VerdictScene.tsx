@@ -8,6 +8,7 @@ import {
 } from "remotion";
 import { COLORS, RoundData, scoreAfter } from "./types";
 import { fontFamily } from "./font";
+import { AnimatedBg } from "./AnimatedBg";
 
 const ease = Easing.bezier(0.16, 1, 0.3, 1);
 
@@ -49,15 +50,17 @@ export const VerdictScene: React.FC<{
   });
 
   return (
-    <AbsoluteFill
-      style={{
-        backgroundColor: COLORS.cream,
-        alignItems: "center",
-        justifyContent: "center",
-        gap: vertical ? 36 : 18,
-        padding: vertical ? 0 : 30,
-      }}
-    >
+    <AbsoluteFill style={{ backgroundColor: COLORS.cream }}>
+      <AnimatedBg light />
+      {/* content in its own positioned layer so it paints above the bg */}
+      <AbsoluteFill
+        style={{
+          alignItems: "center",
+          justifyContent: "center",
+          gap: vertical ? 36 : 18,
+          padding: vertical ? 0 : 30,
+        }}
+      >
       <div style={{ scale: String(crownScale), fontSize: vertical ? 140 : 100 }}>
         👑
       </div>
@@ -123,6 +126,7 @@ export const VerdictScene: React.FC<{
       >
         Snackbyte AI · new AI battle every day
       </div>
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };

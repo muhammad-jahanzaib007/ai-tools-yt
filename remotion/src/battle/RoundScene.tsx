@@ -9,6 +9,7 @@ import {
 import { COLORS, RoundData, scoreAfter } from "./types";
 import { fontFamily } from "./font";
 import { Scoreboard } from "./Scoreboard";
+import { AnimatedBg } from "./AnimatedBg";
 
 const ease = Easing.bezier(0.16, 1, 0.3, 1);
 
@@ -78,6 +79,7 @@ export const RoundScene: React.FC<{
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
+      <AnimatedBg variant={index + 1} />
       <Scoreboard toolA={toolA} toolB={toolB} scoreA={shown.a} scoreB={shown.b} />
       <AbsoluteFill
         style={{
