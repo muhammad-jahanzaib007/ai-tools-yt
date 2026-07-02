@@ -116,8 +116,9 @@ def generate_brief(topic):
         "- title: a clear, honest, clickable YouTube title, <=70 chars, no clickbait lies\n"
         "- hook: the spoken opening line (<=14 words). Make it a scroll-stopping pattern-interrupt: "
         "a surprising claim, a sharp question, or a bold promise. No generic intros like 'In this video'.\n"
-        "- narration: an array of 6-10 segments. Each segment is an object with "
-        '"text" (one or two spoken sentences) and "broll" (a 2-4 word stock-footage search query '
+        "- narration: an array of 9-14 segments. Each segment is an object with "
+        '"text" (ONE short spoken sentence, max 14 words, punchy and fast-paced; no filler, '
+        'no throat-clearing) and "broll" (a 2-4 word stock-footage search query '
         "that matches the text, e.g. 'person typing laptop', 'data center servers'). The first "
         "segment's text must start with the hook. The FINAL segment must be a short, natural "
         "call-to-action: ask one quick question inviting a comment, then a brief nudge to follow "

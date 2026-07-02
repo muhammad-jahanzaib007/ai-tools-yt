@@ -91,7 +91,8 @@ def tts(text, dest):
         headers={"xi-api-key": EL_KEY, "Content-Type": "application/json"},
         json={"text": text, "model_id": EL_MODEL,
               "voice_settings": {"stability": 0.4, "similarity_boost": 0.85,
-                                 "style": 0.25, "use_speaker_boost": True}},
+                                 "style": 0.25, "use_speaker_boost": True,
+                                 "speed": 1.09}},
         timeout=120,
     )
     if r.status_code >= 400:
@@ -107,7 +108,8 @@ def tts_timed(text, dest):
         headers={"xi-api-key": EL_KEY, "Content-Type": "application/json"},
         json={"text": text, "model_id": EL_MODEL,
               "voice_settings": {"stability": 0.4, "similarity_boost": 0.85,
-                                 "style": 0.25, "use_speaker_boost": True}},
+                                 "style": 0.25, "use_speaker_boost": True,
+                                 "speed": 1.09}},
         timeout=120,
     )
     if r.status_code >= 400:
@@ -217,9 +219,14 @@ def make_segment(idx, audio, broll, dur, dest):
     if broll and broll.exists():
         # Ken Burns: continuous zoom using the accumulating `zoom` var (NOT `on`, which is static).
         # Oversize first so zooming doesn't upscale past source.
+        # Alternate zoom direction per segment so every cut lands with a visible motion change.
+        if idx % 2 == 0:
+            zexpr = "min(zoom+0.0032,1.35)"
+        else:
+            zexpr = "if(lte(zoom,1.0),1.35,max(zoom-0.0032,1.001))"
         vf = (f"[0:v]scale={int(W*1.4)}:{int(H*1.4)}:force_original_aspect_ratio=increase,"
               f"crop={int(W*1.4)}:{int(H*1.4)},"
-              f"zoompan=z='min(zoom+0.0018,1.35)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':"
+              f"zoompan=z='{zexpr}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':"
               f"d=1:s={W}x{H}:fps={FPS},format=yuv420p[v]")
         run(["ffmpeg", "-y", "-stream_loop", "-1", "-i", str(broll), "-i", str(audio), "-t", f"{dur:.3f}",
              "-filter_complex", vf,
@@ -271,7 +278,7 @@ def build_ass(segs, durations, path, title=None):
     path.write_text(header + "\n".join(lines) + "\n", encoding="utf-8")
 
 
-def make_outro(dest, seconds=2.6):
+def make_outro(dest, seconds=1.6):
     """Branded 'Subscribe' end card (cream bg, coral wordmark) with silent audio."""
     vf = (f"drawtext=font=DejaVu Sans:text='Subscribe for daily AI tools':"
           f"fontcolor=0x1A1915:fontsize=64:x=(w-text_w)/2:y=h*0.42-40,"
@@ -310,7 +317,7 @@ def main():
             print(f"  word timings unavailable ({e}); plain TTS for this segment", file=sys.stderr)
             karaoke = False
             tts(seg["text"], audio)
-        d = probe_duration(audio) + 0.35           # small tail so captions/cuts don't clip
+        d = probe_duration(audio) + 0.12           # small tail so captions/cuts don't clip
         broll = WORK / f"b{i}.mp4"
         if not pexels_clip(seg.get("broll", brief["title"]), broll):
             broll = None
