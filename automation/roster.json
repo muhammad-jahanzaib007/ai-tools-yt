@@ -1,0 +1,28 @@
+{
+  "_about": "Master roster of every AI tool we make videos about. Each gets a superhero avatar (idle + action) generated into assets/toolverse/. The 12 with hand-written powers/voices in universe.json are the comic-cast heroes; the rest appear in battle videos. alias + color drive the avatar art.",
+  "tools": [
+    {"tool": "ChatGPT",       "alias": "The Oracle",        "color": "#74AA9C"},
+    {"tool": "Claude",        "alias": "The Strategist",    "color": "#D97757"},
+    {"tool": "Gemini",        "alias": "The Twin Star",     "color": "#4E7BF0"},
+    {"tool": "Midjourney",    "alias": "Mirage",            "color": "#8A7CFF"},
+    {"tool": "ElevenLabs",    "alias": "Echo",              "color": "#E8B93C"},
+    {"tool": "Speechify",     "alias": "The Listener",      "color": "#FFA502"},
+    {"tool": "Murf",          "alias": "The Voicesmith",    "color": "#3B82F6"},
+    {"tool": "Writesonic",    "alias": "Scribe",            "color": "#4F8EF7"},
+    {"tool": "Jasper",        "alias": "The Campaigner",    "color": "#FF5C8A"},
+    {"tool": "Copy.ai",       "alias": "Quill",             "color": "#6A4CFF"},
+    {"tool": "Rytr",          "alias": "Inkling",           "color": "#2AA5F0"},
+    {"tool": "Grammarly",     "alias": "The Warden",        "color": "#15C39A"},
+    {"tool": "Notion AI",     "alias": "The Archivist",     "color": "#9B9B9B"},
+    {"tool": "Canva",         "alias": "The Forge",         "color": "#00C4CC"},
+    {"tool": "Adobe Express", "alias": "Swift",             "color": "#FF3366"},
+    {"tool": "Pictory",       "alias": "The Cutter",        "color": "#35B5AA"},
+    {"tool": "InVideo",       "alias": "Reelwright",        "color": "#E82C6A"},
+    {"tool": "Synthesia",     "alias": "Avatar",            "color": "#6C5CE7"},
+    {"tool": "HeyGen",        "alias": "The Puppeteer",     "color": "#6366F1"},
+    {"tool": "Descript",      "alias": "Textblade",         "color": "#5C4CFF"},
+    {"tool": "Premiere Pro",  "alias": "The Timeline Titan","color": "#9E7BFF"},
+    {"tool": "TubeBuddy",     "alias": "Trailblazer",       "color": "#E52D27"},
+    {"tool": "vidIQ",         "alias": "Insight",           "color": "#F03C3C"}
+  ]
+}

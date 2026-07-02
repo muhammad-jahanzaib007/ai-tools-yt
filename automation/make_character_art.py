@@ -23,6 +23,7 @@ import requests
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "assets" / "toolverse"
 UNIVERSE = ROOT / "automation" / "universe.json"
+ROSTER = ROOT / "automation" / "roster.json"
 
 MODEL = os.environ.get("POLLINATIONS_MODEL", "flux")
 W = H = 1024
@@ -85,13 +86,18 @@ def slugify(s):
 def main():
     uni = json.loads(UNIVERSE.read_text(encoding="utf-8"))
     OUT.mkdir(parents=True, exist_ok=True)
+    # Every tool we make videos about gets a hero avatar. roster.json is the
+    # full list; universe heroes add hand-written powers for a richer prompt.
+    powers = {h["tool"]: h.get("power") for h in uni["heroes"]}
+    tools = json.loads(ROSTER.read_text(encoding="utf-8"))["tools"] if ROSTER.exists() else uni["heroes"]
     jobs = []
-    for h in uni["heroes"]:
+    for h in tools:
         s = slugify(h["tool"])
         col = color_name(h["color"])
+        power = powers.get(h["tool"]) or f"the powers of the {h['tool']} AI tool"
         base = (f"{STYLE} An original superhero character called {h['alias']}, the heroic "
-                f"personification of an AI tool. Costume and cape are primarily {col} "
-                f"(a {col} colour scheme). Their power: {h['power']}. An original character, "
+                f"personification of the {h['tool']} AI tool. Costume and cape are primarily {col} "
+                f"(a {col} colour scheme). Their power: {power}. An original character, "
                 "NOT a company logo or mascot.")
         jobs.append((OUT / f"hero-{s}-idle.png", base + " Confident heroic idle stance, facing the viewer."))
         jobs.append((OUT / f"hero-{s}-action.png", base + " Explosive mid-attack action pose, unleashing their power."))
