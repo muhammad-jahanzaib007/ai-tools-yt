@@ -33,7 +33,7 @@ ENDPOINT = os.environ.get("MODELS_ENDPOINT", "https://models.github.ai/inference
 TOKEN = os.environ.get("GITHUB_TOKEN") or os.environ.get("MODELS_TOKEN")
 # If ANTHROPIC_API_KEY is set, use Claude; otherwise fall back to free GitHub Models.
 ANTHROPIC_KEY = os.environ.get("ANTHROPIC_API_KEY")
-CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-4-6")
+CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-5")
 EM_DASH = "—"
 
 SYSTEM = (
@@ -62,8 +62,12 @@ def _raw_completion(user, max_tokens):
     if ANTHROPIC_KEY:
         import anthropic
         client = anthropic.Anthropic()
+        # Thinking off: on Sonnet 5 adaptive thinking is on by default when the
+        # field is omitted, and thinking tokens count against max_tokens, which
+        # could truncate the JSON on this short structured task.
         msg = client.messages.create(
             model=CLAUDE_MODEL, max_tokens=max_tokens, system=SYSTEM,
+            thinking={"type": "disabled"},
             messages=[{"role": "user", "content": user}],
         )
         return "".join(b.text for b in msg.content if b.type == "text")
