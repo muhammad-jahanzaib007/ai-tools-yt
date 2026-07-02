@@ -41,7 +41,7 @@ jobs:
       - name: Install Remotion deps (battle graphics)
         run: npm ci --prefix remotion
 
-      - run: pip install --upgrade requests
+      - run: pip install --upgrade requests librosa soundfile
 
       - name: Render video
         env:
@@ -51,6 +51,10 @@ jobs:
           ELEVEN_MODEL: ${{ vars.ELEVEN_MODEL }}
           BRIEF_SLUG: ${{ inputs.slug }}
         run: python automation/render_video.py
+
+      - name: Audio QA (voice expressiveness + mix)
+        continue-on-error: true
+        run: python automation/audio_qa.py
 
       - name: Upload video artifact
         uses: actions/upload-artifact@v4
@@ -77,4 +81,5 @@ jobs:
           fi
           echo "$(date -u +%FT%TZ) ${{ job.status }} ${out:-no-output} ${secs:+${secs}s}" > .github/last-render.txt
           git add .github/last-render.txt
+          git add .github/last-audio-qa.txt 2>/dev/null || true
           git commit -m "render status" --quiet && git push --quiet || echo "nothing to record"

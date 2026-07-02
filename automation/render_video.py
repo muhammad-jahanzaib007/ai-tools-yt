@@ -41,8 +41,20 @@ TRANS = 15                                     # = TRANSITION_FRAMES in remotion
 NPX = "npx.cmd" if os.name == "nt" else "npx"
 
 
-def pick_music():
+def pick_music(vibe="battle"):
     if MUSIC_DIR.is_dir():
+        # manifest.json tags tracks by measured BPM/energy; battles get only
+        # high-tempo punchy tracks so the music matches the format
+        manifest = MUSIC_DIR / "manifest.json"
+        if manifest.exists():
+            try:
+                entries = json.loads(manifest.read_text(encoding="utf-8"))["tracks"]
+                pool = [MUSIC_DIR / t["file"] for t in entries
+                        if t.get("vibe") == vibe and (MUSIC_DIR / t["file"]).exists()]
+                if pool:
+                    return random.choice(pool)
+            except Exception as e:
+                print(f"music manifest ignored: {e}", file=sys.stderr)
         tracks = sorted(MUSIC_DIR.glob("*.mp3")) + sorted(MUSIC_DIR.glob("*.m4a"))
         if tracks:
             return random.choice(tracks)

@@ -42,7 +42,7 @@ jobs:
       - name: Install Remotion deps (battle graphics)
         run: npm ci --prefix remotion
 
-      - run: pip install --upgrade requests anthropic google-api-python-client google-auth google-auth-httplib2
+      - run: pip install --upgrade requests anthropic google-api-python-client google-auth google-auth-httplib2 librosa soundfile
 
       - name: Generate brief
         env:
@@ -78,3 +78,14 @@ jobs:
           YT_PRIVACY: ${{ vars.YT_PRIVACY || 'public' }}
           YT_CATEGORY: ${{ vars.YT_CATEGORY || '28' }}
         run: python automation/upload_video.py
+
+      - name: Audio QA + record
+        if: always()
+        continue-on-error: true
+        run: |
+          python automation/audio_qa.py || true
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase --quiet || true
+          git add .github/last-audio-qa.txt 2>/dev/null || true
+          git commit -m "audio qa" --quiet && git push --quiet || echo "nothing to record"

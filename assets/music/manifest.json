@@ -1,0 +1,26 @@
+{
+  "_how": "Generated from spectral analysis (BPM, RMS, spectral flux 'punch') of each track. pick_music() uses vibe='battle' tracks for battle videos. Re-run analysis when tracks change.",
+  "_generated": "2026-07-02",
+  "tracks": [
+    {"file": "Event Horizon - The Grey Room _ Density & Time.mp3", "bpm": 136, "punch": 0.275, "vibe": "battle"},
+    {"file": "Ancient Civilisations - Alex Jones _ Xander Jones.mp3", "bpm": 157, "punch": 0.273, "vibe": "battle"},
+    {"file": "Majestic-12 - Alex Jones _ Xander Jones.mp3", "bpm": 99, "punch": 0.149, "vibe": "battle"},
+    {"file": "Pulsar - The Grey Room _ Density & Time.mp3", "bpm": 103, "punch": 0.113, "vibe": "battle"},
+    {"file": "The Theme - Alex Jones _ Xander Jones.mp3", "bpm": 129, "punch": 0.108, "vibe": "battle"},
+    {"file": "Robots and Aliens - Joel Cummins.mp3", "bpm": 123, "punch": 0.100, "vibe": "battle"},
+    {"file": "Empty House - Evening Telecast.mp3", "bpm": 92, "punch": 0.095, "vibe": "battle"},
+    {"file": "Stake Out - Alex Jones _ Xander Jones.mp3", "bpm": 99, "punch": 0.093, "vibe": "battle"},
+    {"file": "Wehrmut - Godmode.mp3", "bpm": 117, "punch": 0.090, "vibe": "battle"},
+    {"file": "Level Eleven - Evening Telecast.mp3", "bpm": 78, "punch": 0.115, "vibe": "chill"},
+    {"file": "Pixelated Autumn Leaves - Jeremy Blake.mp3", "bpm": 60, "punch": 0.115, "vibe": "chill"},
+    {"file": "Misdirection - The Grey Room _ Density & Time.mp3", "bpm": 60, "punch": 0.100, "vibe": "chill"},
+    {"file": "Drop Of A Hat - The Grey Room _ Density & Time.mp3", "bpm": 89, "punch": 0.088, "vibe": "chill"},
+    {"file": "On The Flip - The Grey Room _ Density & Time.mp3", "bpm": 85, "punch": 0.086, "vibe": "chill"},
+    {"file": "Lawrence - TrackTribe.mp3", "bpm": 80, "punch": 0.081, "vibe": "chill"},
+    {"file": "Reasons - Anno Domini Beats.mp3", "bpm": 64, "punch": 0.072, "vibe": "chill"},
+    {"file": "A Stroll - The Grey Room _ Density & Time.mp3", "bpm": 75, "punch": 0.070, "vibe": "chill"},
+    {"file": "Nebula - The Grey Room _ Density & Time.mp3", "bpm": 76, "punch": 0.064, "vibe": "chill"},
+    {"file": "Down The Rabbit Hole - The Grey Room _ Density & Time.mp3", "bpm": 73, "punch": 0.063, "vibe": "chill"},
+    {"file": "Flowers - Anno Domini Beats.mp3", "bpm": 70, "punch": 0.046, "vibe": "chill"}
+  ]
+}
