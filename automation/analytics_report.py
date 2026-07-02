@@ -114,6 +114,16 @@ def main():
         "",
     ]
 
+    # YouTube Analytics lags ~2-3 days; a young channel's first reports come
+    # back empty. Say so, or an all-zero report reads like channel death.
+    if not rows and not any(trow):
+        lines[2:2] = [
+            "> **Data note:** the Analytics API lags ~2-3 days. An all-zero "
+            "report on a young channel means the data has not landed yet, "
+            "not zero performance.",
+            "",
+        ]
+
     OUT_DIR.mkdir(exist_ok=True)
     out = OUT_DIR / f"report-{end.isoformat()}.md"
     out.write_text("\n".join(lines), encoding="utf-8")
