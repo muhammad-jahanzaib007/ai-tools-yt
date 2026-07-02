@@ -634,7 +634,10 @@ def render_battle(brief):
         inputs += ["-stream_loop", "-1", "-i", str(music.resolve())]
         filters.append(f"[{n+1}:a]volume=0.06[m]")
         alabels.append("[m]")
-    filters.append("".join(alabels) + f"amix=inputs={len(alabels)}:duration=longest:normalize=0[a]")
+    # loudnorm to YouTube's -14 LUFS: roster voices vary in level and the
+    # voice+music sum was measured clipping (peak 1.11) without it
+    filters.append("".join(alabels) + f"amix=inputs={len(alabels)}:duration=longest:normalize=0[mix]")
+    filters.append("[mix]loudnorm=I=-14:TP=-1.5:LRA=11[a]")
     filters.append("[0:v]subtitles=subs.ass[v]")
     final = OUT / f"{slug}.mp4"
     run(["ffmpeg", "-y"] + inputs + [
@@ -736,7 +739,8 @@ def main():
         run(["ffmpeg", "-y", "-i", "body.mp4", "-stream_loop", "-1", "-i", str(music.resolve()),
              "-filter_complex",
              "[0:v]subtitles=subs.ass[v];[1:a]volume=0.06[m];"
-             "[0:a][m]amix=inputs=2:duration=first:normalize=0[a]",
+             "[0:a][m]amix=inputs=2:duration=first:normalize=0[mix];"
+             "[mix]loudnorm=I=-14:TP=-1.5:LRA=11[a]",
              "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-preset", "medium", "-crf", "21",
              "-c:a", "aac", "-ar", "44100", "-shortest", str(final.resolve())], cwd=str(WORK))
     else:
