@@ -1,1 +1,1 @@
-2026-07-02T14:06:18Z success brief=synthesia-vs-heygen
+2026-07-02T15:16:05Z success brief=chatgpt-vs-writesonic-blog-posts
