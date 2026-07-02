@@ -1,1 +1,1 @@
-voice_pitch_std=6.46st(expressive) script_wer=0.25(ok) mix_rms=0.074 peak=0.69 dur=61s
+voice_pitch_std=7.40st(expressive) script_wer=0.22(ok) mix_rms=0.149 peak=0.87 dur=66s
