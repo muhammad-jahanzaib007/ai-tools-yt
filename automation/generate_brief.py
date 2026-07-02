@@ -112,6 +112,35 @@ def chat_json(user, max_tokens=3000):
         return json.loads(m.group(0))
 
 
+CLASSIC_BULLETS = (
+    "- narration: an array of 9-14 segments. Each segment is an object with "
+    '"text" (ONE short spoken sentence, max 14 words, punchy and fast-paced; no filler, '
+    'no throat-clearing) and "broll" (a 2-4 word stock-footage search query '
+    "that matches the text, e.g. 'person typing laptop', 'data center servers'). The first "
+    "segment's text must start with the hook. The FINAL segment must be a short, natural "
+    "call-to-action: ask one quick question inviting a comment, then a brief nudge to follow "
+    "for daily AI tools. Never the generic 'like, comment, share and subscribe' line.\n"
+)
+
+BATTLE_BULLETS = (
+    "- battle: REQUIRED (this topic is an X vs Y battle): "
+    '{"toolA": "Name", "toolB": "Name", "tagline": "a question of 8 words or fewer for the '
+    'intro card", "rounds": [2 or 3 items of {"title": "1-3 words, e.g. Price", '
+    '"aPoint": "toolA in this round, 9 words or fewer", "bPoint": "same for toolB", '
+    '"winner": "a" or "b"}], "verdict": "28 words or fewer naming the overall winner and '
+    'what the loser is still better for"}.\n'
+    "- narration: an array of EXACTLY rounds+2 segments (3 rounds -> 5 segments; 2 rounds -> 4). "
+    'Each segment is an object with "text" and "broll" (a 2-4 word stock-footage search query). '
+    "The segments map 1:1 onto the video scenes: segment 1 = the hook plus a one-line setup of "
+    "the matchup (plays over the VS intro card); then ONE segment per round (say what the round "
+    "tests, compare both tools concretely, declare the round winner; 2 or 3 short sentences, "
+    "max 35 words); final segment = the verdict spoken naturally, then ask viewers which tool "
+    "they would pick in the comments and nudge them to follow for daily AI battles. Spoken "
+    'round winners MUST match the "winner" fields and the spoken verdict MUST match "verdict". '
+    "Do not add extra segments.\n"
+)
+
+
 def _clean_battle(bt, narration):
     """Validate the optional battle block. None = unusable -> b-roll fallback."""
     if not isinstance(bt, dict):
@@ -161,6 +190,7 @@ def generate_brief(topic):
 
 
 def _generate_once(topic, extra=""):
+    is_battle = " vs " in topic.lower()
     user = (
         f'Write the script and metadata for a 60-90 second faceless YouTube video on: "{topic}".\n\n'
         "Return a single JSON object with these keys:\n"
@@ -168,26 +198,7 @@ def _generate_once(topic, extra=""):
         "- title: a clear, honest, clickable YouTube title, <=70 chars, no clickbait lies\n"
         "- hook: the spoken opening line (<=14 words). Make it a scroll-stopping pattern-interrupt: "
         "a surprising claim, a sharp question, or a bold promise. No generic intros like 'In this video'.\n"
-        "- narration: an array of segments, each an object with "
-        '"text" and "broll" (a 2-4 word stock-footage search query that matches the text, '
-        "e.g. 'person typing laptop', 'data center servers'). For a NON-battle topic: 9-14 "
-        "segments, each ONE short spoken sentence (max 14 words, punchy, no filler); the first "
-        "segment's text must start with the hook, and the FINAL segment is a short natural "
-        "call-to-action: one quick question inviting a comment, then a nudge to follow for "
-        "daily AI tools. Never the generic 'like, comment, share and subscribe' line.\n"
-        "- battle: ONLY when the topic is an 'X vs Y' comparison, also return this object: "
-        '{"toolA": "Name", "toolB": "Name", "tagline": "a question of 8 words or fewer for the '
-        'intro card", "rounds": [2 or 3 items of {"title": "1-3 words, e.g. Price", '
-        '"aPoint": "toolA in this round, 9 words or fewer", "bPoint": "same for toolB", '
-        '"winner": "a" or "b"}], "verdict": "28 words or fewer naming the overall winner and '
-        'what the loser is still better for"}. For battle topics the narration must instead '
-        "have EXACTLY rounds+2 segments, mirroring the on-screen scenes: segment 1 = the hook "
-        "plus a one-line setup of the matchup (plays over the VS intro); one segment per round "
-        "(say what the round tests, compare the two tools concretely, declare the round winner; "
-        "2 or 3 short sentences, max 35 words); final segment = the verdict spoken naturally, "
-        "then ask viewers which tool they would pick in the comments and nudge them to follow "
-        "for daily AI battles. Spoken round winners MUST match the winner fields and the spoken "
-        "verdict MUST match the verdict text.\n"
+        + (BATTLE_BULLETS if is_battle else CLASSIC_BULLETS) +
         "- description: a YouTube description, 2 or 3 sentences. Do NOT list links here.\n"
         "- links: an array of the tools/resources you mention, each an object "
         '{"name": "Tool Name", "url": "https://official-homepage"} using the real official website. '
