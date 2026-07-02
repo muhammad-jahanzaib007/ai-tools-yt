@@ -50,7 +50,8 @@ jobs:
           VOICE_ID: ${{ vars.VOICE_ID }}
           ELEVEN_MODEL: ${{ vars.ELEVEN_MODEL }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          VOICE_PROVIDER: ${{ vars.VOICE_PROVIDER }}
+          # A/B TEST: forced to gemini for one run — revert to vars.VOICE_PROVIDER after
+          VOICE_PROVIDER: gemini
           GEMINI_VOICE: ${{ vars.GEMINI_VOICE }}
           BRIEF_SLUG: ${{ inputs.slug }}
         run: python automation/render_video.py
