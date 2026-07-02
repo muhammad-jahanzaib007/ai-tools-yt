@@ -83,8 +83,6 @@ def slugify(s):
 
 
 def main():
-    if not KEYS:
-        sys.exit("GEMINI_API_KEY must be set")
     uni = json.loads(UNIVERSE.read_text(encoding="utf-8"))
     OUT.mkdir(parents=True, exist_ok=True)
     jobs = []
