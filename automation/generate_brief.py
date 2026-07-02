@@ -144,6 +144,23 @@ def _clean_battle(bt, narration):
 
 
 def generate_brief(topic):
+    b = _generate_once(topic)
+    if " vs " in topic.lower() and not b.get("battle"):
+        print("battle block missing/invalid; retrying with a stern reminder", file=sys.stderr)
+        stern = (
+            "\n\nYOUR PREVIOUS ATTEMPT FAILED validation: it was missing a valid "
+            '"battle" object, or the narration did not have exactly rounds+2 '
+            "segments. This topic IS an X vs Y battle. Return the battle object "
+            "AND exactly rounds+2 narration segments (one for the intro, one per "
+            "round, one for the verdict). Count the segments before answering."
+        )
+        b2 = _generate_once(topic, extra=stern)
+        if b2.get("battle"):
+            b = b2
+    return b
+
+
+def _generate_once(topic, extra=""):
     user = (
         f'Write the script and metadata for a 60-90 second faceless YouTube video on: "{topic}".\n\n'
         "Return a single JSON object with these keys:\n"
@@ -178,6 +195,7 @@ def generate_brief(topic):
         "- tags: an array of 8-12 lowercase search tags (do not include any year)\n"
         "- thumbnail_text: 3-5 punchy words for the thumbnail\n"
         "Keep claims general and accurate. No em dashes anywhere."
+        + extra
     )
     b = chat_json(user)
     for k in ("slug", "title", "hook", "description", "thumbnail_text"):

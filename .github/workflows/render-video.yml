@@ -11,7 +11,7 @@ on:
       - ".github/render-trigger.txt"
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: yt-render
@@ -61,3 +61,20 @@ jobs:
             output/*.jpg
           if-no-files-found: error
           retention-days: 14
+
+      # The repo is private, so run results can't be watched via the public
+      # API; a tiny committed status line makes them checkable with git alone.
+      - name: Record render status
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase --quiet || true
+          out=$(ls output/*.mp4 2>/dev/null | head -1)
+          secs=""
+          if [ -n "$out" ]; then
+            secs=$(ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 "$out" 2>/dev/null | cut -d. -f1)
+          fi
+          echo "$(date -u +%FT%TZ) ${{ job.status }} ${out:-no-output} ${secs:+${secs}s}" > .github/last-render.txt
+          git add .github/last-render.txt
+          git commit -m "render status" --quiet && git push --quiet || echo "nothing to record"
