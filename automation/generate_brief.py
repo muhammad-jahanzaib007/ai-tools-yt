@@ -31,9 +31,11 @@ TOPICS_JSON = DATA / "topics.json"
 MODEL = os.environ.get("BLOG_MODEL", "openai/gpt-4o-mini")
 ENDPOINT = os.environ.get("MODELS_ENDPOINT", "https://models.github.ai/inference/chat/completions")
 TOKEN = os.environ.get("GITHUB_TOKEN") or os.environ.get("MODELS_TOKEN")
-# If ANTHROPIC_API_KEY is set, use Claude; otherwise fall back to free GitHub Models.
+# Provider chain: Gemini free tier -> Claude -> free GitHub Models.
 ANTHROPIC_KEY = os.environ.get("ANTHROPIC_API_KEY")
 CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-5")
+GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 EM_DASH = "—"
 
 SYSTEM = (
@@ -58,7 +60,38 @@ def save(p, obj):
     p.write_text(json.dumps(obj, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
+def _gemini_completion(user, max_tokens):
+    last = ""
+    for attempt in range(3):
+        try:
+            r = requests.post(
+                f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent",
+                params={"key": GEMINI_KEY},
+                json={
+                    "systemInstruction": {"parts": [{"text": SYSTEM}]},
+                    "contents": [{"role": "user", "parts": [{"text": user}]}],
+                    "generationConfig": {"temperature": 0.9, "maxOutputTokens": max_tokens,
+                                         "responseMimeType": "application/json"},
+                },
+                timeout=120,
+            )
+        except requests.RequestException as e:
+            last = str(e); time.sleep(2 * (attempt + 1)); continue
+        if r.status_code < 400:
+            return r.json()["candidates"][0]["content"]["parts"][0]["text"]
+        last = f"{r.status_code}: {r.text[:200]}"
+        if r.status_code in (429, 500, 502, 503):
+            time.sleep(4 * (attempt + 1)); continue
+        break
+    raise RuntimeError(f"gemini failed ({last})")
+
+
 def _raw_completion(user, max_tokens):
+    if GEMINI_KEY:
+        try:
+            return _gemini_completion(user, max_tokens)
+        except Exception as e:
+            print(f"gemini unavailable ({e}); trying next provider", file=sys.stderr)
     if ANTHROPIC_KEY:
         import anthropic
         client = anthropic.Anthropic()

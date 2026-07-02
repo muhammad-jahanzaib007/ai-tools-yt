@@ -50,6 +50,8 @@ jobs:
           BLOG_MODEL: ${{ vars.BLOG_MODEL || 'openai/gpt-4o-mini' }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           CLAUDE_MODEL: ${{ vars.CLAUDE_MODEL || 'claude-sonnet-5' }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL || 'gemini-2.5-flash' }}
         run: python automation/generate_brief.py
 
       - name: Save brief
@@ -68,6 +70,9 @@ jobs:
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           VOICE_ID: ${{ vars.VOICE_ID }}
           ELEVEN_MODEL: ${{ vars.ELEVEN_MODEL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          VOICE_PROVIDER: ${{ vars.VOICE_PROVIDER }}
+          GEMINI_VOICE: ${{ vars.GEMINI_VOICE }}
         run: python automation/render_video.py
 
       - name: Upload to YouTube

@@ -49,6 +49,9 @@ jobs:
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           VOICE_ID: ${{ vars.VOICE_ID }}
           ELEVEN_MODEL: ${{ vars.ELEVEN_MODEL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          VOICE_PROVIDER: ${{ vars.VOICE_PROVIDER }}
+          GEMINI_VOICE: ${{ vars.GEMINI_VOICE }}
           BRIEF_SLUG: ${{ inputs.slug }}
         run: python automation/render_video.py
 

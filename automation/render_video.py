@@ -62,8 +62,17 @@ def pick_music(vibe="battle"):
 
 EL_KEY = os.environ.get("ELEVENLABS_API_KEY")
 PX_KEY = os.environ.get("PEXELS_API_KEY")
+GEM_KEY = os.environ.get("GEMINI_API_KEY")
+# Voice provider: ElevenLabs (paid, default when its key exists) or Gemini TTS
+# (free tier). Override with repo var VOICE_PROVIDER=eleven|gemini for A/B runs.
+VOICE_PROVIDER = os.environ.get("VOICE_PROVIDER") or ("eleven" if EL_KEY else "gemini")
 VOICE_ID = os.environ.get("VOICE_ID") or "Fahco4VZzobUeiPqni1S"      # user-picked library voice
 EL_MODEL = os.environ.get("ELEVEN_MODEL") or "eleven_multilingual_v2"
+GEMINI_TTS_MODEL = os.environ.get("GEMINI_TTS_MODEL", "gemini-2.5-flash-preview-tts")
+GEMINI_VOICE = os.environ.get("GEMINI_VOICE", "Puck")
+GEMINI_STYLE = os.environ.get(
+    "GEMINI_STYLE",
+    "Say this like an excited sports commentator calling a match, fast and punchy: ")
 # Expressive delivery: low stability = more variation between sentences, high
 # style = more emotion. The old 0.4/0.25 sounded like reading from a book.
 VOICE_SETTINGS = {
@@ -108,7 +117,62 @@ def pick_brief():
     return json.loads(best.read_text(encoding="utf-8"))
 
 
+def tts_gemini(text, dest):
+    """Gemini TTS (free tier): returns 24kHz PCM, converted to mp3 via ffmpeg."""
+    last = ""
+    for attempt in range(3):
+        try:
+            r = requests.post(
+                f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_TTS_MODEL}:generateContent",
+                params={"key": GEM_KEY},
+                json={
+                    "contents": [{"parts": [{"text": GEMINI_STYLE + text}]}],
+                    "generationConfig": {
+                        "responseModalities": ["AUDIO"],
+                        "speechConfig": {"voiceConfig": {
+                            "prebuiltVoiceConfig": {"voiceName": GEMINI_VOICE}}},
+                    },
+                },
+                timeout=180,
+            )
+        except requests.RequestException as e:
+            last = str(e); import time; time.sleep(3 * (attempt + 1)); continue
+        if r.status_code < 400:
+            part = r.json()["candidates"][0]["content"]["parts"][0]["inlineData"]
+            raw = dest.with_suffix(".pcm")
+            raw.write_bytes(base64.b64decode(part["data"]))
+            run(["ffmpeg", "-y", "-f", "s16le", "-ar", "24000", "-ac", "1",
+                 "-i", str(raw), "-b:a", "128k", str(dest)])
+            raw.unlink(missing_ok=True)
+            return
+        last = f"{r.status_code}: {r.text[:200]}"
+        if r.status_code in (429, 500, 502, 503):
+            import time; time.sleep(5 * (attempt + 1)); continue
+        break
+    raise RuntimeError(f"gemini tts failed ({last})")
+
+
+def _whisper_words(path):
+    """Word timings via forced transcription: Gemini TTS has no timestamp API,
+    so the karaoke captions align to what Whisper hears."""
+    global _WHISPER
+    from faster_whisper import WhisperModel
+    if _WHISPER is None:
+        _WHISPER = WhisperModel("tiny.en", device="cpu", compute_type="int8")
+    segs, _ = _WHISPER.transcribe(str(path), language="en", beam_size=1,
+                                  word_timestamps=True)
+    words = []
+    for s in segs:
+        for w in (s.words or []):
+            token = w.word.strip()
+            if token:
+                words.append((token, w.start, w.end))
+    return words
+
+
 def tts(text, dest):
+    if VOICE_PROVIDER == "gemini":
+        return tts_gemini(text, dest)
     r = requests.post(
         f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}",
         params={"output_format": "mp3_44100_128"},
@@ -123,6 +187,12 @@ def tts(text, dest):
 
 def tts_timed(text, dest):
     """TTS with word timings. Returns [(word, start_s, end_s)] or raises if unavailable."""
+    if VOICE_PROVIDER == "gemini":
+        tts_gemini(text, dest)
+        words = _whisper_words(dest)
+        if not words:
+            raise RuntimeError("no word timings recoverable from gemini audio")
+        return words
     r = requests.post(
         f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}/with-timestamps",
         params={"output_format": "mp3_44100_128"},
@@ -534,8 +604,13 @@ def render_battle(brief):
 
 
 def main():
-    if not EL_KEY or not PX_KEY:
-        sys.exit("ELEVENLABS_API_KEY and PEXELS_API_KEY must be set")
+    if VOICE_PROVIDER == "gemini" and not GEM_KEY:
+        sys.exit("VOICE_PROVIDER=gemini needs GEMINI_API_KEY")
+    if VOICE_PROVIDER != "gemini" and not EL_KEY:
+        sys.exit("ELEVENLABS_API_KEY must be set (or set GEMINI_API_KEY for the free voice)")
+    if not PX_KEY:
+        sys.exit("PEXELS_API_KEY must be set")
+    print(f"voice provider: {VOICE_PROVIDER}")
     if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
         sys.exit("ffmpeg/ffprobe not found on PATH")
 

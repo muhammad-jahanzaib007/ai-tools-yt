@@ -35,6 +35,8 @@ jobs:
           # Optional: add an ANTHROPIC_API_KEY secret to use Claude instead of free GitHub Models.
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           CLAUDE_MODEL: ${{ vars.CLAUDE_MODEL || 'claude-sonnet-5' }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL || 'gemini-2.5-flash' }}
         run: python automation/generate_brief.py
 
       - name: Upload brief as artifact
