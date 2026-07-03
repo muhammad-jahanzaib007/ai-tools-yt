@@ -160,14 +160,13 @@ def gen_openai(prompt, dest, retries=3):
     global LAST_ERR
     is_dalle = OPENAI_IMAGE_MODEL.startswith("dall-e")
     body = {"model": OPENAI_IMAGE_MODEL, "prompt": prompt, "size": "1024x1024", "n": 1}
-    if is_dalle:
-        # dall-e-3 needs NO org verification (gpt-image-1 does). It defaults to a
-        # URL response, so ask for b64 explicitly, and its quality vocab is
-        # standard|hd (map our high -> hd, else standard).
-        body["response_format"] = "b64_json"
-        body["quality"] = "hd" if OPENAI_IMAGE_QUALITY == "high" else "standard"
-    else:
-        body["quality"] = OPENAI_IMAGE_QUALITY   # gpt-image-1: low|medium|high|auto
+    # NOTE: do NOT send response_format — this endpoint rejects it ("unknown
+    # parameter"). dall-e-3 then returns a URL (data[0].url); gpt-image-1 returns
+    # base64 (data[0].b64_json). We handle whichever comes back below.
+    # dall-e-3 (no org verification needed) uses standard|hd; gpt-image-1 uses
+    # low|medium|high|auto.
+    body["quality"] = ("hd" if OPENAI_IMAGE_QUALITY == "high" else "standard") \
+        if is_dalle else OPENAI_IMAGE_QUALITY
     last = ""
     for attempt in range(retries):
         try:
@@ -180,11 +179,21 @@ def gen_openai(prompt, dest, retries=3):
             last = str(e); time.sleep(4 * (attempt + 1)); continue
         if r.status_code < 400:
             data = r.json().get("data", [])
-            b64 = data[0].get("b64_json") if data else None
-            if b64:
-                dest.write_bytes(base64.b64decode(b64))
+            item = data[0] if data else {}
+            if item.get("b64_json"):
+                dest.write_bytes(base64.b64decode(item["b64_json"]))
                 return True
-            last = "no image in response"
+            if item.get("url"):
+                try:
+                    img = requests.get(item["url"], timeout=120)
+                    if img.status_code < 400 and len(img.content) > 10000:
+                        dest.write_bytes(img.content)
+                        return True
+                    last = f"image download {img.status_code} {len(img.content)}b"
+                except requests.RequestException as e:
+                    last = f"image download error: {e}"
+            else:
+                last = "no image in response"
         else:
             last = f"{r.status_code}: {r.text[:200]}"
         time.sleep(5 * (attempt + 1))
