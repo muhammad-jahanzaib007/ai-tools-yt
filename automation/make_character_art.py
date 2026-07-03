@@ -26,10 +26,11 @@ OUT = ROOT / "assets" / "toolverse"
 UNIVERSE = ROOT / "automation" / "universe.json"
 ROSTER = ROOT / "automation" / "roster.json"
 
-MODEL = os.environ.get("POLLINATIONS_MODEL", "flux")
+MODEL = os.environ.get("POLLINATIONS_MODEL") or "flux"
 GEM_KEYS = [k for k in (os.environ.get("GEMINI_API_KEY"),
                         os.environ.get("GEMINI_API_KEY_2")) if k]
-GEMINI_IMAGE_MODEL = os.environ.get("GEMINI_IMAGE_MODEL", "gemini-3.1-flash-image")
+# `or` (not the get-default) so an empty CI env var doesn't override the default
+GEMINI_IMAGE_MODEL = os.environ.get("GEMINI_IMAGE_MODEL") or "gemini-3.1-flash-image"
 # Default to Gemini when a key exists: it follows the distinct per-tool archetype
 # prompts far better than Flux (which regressed every hero to a generic figure).
 PROVIDER = os.environ.get("ART_PROVIDER") or ("gemini" if GEM_KEYS else "pollinations")
