@@ -14,14 +14,19 @@ Design notes
   break a run. Same reason every network call is wrapped and best-effort.
 
 Required env (repo secrets) to actually post:
-  META_PAGE_TOKEN   long-lived Page access token
+  META_PAGE_TOKEN   long-lived Page access token          (IG + FB)
   IG_USER_ID        Instagram Business account id (linked to the Page)
   FB_PAGE_ID        Facebook Page id
+  TIKTOK_CLIENT_KEY, TIKTOK_CLIENT_SECRET, TIKTOK_REFRESH_TOKEN   (TikTok)
 Provided automatically by Actions (for staging the public URL):
   GITHUB_TOKEN, GITHUB_REPOSITORY
 Optional:
-  CROSSPOST_TARGETS   comma list, default "ig,fb"  (e.g. "ig" to skip Facebook)
+  CROSSPOST_TARGETS   comma list, default "ig,fb"  (add "tt" for TikTok)
+  TIKTOK_PRIVACY      "SELF_ONLY" (default, pre-audit) or "PUBLIC_TO_EVERYONE"
   DRY_RUN             "1" = build caption + stage, but do not publish
+
+TikTok note: an unaudited app can only post SELF_ONLY (private). Flip
+TIKTOK_PRIVACY to PUBLIC_TO_EVERYONE only after the app passes TikTok audit.
 """
 
 import os
@@ -40,6 +45,10 @@ GRAPH = "https://graph.facebook.com/v21.0"
 TOKEN = os.environ.get("META_PAGE_TOKEN")
 IG_USER_ID = os.environ.get("IG_USER_ID")
 FB_PAGE_ID = os.environ.get("FB_PAGE_ID")
+TT_KEY = os.environ.get("TIKTOK_CLIENT_KEY")
+TT_SECRET = os.environ.get("TIKTOK_CLIENT_SECRET")
+TT_REFRESH = os.environ.get("TIKTOK_REFRESH_TOKEN")
+TT_PRIVACY = os.environ.get("TIKTOK_PRIVACY", "SELF_ONLY")
 GH_TOKEN = os.environ.get("GITHUB_TOKEN")
 GH_REPO = os.environ.get("GITHUB_REPOSITORY")            # "owner/name"
 TARGETS = [t.strip() for t in os.environ.get("CROSSPOST_TARGETS", "ig,fb").split(",") if t.strip()]
@@ -160,9 +169,56 @@ def post_facebook(video_url, caption):
     return vid
 
 
+# --- TikTok (Content Posting API, Direct Post via file upload) ----------------
+
+def _tiktok_access_token():
+    r = requests.post("https://open.tiktokapis.com/v2/oauth/token/", data={
+        "client_key": TT_KEY, "client_secret": TT_SECRET,
+        "grant_type": "refresh_token", "refresh_token": TT_REFRESH})
+    r.raise_for_status()
+    return r.json()["access_token"]
+
+
+def post_tiktok(video: Path, caption):
+    """Direct-post the local mp4 to TikTok. FILE_UPLOAD (not PULL_FROM_URL) so we
+    don't need TikTok domain verification. Pre-audit this only lands as SELF_ONLY."""
+    at = _tiktok_access_token()
+    h = {"Authorization": f"Bearer {at}", "Content-Type": "application/json"}
+    size = video.stat().st_size
+    # single-chunk upload (Shorts are small); TikTok caps a chunk at 64MB
+    init = requests.post(
+        "https://open.tiktokapis.com/v2/post/publish/video/init/", headers=h,
+        json={"post_info": {"title": caption[:2200], "privacy_level": TT_PRIVACY,
+                            "disable_comment": False, "disable_duet": False, "disable_stitch": False},
+              "source_info": {"source": "FILE_UPLOAD", "video_size": size,
+                              "chunk_size": size, "total_chunk_count": 1}})
+    init.raise_for_status()
+    d = init.json()["data"]
+    upload_url, publish_id = d["upload_url"], d["publish_id"]
+    with open(video, "rb") as f:
+        requests.put(upload_url, data=f.read(), headers={
+            "Content-Type": "video/mp4",
+            "Content-Range": f"bytes 0-{size-1}/{size}",
+            "Content-Length": str(size)}).raise_for_status()
+    # poll publish status
+    for _ in range(30):
+        time.sleep(10)
+        s = requests.post("https://open.tiktokapis.com/v2/post/publish/status/fetch/",
+                          headers=h, json={"publish_id": publish_id}).json()
+        st = s.get("data", {}).get("status")
+        if st in ("PUBLISH_COMPLETE", "SEND_TO_USER_INBOX"):
+            return publish_id
+        if st == "FAILED":
+            raise RuntimeError(f"TikTok publish failed: {s}")
+    raise RuntimeError("TikTok publish did not finish in time")
+
+
 def main():
-    if not (TOKEN and (IG_USER_ID or FB_PAGE_ID)):
-        log("Meta creds absent (META_PAGE_TOKEN + IG_USER_ID/FB_PAGE_ID) - skipping cross-post.")
+    do_ig = "ig" in TARGETS and TOKEN and IG_USER_ID
+    do_fb = "fb" in TARGETS and TOKEN and FB_PAGE_ID
+    do_tt = "tt" in TARGETS and TT_KEY and TT_SECRET and TT_REFRESH
+    if not (do_ig or do_fb or do_tt):
+        log("no platform creds present for enabled targets - skipping cross-post.")
         return
     video = newest_video()
     if not video:
@@ -174,27 +230,35 @@ def main():
     log(f"video={video.name}")
     log(f"caption={caption!r}")
 
-    try:
-        public_url = stage_public_url(video)
-        log(f"staged public url: {public_url}")
-    except Exception as e:
-        log(f"staging failed, cannot cross-post: {e}")
-        return
+    # IG needs a public URL; FB reuses it. TikTok uploads the local file directly.
+    public_url = None
+    if do_ig or do_fb:
+        try:
+            public_url = stage_public_url(video)
+            log(f"staged public url: {public_url}")
+        except Exception as e:
+            log(f"staging failed, IG/FB disabled this run: {e}")
+            do_ig = do_fb = False
 
     if DRY_RUN:
         log("DRY_RUN=1 - staged only, not publishing.")
         return
 
-    if "ig" in TARGETS and IG_USER_ID:
+    if do_ig:
         try:
             log("instagram reel id:", post_instagram(public_url, caption))
         except Exception as e:
             log(f"instagram post failed: {e}")
-    if "fb" in TARGETS and FB_PAGE_ID:
+    if do_fb:
         try:
             log("facebook reel id:", post_facebook(public_url, caption))
         except Exception as e:
             log(f"facebook post failed: {e}")
+    if do_tt:
+        try:
+            log("tiktok publish id:", post_tiktok(video, caption))
+        except Exception as e:
+            log(f"tiktok post failed: {e}")
 
 
 if __name__ == "__main__":
