@@ -204,6 +204,11 @@ def post_tiktok(video: Path, caption):
     at = _tiktok_access_token()
     h = {"Authorization": f"Bearer {at}", "Content-Type": "application/json"}
     size = video.stat().st_size
+    # TikTok requires querying creator posting eligibility before init; it also
+    # surfaces the clearest permission errors, so a 403 here tells us the reason.
+    ci = requests.post("https://open.tiktokapis.com/v2/post/publish/creator_info/query/", headers=h)
+    if not ci.ok:
+        raise RuntimeError(f"creator_info {ci.status_code}: {ci.text[:300]}")
     # single-chunk upload (Shorts are small); TikTok caps a chunk at 64MB
     init = requests.post(
         "https://open.tiktokapis.com/v2/post/publish/video/init/", headers=h,
@@ -211,7 +216,8 @@ def post_tiktok(video: Path, caption):
                             "disable_comment": False, "disable_duet": False, "disable_stitch": False},
               "source_info": {"source": "FILE_UPLOAD", "video_size": size,
                               "chunk_size": size, "total_chunk_count": 1}})
-    init.raise_for_status()
+    if not init.ok:
+        raise RuntimeError(f"init {init.status_code}: {init.text[:300]}")
     d = init.json()["data"]
     upload_url, publish_id = d["upload_url"], d["publish_id"]
     with open(video, "rb") as f:
