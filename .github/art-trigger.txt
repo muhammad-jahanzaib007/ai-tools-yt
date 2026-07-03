@@ -1,1 +1,1 @@
-smoke test 1 hero avatar via OpenAI dall-e-3 hd (ART_LIMIT=1, heroes only) 2026-07-03 #6
+﻿smoke test 1 hero via dall-e-3 hd, response_format fix + attempt-cap 2026-07-03 #7
