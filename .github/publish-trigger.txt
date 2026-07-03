@@ -1,1 +1,1 @@
-﻿publish (hook+outro) @ 2026-07-01T00:05:47.3498571+01:00
+﻿manual full-pipeline test 2026-07-03T01:19:25.7541086+01:00

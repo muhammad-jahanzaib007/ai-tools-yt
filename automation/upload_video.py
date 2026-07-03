@@ -89,7 +89,14 @@ def main():
     while resp is None:
         status, resp = req.next_chunk()
     vid = resp["id"]
-    print(f"Uploaded: https://youtu.be/{vid}")
+    url = f"https://youtu.be/{vid}"
+    print(f"Uploaded: {url}")
+    # Private repo: record the URL so it can be read back with git alone.
+    try:
+        (ROOT / ".github" / "last-upload.txt").write_text(
+            f"{video.stem} {PRIVACY} {url}\n", encoding="utf-8")
+    except Exception:
+        pass
 
     thumb = OUT / f"{slug}.jpg"
     if thumb.exists():

@@ -46,14 +46,11 @@ jobs:
       - run: pip install --upgrade requests anthropic google-api-python-client google-auth google-auth-httplib2 librosa soundfile faster-whisper pillow
 
       # Slot decides the format: midday = tool battle, evening = Toolverse comic.
+      # TEMP: forced to comic for a manual end-to-end test run. Revert to slot after.
       - name: Pick format by slot
         id: fmt
         run: |
-          if [ "$(date -u +%H)" -lt 16 ]; then
-            echo "format=battle" >> "$GITHUB_OUTPUT"
-          else
-            echo "format=comic" >> "$GITHUB_OUTPUT"
-          fi
+          echo "format=comic" >> "$GITHUB_OUTPUT"
 
       - name: Generate brief
         env:
@@ -106,5 +103,5 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git pull --rebase --quiet || true
-          git add .github/last-audio-qa.txt 2>/dev/null || true
+          git add .github/last-audio-qa.txt .github/last-upload.txt 2>/dev/null || true
           git commit -m "audio qa" --quiet && git push --quiet || echo "nothing to record"
