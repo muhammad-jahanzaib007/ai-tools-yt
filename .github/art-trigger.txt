@@ -1,1 +1,1 @@
-﻿BATCH all 46 heroes, no-name 3D animated, gpt-image-1-mini 2026-07-03 #12
+﻿transparent-bg test: regen 1 hero (canva idle) via gpt-image-1-mini background=transparent 2026-07-04 #13

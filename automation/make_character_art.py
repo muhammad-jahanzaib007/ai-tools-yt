@@ -65,8 +65,10 @@ HERO_BASE = (
     "proportions, vibrant full colour (NOT a drawing, NOT a comic ink sketch, NOT flat 2D, "
     "NOT greyscale). Single full-body character, highly detailed, centred composition with a "
     "clear margin of empty space around the character so the ENTIRE figure and any banner are "
-    "fully inside the frame and nothing is cropped or cut off at the edges. Plain solid white "
-    "background, no watermark, no signature. Do NOT reproduce any real company logo; any emblem "
+    "fully inside the frame and nothing is cropped or cut off at the edges. NO background at all "
+    "— the character is fully isolated/cut out on a transparent background, with no scenery, no "
+    "floor, no backdrop, no glow cloud behind them. No watermark, no signature. Do NOT reproduce "
+    "any real company logo; any emblem "
     "must be an original invented symbol. No text, no words, no lettering, no captions, "
     "no name banner anywhere in the image."
 )
@@ -173,6 +175,11 @@ def gen_openai(prompt, dest, retries=3):
     # low|medium|high|auto.
     body["quality"] = ("hd" if OPENAI_IMAGE_QUALITY == "high" else "standard") \
         if is_dalle else OPENAI_IMAGE_QUALITY
+    if not is_dalle:
+        # gpt-image-1 can render a real transparent background — far cleaner than
+        # keying a beige/gradient backdrop afterwards (which left a cream halo).
+        body["background"] = "transparent"
+        body["output_format"] = "png"
     last = ""
     for attempt in range(retries):
         try:

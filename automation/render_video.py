@@ -591,6 +591,12 @@ def _key_white(src, dest):
     from PIL import Image, ImageDraw
     im = Image.open(src).convert("RGBA")
     w, h = im.size
+    # If the art already has a real transparent background (gpt-image-1 renders
+    # one directly), keep it as-is — flooding would only risk damage.
+    corners = [im.getpixel(p)[3] for p in ((0, 0), (w-1, 0), (0, h-1), (w-1, h-1))]
+    if sum(c < 16 for c in corners) >= 3:
+        im.save(dest)
+        return
     rgb = im.convert("RGB")
     SENT = (255, 0, 255)                     # sentinel unlikely to occur in art
     seeds = [(0, 0), (w-1, 0), (0, h-1), (w-1, h-1),
