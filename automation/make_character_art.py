@@ -59,10 +59,13 @@ BASE = (
 # gpt-image-1 renders short text + simple symbols reliably (Flux could not,
 # which is why emblems used to be vector overlays only).
 HERO_BASE = (
-    "Bold comic book illustration, single full-body character, thick black ink outlines, "
-    "cel shading, halftone accents, highly detailed, centered composition, plain solid white "
-    "background, no watermark, no signature. Do NOT reproduce any real company logo; "
-    "any emblem must be an original invented symbol."
+    "Vibrant FULL-COLOUR comic book illustration, richly saturated colours, dynamic cel "
+    "shading, bold coloured comic art (NOT black and white, NOT greyscale, NOT a monochrome "
+    "ink sketch). Single full-body character, thick clean ink outlines, highly detailed, "
+    "centred composition with a clear margin of empty space around the character so the ENTIRE "
+    "figure and any banner are fully inside the frame and nothing is cropped or cut off at the "
+    "edges. Plain solid white background, no watermark, no signature. Do NOT reproduce any real "
+    "company logo; any emblem must be an original invented symbol."
 )
 # The distinct look comes from each tool's ARCHETYPE (passed in per hero), not a
 # single fixed silhouette. Keep only the shared "original + bright + hopeful"
@@ -231,12 +234,14 @@ def main():
         # all look alike; fall back to a generic line for any tool without one.
         archetype = h.get("archetype") or "an original futuristic superhero"
         base = (f"{HERO_STYLE} The hero is called {h['alias']}, depicted as {archetype}. "
-                f"Everything themed around a {col} colour scheme — costume, energy and accents "
-                f"all in {col} tones so the character clearly belongs to this theme. "
-                f"On the chest, a single original iconic emblem symbolising their power "
-                f"({power}), drawn as a clean {col} glyph (an invented symbol, NOT a real logo). "
-                f"Directly above the hero's head, a bold clean comic-book banner clearly "
-                f"displaying the text \"{h['tool']}\" spelled exactly, large and legible. "
+                f"STRONG {col} colour scheme: the costume is predominantly bright {col}, with "
+                f"{col} energy and {col} accents throughout, vividly coloured (do NOT render "
+                f"greyscale). On the chest, a single original iconic emblem symbolising their "
+                f"power ({power}), drawn as a clean {col} glyph (an invented symbol, NOT a real "
+                f"logo). Above the hero's head but fully inside the frame (with clear space "
+                f"above it, not touching the top edge), a bold clean comic-book banner clearly "
+                f"displaying the text \"{h['tool']}\" spelled exactly, large and fully legible, "
+                f"the whole banner and all its letters completely visible and uncropped. "
                 f"Their power: {power}.")
         jobs.append((OUT / f"hero-{s}-idle.png", base + " Confident, calm, hopeful heroic stance, facing the viewer, standing tall."))
         jobs.append((OUT / f"hero-{s}-action.png", base + " Dynamic mid-action pose, unleashing their power with a bright energy burst."))

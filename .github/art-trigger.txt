@@ -1,1 +1,1 @@
-﻿smoke test 1 hero via gpt-image-1-mini 2026-07-03 #8
+﻿smoke test 1 hero gpt-image-1-mini, colour+framing prompt fix 2026-07-03 #9
