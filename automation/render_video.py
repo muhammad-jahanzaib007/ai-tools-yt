@@ -107,12 +107,13 @@ def select_gemini_voice(slug):
         print(f"gemini voice: {_gem_voice}")
 # Expressive delivery: low stability = more variation between sentences, high
 # style = more emotion. The old 0.4/0.25 sounded like reading from a book.
+VOICE_SPEED = float(os.environ.get("VOICE_SPEED", "1.15"))   # slight speed-up: default read felt slow
 VOICE_SETTINGS = {
     "stability": float(os.environ.get("VOICE_STABILITY", "0.35")),
     "similarity_boost": float(os.environ.get("VOICE_SIMILARITY", "0.75")),
     "style": float(os.environ.get("VOICE_STYLE", "0.55")),
     "use_speaker_boost": True,
-    "speed": float(os.environ.get("VOICE_SPEED", "1.09")),
+    "speed": VOICE_SPEED,
 }
 W, H, FPS = 1080, 1920, 30
 
@@ -180,8 +181,12 @@ def tts_gemini(text, dest, voice=None, style=None):
             part = r.json()["candidates"][0]["content"]["parts"][0]["inlineData"]
             raw = dest.with_suffix(".pcm")
             raw.write_bytes(base64.b64decode(part["data"]))
+            # Gemini TTS has no speed control, so speed up here with atempo
+            # (pitch-preserving). Done before Whisper alignment so the karaoke
+            # captions still match the sped-up audio.
             run(["ffmpeg", "-y", "-f", "s16le", "-ar", "24000", "-ac", "1",
-                 "-i", str(raw), "-b:a", "128k", str(dest)])
+                 "-i", str(raw), "-filter:a", f"atempo={VOICE_SPEED}",
+                 "-b:a", "128k", str(dest)])
             raw.unlink(missing_ok=True)
             return
         last = f"{r.status_code}: {r.text[:200]}"

@@ -1,6 +1,6 @@
 {
-  "_how": "Generated from spectral analysis (BPM, RMS, spectral flux 'punch') of each track. pick_music() uses vibe='battle' tracks for battle videos. Re-run analysis when tracks change.",
-  "_generated": "2026-07-02",
+  "_how": "Generated from spectral analysis (BPM, RMS, spectral flux 'punch'). pick_music(vibe='battle') uses the energetic tracks. Only claim-safe YouTube Audio Library tracks are listed. NCS, watermarked, and preview files in the folder are deliberately excluded.",
+  "_generated": "2026-07-03",
   "tracks": [
     {"file": "Event Horizon - The Grey Room _ Density & Time.mp3", "bpm": 136, "punch": 0.275, "vibe": "battle"},
     {"file": "Ancient Civilisations - Alex Jones _ Xander Jones.mp3", "bpm": 157, "punch": 0.273, "vibe": "battle"},
