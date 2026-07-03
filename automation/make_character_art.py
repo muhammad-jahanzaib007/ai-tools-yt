@@ -243,8 +243,9 @@ def main():
         if dest.exists() and dest.stat().st_size > 10000:
             skipped += 1
             continue
-        if ART_LIMIT and done >= ART_LIMIT:
-            break                           # smoke-test cap reached; stop spending
+        if ART_LIMIT and (done + failed) >= ART_LIMIT:
+            break                           # smoke-test cap: count attempts, not just
+                                            # successes, so failures can't grind the batch
         print(f"generating {dest.name} ...")
         if gen_image(prompt, dest):
             done += 1
