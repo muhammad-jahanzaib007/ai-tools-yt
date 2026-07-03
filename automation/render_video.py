@@ -579,17 +579,30 @@ def _art_slug(name):
 
 
 def _key_white(src, dest):
-    """Copy a character PNG with its near-white background made transparent,
-    so it composites cleanly onto the comic scenes."""
-    from PIL import Image
+    """Copy a character PNG with its background made transparent so it
+    composites cleanly onto the comic scenes.
+
+    Uses an edge flood-fill rather than a brightness threshold: gpt-image-1
+    renders a warm off-white/beige backdrop (~217,206,191), well under any
+    "near-white" cutoff, so a threshold key removed nothing. Flood-filling from
+    the edges strips the connected background at any colour while leaving the
+    character (and same-coloured interior pixels not touching an edge) intact.
+    """
+    from PIL import Image, ImageDraw
     im = Image.open(src).convert("RGBA")
-    px = im.load()
     w, h = im.size
+    rgb = im.convert("RGB")
+    SENT = (255, 0, 255)                     # sentinel unlikely to occur in art
+    seeds = [(0, 0), (w-1, 0), (0, h-1), (w-1, h-1),
+             (w//2, 0), (w//2, h-1), (0, h//2), (w-1, h//2)]
+    for s in seeds:
+        ImageDraw.floodfill(rgb, s, SENT, thresh=42)
+    src_px, out_px = rgb.load(), im.load()
     for y in range(h):
         for x in range(w):
-            r, g, b, a = px[x, y]
-            if r > 238 and g > 238 and b > 238:
-                px[x, y] = (r, g, b, 0)
+            if src_px[x, y] == SENT:
+                r, g, b, a = out_px[x, y]
+                out_px[x, y] = (r, g, b, 0)
     im.save(dest)
 
 
