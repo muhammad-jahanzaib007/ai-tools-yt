@@ -1,1 +1,1 @@
-regenerate hero avatars via Gemini (fixed responseModalities) 2026-07-03 #2
+regenerate hero avatars via Gemini interactions endpoint (gemini-3.1-flash-image) 2026-07-03 #3

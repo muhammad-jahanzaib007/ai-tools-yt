@@ -29,7 +29,7 @@ ROSTER = ROOT / "automation" / "roster.json"
 MODEL = os.environ.get("POLLINATIONS_MODEL", "flux")
 GEM_KEYS = [k for k in (os.environ.get("GEMINI_API_KEY"),
                         os.environ.get("GEMINI_API_KEY_2")) if k]
-GEMINI_IMAGE_MODEL = os.environ.get("GEMINI_IMAGE_MODEL", "gemini-2.5-flash-image")
+GEMINI_IMAGE_MODEL = os.environ.get("GEMINI_IMAGE_MODEL", "gemini-3.1-flash-image")
 # Default to Gemini when a key exists: it follows the distinct per-tool archetype
 # prompts far better than Flux (which regressed every hero to a generic figure).
 PROVIDER = os.environ.get("ART_PROVIDER") or ("gemini" if GEM_KEYS else "pollinations")
@@ -98,37 +98,35 @@ def gen_pollinations(prompt, dest, retries=5):
 
 
 def gen_gemini(prompt, dest, retries=None):
-    """Gemini image model (nano-banana): returns an inline base64 PNG. Rotates
-    across the key pool on quota (429), same pattern as the TTS path."""
-    global _gem_idx
+    """Gemini image model via the /v1beta/interactions endpoint: returns a
+    base64 PNG under steps[].content[] (type=image). Rotates keys on quota."""
+    global _gem_idx, LAST_ERR
     retries = retries if retries is not None else 2 * max(1, len(GEM_KEYS))
     last = ""
     for attempt in range(retries):
         key = GEM_KEYS[_gem_idx % len(GEM_KEYS)]
         try:
             r = requests.post(
-                f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_IMAGE_MODEL}:generateContent",
-                params={"key": key},
-                json={"contents": [{"parts": [{"text": prompt}]}],
-                      # image models only return an image when IMAGE is requested
-                      "generationConfig": {"responseModalities": ["TEXT", "IMAGE"]}},
+                "https://generativelanguage.googleapis.com/v1beta/interactions",
+                headers={"x-goog-api-key": key, "Content-Type": "application/json"},
+                json={"model": GEMINI_IMAGE_MODEL,
+                      "input": [{"type": "text", "text": prompt}],
+                      "response_format": {"type": "image", "aspect_ratio": "1:1"}},
                 timeout=180)
         except requests.RequestException as e:
             last = str(e); time.sleep(3 * (attempt + 1)); continue
         if r.status_code < 400:
-            parts = r.json().get("candidates", [{}])[0].get("content", {}).get("parts", [])
-            for p in parts:
-                data = p.get("inlineData") or p.get("inline_data")
-                if data and data.get("data"):
-                    dest.write_bytes(base64.b64decode(data["data"]))
-                    return True
+            for step in r.json().get("steps", []):
+                for c in step.get("content", []):
+                    if c.get("type") == "image" and c.get("data"):
+                        dest.write_bytes(base64.b64decode(c["data"]))
+                        return True
             last = "no image in response"
         else:
             last = f"{r.status_code}: {r.text[:200]}"
             if r.status_code == 429 and len(GEM_KEYS) > 1:
                 _gem_idx += 1                       # quota hit: next key in pool
         time.sleep(5 * (attempt + 1))
-    global LAST_ERR
     LAST_ERR = last
     print(f"  FAILED {dest.name}: {last}", file=sys.stderr)
     return False
