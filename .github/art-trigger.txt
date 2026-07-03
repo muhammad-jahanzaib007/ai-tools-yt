@@ -1,1 +1,1 @@
-regenerate hero avatars via Gemini interactions (gemini-3.1-flash-image, empty-model fix) 2026-07-03 #5
+smoke test 1 hero avatar via OpenAI dall-e-3 hd (ART_LIMIT=1, heroes only) 2026-07-03 #6
