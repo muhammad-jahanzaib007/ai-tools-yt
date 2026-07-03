@@ -126,5 +126,5 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git pull --rebase --quiet || true
-          git add .github/last-audio-qa.txt .github/last-upload.txt 2>/dev/null || true
+          git add .github/last-audio-qa.txt .github/last-upload.txt .github/last-crosspost.txt 2>/dev/null || true
           git commit -m "audio qa" --quiet && git push --quiet || echo "nothing to record"

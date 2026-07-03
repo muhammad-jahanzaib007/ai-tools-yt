@@ -40,6 +40,7 @@ import requests
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "output"
 BRIEFS = ROOT / "briefs"
+TELEMETRY = ROOT / ".github" / "last-crosspost.txt"
 GRAPH = "https://graph.facebook.com/v21.0"
 
 TOKEN = os.environ.get("META_PAGE_TOKEN")
@@ -57,6 +58,24 @@ DRY_RUN = os.environ.get("DRY_RUN") == "1"
 
 def log(*a):
     print("[crosspost]", *a, file=sys.stderr)
+
+
+def write_telemetry(video, results):
+    """Commit a one-line per-run receipt like the other pipeline stages, so the
+    IG/FB/TikTok outcome is visible from git without digging the Actions log.
+    results = dict platform -> "ok:<id>" | "fail:<reason>" | "skip"."""
+    ts = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    name = video.name if video else "none"
+
+    def clean(v):
+        return " ".join(str(v).split())[:160]
+
+    parts = " ".join(f"{p}={clean(results.get(p, 'skip'))}" for p in ("ig", "fb", "tt"))
+    try:
+        TELEMETRY.parent.mkdir(parents=True, exist_ok=True)
+        TELEMETRY.write_text(f"{ts} {name} {parts}\n", encoding="utf-8")
+    except Exception as e:
+        log(f"telemetry write failed: {e}")
 
 
 def newest_video():
@@ -230,6 +249,8 @@ def main():
     log(f"video={video.name}")
     log(f"caption={caption!r}")
 
+    results = {}
+
     # IG needs a public URL; FB reuses it. TikTok uploads the local file directly.
     public_url = None
     if do_ig or do_fb:
@@ -238,27 +259,45 @@ def main():
             log(f"staged public url: {public_url}")
         except Exception as e:
             log(f"staging failed, IG/FB disabled this run: {e}")
+            reason = f"fail:staging {e}"
+            if do_ig:
+                results["ig"] = reason
+            if do_fb:
+                results["fb"] = reason
             do_ig = do_fb = False
 
     if DRY_RUN:
         log("DRY_RUN=1 - staged only, not publishing.")
+        write_telemetry(video, {p: "dryrun" for p in ("ig", "fb", "tt")
+                                if {"ig": do_ig, "fb": do_fb, "tt": do_tt}[p]})
         return
 
     if do_ig:
         try:
-            log("instagram reel id:", post_instagram(public_url, caption))
+            rid = post_instagram(public_url, caption)
+            log("instagram reel id:", rid)
+            results["ig"] = f"ok:{rid}"
         except Exception as e:
             log(f"instagram post failed: {e}")
+            results["ig"] = f"fail:{e}"
     if do_fb:
         try:
-            log("facebook reel id:", post_facebook(public_url, caption))
+            vid = post_facebook(public_url, caption)
+            log("facebook reel id:", vid)
+            results["fb"] = f"ok:{vid}"
         except Exception as e:
             log(f"facebook post failed: {e}")
+            results["fb"] = f"fail:{e}"
     if do_tt:
         try:
-            log("tiktok publish id:", post_tiktok(video, caption))
+            pid = post_tiktok(video, caption)
+            log("tiktok publish id:", pid)
+            results["tt"] = f"ok:{pid}"
         except Exception as e:
             log(f"tiktok post failed: {e}")
+            results["tt"] = f"fail:{e}"
+
+    write_telemetry(video, results)
 
 
 if __name__ == "__main__":
