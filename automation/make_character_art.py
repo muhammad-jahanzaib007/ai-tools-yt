@@ -29,11 +29,21 @@ ROSTER = ROOT / "automation" / "roster.json"
 MODEL = os.environ.get("POLLINATIONS_MODEL") or "flux"
 GEM_KEYS = [k for k in (os.environ.get("GEMINI_API_KEY"),
                         os.environ.get("GEMINI_API_KEY_2")) if k]
+OPENAI_KEY = os.environ.get("OPENAI_API_KEY")
 # `or` (not the get-default) so an empty CI env var doesn't override the default
 GEMINI_IMAGE_MODEL = os.environ.get("GEMINI_IMAGE_MODEL") or "gemini-3.1-flash-image"
-# Default to Gemini when a key exists: it follows the distinct per-tool archetype
-# prompts far better than Flux (which regressed every hero to a generic figure).
-PROVIDER = os.environ.get("ART_PROVIDER") or ("gemini" if GEM_KEYS else "pollinations")
+OPENAI_IMAGE_MODEL = os.environ.get("OPENAI_IMAGE_MODEL") or "gpt-image-1"
+OPENAI_IMAGE_QUALITY = os.environ.get("OPENAI_IMAGE_QUALITY") or "medium"
+# Cap new generations this run (0 = no cap). Use e.g. ART_LIMIT=1 for a cheap
+# single-image smoke test before committing to the whole batch.
+ART_LIMIT = int(os.environ.get("ART_LIMIT") or "0")
+# Only generate hero avatars (skip villains) when set.
+HEROES_ONLY = (os.environ.get("ART_HEROES_ONLY") or "").lower() in ("1", "true", "yes")
+# Provider preference: OpenAI gpt-image-1 first (best at distinct per-tool
+# characters; Gemini image gen is paywalled behind blocked Google billing, and
+# Flux/Pollinations regressed every hero to a generic caped figure).
+PROVIDER = os.environ.get("ART_PROVIDER") or (
+    "openai" if OPENAI_KEY else "gemini" if GEM_KEYS else "pollinations")
 ARTLOG = ROOT / ".github" / "last-art.txt"
 _gem_idx = 0
 LAST_ERR = ""                                   # last generator error, for the log
@@ -44,10 +54,20 @@ BASE = (
     "cel shading, halftone accents, highly detailed, centered composition, plain solid white "
     "background, no text, no words, no real brand logos, no watermark, no signature."
 )
-# Heroes: the distinct look comes from each tool's ARCHETYPE (passed in per
-# hero), not a single fixed silhouette. Keep only the shared "original + bright
-# + hopeful" framing here so every hero reads different.
-HERO_STYLE = (BASE + " An original comic superhero, bright and hopeful, uplifting heroic mood, "
+# Heroes allow lettering (name banner) + a chest emblem, so they DON'T inherit
+# BASE's "no text" clause — but still forbid copying any real company logo.
+# gpt-image-1 renders short text + simple symbols reliably (Flux could not,
+# which is why emblems used to be vector overlays only).
+HERO_BASE = (
+    "Bold comic book illustration, single full-body character, thick black ink outlines, "
+    "cel shading, halftone accents, highly detailed, centered composition, plain solid white "
+    "background, no watermark, no signature. Do NOT reproduce any real company logo; "
+    "any emblem must be an original invented symbol."
+)
+# The distinct look comes from each tool's ARCHETYPE (passed in per hero), not a
+# single fixed silhouette. Keep only the shared "original + bright + hopeful"
+# framing here so every hero reads different.
+HERO_STYLE = (HERO_BASE + " An original comic superhero, bright and hopeful, uplifting heroic mood, "
     "radiant optimistic lighting. Fully original design, NOT Superman, NOT Batman, no generic "
     "cape-and-trunks default.")
 # Villains: the opposite. Dark, ominous, hopeless.
@@ -133,8 +153,42 @@ def gen_gemini(prompt, dest, retries=None):
     return False
 
 
+def gen_openai(prompt, dest, retries=3):
+    """OpenAI gpt-image-1 via /v1/images/generations: always returns a base64
+    PNG under data[0].b64_json. Follows distinct per-tool prompts far better
+    than Flux, and OpenAI billing sidesteps the blocked Google payment flow."""
+    global LAST_ERR
+    last = ""
+    for attempt in range(retries):
+        try:
+            r = requests.post(
+                "https://api.openai.com/v1/images/generations",
+                headers={"Authorization": f"Bearer {OPENAI_KEY}",
+                         "Content-Type": "application/json"},
+                json={"model": OPENAI_IMAGE_MODEL, "prompt": prompt,
+                      "size": "1024x1024", "quality": OPENAI_IMAGE_QUALITY, "n": 1},
+                timeout=180)
+        except requests.RequestException as e:
+            last = str(e); time.sleep(4 * (attempt + 1)); continue
+        if r.status_code < 400:
+            data = r.json().get("data", [])
+            b64 = data[0].get("b64_json") if data else None
+            if b64:
+                dest.write_bytes(base64.b64decode(b64))
+                return True
+            last = "no image in response"
+        else:
+            last = f"{r.status_code}: {r.text[:200]}"
+        time.sleep(5 * (attempt + 1))
+    LAST_ERR = last
+    print(f"  FAILED {dest.name}: {last}", file=sys.stderr)
+    return False
+
+
 def gen_image(prompt, dest):
-    """Dispatch to the configured provider (Gemini preferred; Flux fallback)."""
+    """Dispatch to the configured provider (OpenAI preferred; Gemini, then Flux)."""
+    if PROVIDER == "openai" and OPENAI_KEY:
+        return gen_openai(prompt, dest)
     if PROVIDER == "gemini" and GEM_KEYS:
         return gen_gemini(prompt, dest)
     return gen_pollinations(prompt, dest)
@@ -160,21 +214,29 @@ def main():
         # all look alike; fall back to a generic line for any tool without one.
         archetype = h.get("archetype") or "an original futuristic superhero"
         base = (f"{HERO_STYLE} The hero is called {h['alias']}, depicted as {archetype}. "
-                f"Primarily a {col} colour scheme. Clean plain chest with no chest logo "
-                f"(an emblem is added separately). Their power: {power}.")
+                f"Everything themed around a {col} colour scheme — costume, energy and accents "
+                f"all in {col} tones so the character clearly belongs to this theme. "
+                f"On the chest, a single original iconic emblem symbolising their power "
+                f"({power}), drawn as a clean {col} glyph (an invented symbol, NOT a real logo). "
+                f"Directly above the hero's head, a bold clean comic-book banner clearly "
+                f"displaying the text \"{h['tool']}\" spelled exactly, large and legible. "
+                f"Their power: {power}.")
         jobs.append((OUT / f"hero-{s}-idle.png", base + " Confident, calm, hopeful heroic stance, facing the viewer, standing tall."))
         jobs.append((OUT / f"hero-{s}-action.png", base + " Dynamic mid-action pose, unleashing their power with a bright energy burst."))
-    for v in uni["villains"]:
-        s = slugify(v["name"])
-        base = (f"{VILLAIN_STYLE} An original comic supervillain called {v['name']}, a monstrous "
-                f"embodiment of this menace: {v['menace']}. Dark, ominous palette with sickly accents.")
-        jobs.append((OUT / f"villain-{s}-menace.png", base + " Towering menacing pose, attacking toward the viewer."))
-        jobs.append((OUT / f"villain-{s}-defeated.png", base + " Defeated: collapsed, crumbling and dissolving away, drained of power."))
+    if not HEROES_ONLY:
+        for v in uni["villains"]:
+            s = slugify(v["name"])
+            base = (f"{VILLAIN_STYLE} An original comic supervillain called {v['name']}, a monstrous "
+                    f"embodiment of this menace: {v['menace']}. Dark, ominous palette with sickly accents.")
+            jobs.append((OUT / f"villain-{s}-menace.png", base + " Towering menacing pose, attacking toward the viewer."))
+            jobs.append((OUT / f"villain-{s}-defeated.png", base + " Defeated: collapsed, crumbling and dissolving away, drained of power."))
     done = skipped = failed = 0
     for dest, prompt in jobs:
         if dest.exists() and dest.stat().st_size > 10000:
             skipped += 1
             continue
+        if ART_LIMIT and done >= ART_LIMIT:
+            break                           # smoke-test cap reached; stop spending
         print(f"generating {dest.name} ...")
         if gen_image(prompt, dest):
             done += 1
@@ -186,8 +248,10 @@ def main():
     ts = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     try:
         ARTLOG.parent.mkdir(parents=True, exist_ok=True)
+        active_model = {"openai": OPENAI_IMAGE_MODEL, "gemini": GEMINI_IMAGE_MODEL,
+                        "pollinations": MODEL}.get(PROVIDER, PROVIDER)
         ARTLOG.write_text(
-            f"{ts} provider={PROVIDER} model={GEMINI_IMAGE_MODEL} "
+            f"{ts} provider={PROVIDER} model={active_model} "
             f"done={done} skipped={skipped} failed={failed} "
             f"last_err={' '.join(LAST_ERR.split())[:240] or 'none'}\n", encoding="utf-8")
     except Exception as e:

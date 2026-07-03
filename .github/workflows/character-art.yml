@@ -30,6 +30,11 @@ jobs:
       - name: Generate missing art
         env:
           ART_PROVIDER: ${{ vars.ART_PROVIDER }}
+          ART_LIMIT: ${{ vars.ART_LIMIT }}
+          ART_HEROES_ONLY: ${{ vars.ART_HEROES_ONLY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_IMAGE_MODEL: ${{ vars.OPENAI_IMAGE_MODEL }}
+          OPENAI_IMAGE_QUALITY: ${{ vars.OPENAI_IMAGE_QUALITY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
           GEMINI_IMAGE_MODEL: ${{ vars.GEMINI_IMAGE_MODEL }}
