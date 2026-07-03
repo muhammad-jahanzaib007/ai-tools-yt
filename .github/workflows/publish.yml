@@ -4,8 +4,8 @@ name: Publish (full pipeline)
 # 2x/day (12:00 + 21:00 UTC = US morning and evening scroll). On demand too.
 on:
   schedule:
-    - cron: "0 12 * * *"
-    - cron: "0 21 * * *"
+    - cron: "13 12 * * *"
+    - cron: "13 21 * * *"
   workflow_dispatch:
   push:
     paths:
