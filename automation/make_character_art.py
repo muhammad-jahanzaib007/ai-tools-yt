@@ -158,6 +158,16 @@ def gen_openai(prompt, dest, retries=3):
     PNG under data[0].b64_json. Follows distinct per-tool prompts far better
     than Flux, and OpenAI billing sidesteps the blocked Google payment flow."""
     global LAST_ERR
+    is_dalle = OPENAI_IMAGE_MODEL.startswith("dall-e")
+    body = {"model": OPENAI_IMAGE_MODEL, "prompt": prompt, "size": "1024x1024", "n": 1}
+    if is_dalle:
+        # dall-e-3 needs NO org verification (gpt-image-1 does). It defaults to a
+        # URL response, so ask for b64 explicitly, and its quality vocab is
+        # standard|hd (map our high -> hd, else standard).
+        body["response_format"] = "b64_json"
+        body["quality"] = "hd" if OPENAI_IMAGE_QUALITY == "high" else "standard"
+    else:
+        body["quality"] = OPENAI_IMAGE_QUALITY   # gpt-image-1: low|medium|high|auto
     last = ""
     for attempt in range(retries):
         try:
@@ -165,9 +175,7 @@ def gen_openai(prompt, dest, retries=3):
                 "https://api.openai.com/v1/images/generations",
                 headers={"Authorization": f"Bearer {OPENAI_KEY}",
                          "Content-Type": "application/json"},
-                json={"model": OPENAI_IMAGE_MODEL, "prompt": prompt,
-                      "size": "1024x1024", "quality": OPENAI_IMAGE_QUALITY, "n": 1},
-                timeout=180)
+                json=body, timeout=180)
         except requests.RequestException as e:
             last = str(e); time.sleep(4 * (attempt + 1)); continue
         if r.status_code < 400:
