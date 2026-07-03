@@ -732,7 +732,10 @@ def _render_scenes(brief, comp, props, label, voices=None):
     # loudnorm to YouTube's -14 LUFS: roster voices vary in level and the
     # voice+music sum was measured clipping (peak 1.11) without it
     filters.append("".join(alabels) + f"amix=inputs={len(alabels)}:duration=longest:normalize=0[mix]")
-    filters.append("[mix]loudnorm=I=-14:TP=-1.5:LRA=11,alimiter=limit=0.95[a]")
+    # alimiter defaults level=true, which re-normalizes back toward 0 dBFS and
+    # undoes loudnorm's -1.5 dBTP headroom -> AAC+resample overshoot then clips.
+    # level=disabled keeps loudnorm's level; limit=0.89 leaves room for ISP.
+    filters.append("[mix]loudnorm=I=-14:TP=-1.5:LRA=11,alimiter=level=disabled:limit=0.89[a]")
     filters.append("[0:v]subtitles=subs.ass[v]")
     final = OUT / f"{slug}.mp4"
     run(["ffmpeg", "-y"] + inputs + [
@@ -841,7 +844,7 @@ def main():
              "-filter_complex",
              "[0:v]subtitles=subs.ass[v];[1:a]volume=0.06[m];"
              "[0:a][m]amix=inputs=2:duration=first:normalize=0[mix];"
-             "[mix]loudnorm=I=-14:TP=-1.5:LRA=11,alimiter=limit=0.95[a]",
+             "[mix]loudnorm=I=-14:TP=-1.5:LRA=11,alimiter=level=disabled:limit=0.89[a]",
              "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-preset", "medium", "-crf", "21",
              "-c:a", "aac", "-ar", "44100", "-shortest", str(final.resolve())], cwd=str(WORK))
     else:
