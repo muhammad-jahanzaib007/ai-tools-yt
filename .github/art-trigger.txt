@@ -1,1 +1,1 @@
-﻿transparent-bg test: regen 1 hero (canva idle) via gpt-image-1-mini background=transparent 2026-07-04 #13
+﻿BATCH regen all 46 heroes with TRANSPARENT bg, gpt-image-1-mini 2026-07-04 #14
