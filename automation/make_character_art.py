@@ -59,19 +59,21 @@ BASE = (
 # gpt-image-1 renders short text + simple symbols reliably (Flux could not,
 # which is why emblems used to be vector overlays only).
 HERO_BASE = (
-    "Vibrant FULL-COLOUR comic book illustration, richly saturated colours, dynamic cel "
-    "shading, bold coloured comic art (NOT black and white, NOT greyscale, NOT a monochrome "
-    "ink sketch). Single full-body character, thick clean ink outlines, highly detailed, "
-    "centred composition with a clear margin of empty space around the character so the ENTIRE "
-    "figure and any banner are fully inside the frame and nothing is cropped or cut off at the "
-    "edges. Plain solid white background, no watermark, no signature. Do NOT reproduce any real "
-    "company logo; any emblem must be an original invented symbol."
+    "High-quality 3D ANIMATED movie character in the style of a Pixar / DreamWorks / Disney "
+    "CGI animated film — polished 3D render, smooth surfaces, soft cinematic studio lighting, "
+    "subtle subsurface scattering, gentle ambient occlusion, expressive slightly stylised "
+    "proportions, vibrant full colour (NOT a drawing, NOT a comic ink sketch, NOT flat 2D, "
+    "NOT greyscale). Single full-body character, highly detailed, centred composition with a "
+    "clear margin of empty space around the character so the ENTIRE figure and any banner are "
+    "fully inside the frame and nothing is cropped or cut off at the edges. Plain solid white "
+    "background, no watermark, no signature. Do NOT reproduce any real company logo; any emblem "
+    "must be an original invented symbol."
 )
 # The distinct look comes from each tool's ARCHETYPE (passed in per hero), not a
 # single fixed silhouette. Keep only the shared "original + bright + hopeful"
 # framing here so every hero reads different.
-HERO_STYLE = (HERO_BASE + " An original comic superhero, bright and hopeful, uplifting heroic mood, "
-    "radiant optimistic lighting. Fully original design, NOT Superman, NOT Batman, no generic "
+HERO_STYLE = (HERO_BASE + " An original animated superhero, bright and hopeful, uplifting heroic "
+    "mood, warm optimistic lighting. Fully original design, NOT Superman, NOT Batman, no generic "
     "cape-and-trunks default.")
 # Villains: the opposite. Dark, ominous, hopeless.
 VILLAIN_STYLE = (BASE + " Dark ominous menacing mood, grim shadows, cold sinister lighting, "
@@ -239,7 +241,7 @@ def main():
                 f"greyscale). On the chest, a single original iconic emblem symbolising their "
                 f"power ({power}), drawn as a clean {col} glyph (an invented symbol, NOT a real "
                 f"logo). Above the hero's head but fully inside the frame (with clear space "
-                f"above it, not touching the top edge), a bold clean comic-book banner clearly "
+                f"above it, not touching the top edge), a bold clean 3D banner clearly "
                 f"displaying the text \"{h['tool']}\" spelled exactly, large and fully legible, "
                 f"the whole banner and all its letters completely visible and uncropped. "
                 f"Their power: {power}.")
