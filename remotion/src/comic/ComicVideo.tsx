@@ -14,7 +14,6 @@ import { slide } from "@remotion/transitions/slide";
 import { COLORS, TRANSITION_FRAMES } from "../battle/types";
 import { fontFamily } from "../battle/font";
 import { Confetti, Grain, SparkBurst, Vignette, glass } from "../battle/fx";
-import { Emblem } from "./emblems";
 
 export type ComicHero = {
   tool: string;
@@ -375,10 +374,8 @@ const HeroScene: React.FC<{ hero: ComicHero; index: number }> = ({ hero, index }
               transform: fromLeft ? "none" : "scaleX(-1)",
             }}
           />
-          {/* emblem crest over the chest */}
-          <div style={{ position: "absolute", top: "27%", left: "50%", translate: "-50% 0", opacity: arrive }}>
-            <Emblem slug={hero.slug} color={hero.color} size={150} />
-          </div>
+          {/* Emblem is now baked into the hero avatar art (gpt-image-1), so no
+              vector-emblem overlay here — it would double up on the chest. */}
         </div>
       </AbsoluteFill>
 

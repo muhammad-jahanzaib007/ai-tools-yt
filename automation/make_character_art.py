@@ -67,7 +67,8 @@ HERO_BASE = (
     "clear margin of empty space around the character so the ENTIRE figure and any banner are "
     "fully inside the frame and nothing is cropped or cut off at the edges. Plain solid white "
     "background, no watermark, no signature. Do NOT reproduce any real company logo; any emblem "
-    "must be an original invented symbol."
+    "must be an original invented symbol. No text, no words, no lettering, no captions, "
+    "no name banner anywhere in the image."
 )
 # The distinct look comes from each tool's ARCHETYPE (passed in per hero), not a
 # single fixed silhouette. Keep only the shared "original + bright + hopeful"
@@ -240,11 +241,7 @@ def main():
                 f"{col} energy and {col} accents throughout, vividly coloured (do NOT render "
                 f"greyscale). On the chest, a single original iconic emblem symbolising their "
                 f"power ({power}), drawn as a clean {col} glyph (an invented symbol, NOT a real "
-                f"logo). Above the hero's head but fully inside the frame (with clear space "
-                f"above it, not touching the top edge), a bold clean 3D banner clearly "
-                f"displaying the text \"{h['tool']}\" spelled exactly, large and fully legible, "
-                f"the whole banner and all its letters completely visible and uncropped. "
-                f"Their power: {power}.")
+                f"logo). Their power: {power}.")
         jobs.append((OUT / f"hero-{s}-idle.png", base + " Confident, calm, hopeful heroic stance, facing the viewer, standing tall."))
         jobs.append((OUT / f"hero-{s}-action.png", base + " Dynamic mid-action pose, unleashing their power with a bright energy burst."))
     if not HEROES_ONLY:
