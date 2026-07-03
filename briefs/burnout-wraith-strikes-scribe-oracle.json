@@ -1,0 +1,67 @@
+{
+  "slug": "burnout-wraith-strikes-scribe-oracle",
+  "title": "Burnout Wraith strikes. Scribe and The Oracle answer the call.",
+  "hook": "The blank page looms. Burnout Wraith attacks. Can our heroes save the workflow?",
+  "comic": {
+    "threat": "Burnout Wraith",
+    "heroes": [
+      {
+        "tool": "Writesonic",
+        "alias": "Scribe",
+        "color": "#4F8EF7",
+        "power": "Floods empty pages with lightspeed, SEO-charged copy."
+      },
+      {
+        "tool": "ChatGPT",
+        "alias": "The Oracle",
+        "color": "#74AA9C",
+        "power": "Conjures words, plans everything, banishes writer's block."
+      }
+    ],
+    "resolution": "The blank page is conquered. Scribe and The Oracle combine their powers, generating content and ideas swiftly."
+  },
+  "narration": [
+    {
+      "text": "A creator stares at the blank page. The deadline looms. Burnout Wraith closes in, feeding on endless manual tasks.",
+      "broll": "blank page stress"
+    },
+    {
+      "text": "I am Scribe. Writesonic unleashes its power. Watch as I flood these empty pages with lightspeed, SEO-charged copy.",
+      "broll": "writing speed light"
+    },
+    {
+      "text": "I am The Oracle. ChatGPT conjures ideas and outlines. I banish writer's block with plans and words from thin air.",
+      "broll": "idea generation abstract"
+    },
+    {
+      "text": "The creator's workflow is saved. Automate your first drafts to beat the burnout. Which AI hero should join the fight next? Let us know!",
+      "broll": "creative triumph"
+    }
+  ],
+  "description": "Tonight on The AI Toolverse, the dreaded Burnout Wraith targets a creator's empty page. But help is at hand. Scribe and The Oracle deploy their unique AI powers to save the day.",
+  "links": [
+    {
+      "name": "Writesonic",
+      "url": "https://writesonic.com"
+    },
+    {
+      "name": "ChatGPT",
+      "url": "https://openai.com/chatgpt"
+    }
+  ],
+  "tags": [
+    "ai tools",
+    "ai for creators",
+    "writesonic",
+    "chatgpt",
+    "content creation",
+    "youtube shorts",
+    "ai automation",
+    "writer's block",
+    "productivity",
+    "ai assistant"
+  ],
+  "thumbnail_text": "Beat Burnout. AI Wins.",
+  "topic": "Toolverse episode: Burnout Wraith",
+  "date": "2026-07-03"
+}
