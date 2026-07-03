@@ -1,1 +1,1 @@
-regenerate hero avatars via Gemini + per-tool archetypes 2026-07-03
+regenerate hero avatars via Gemini (fixed responseModalities) 2026-07-03 #2

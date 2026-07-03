@@ -33,7 +33,9 @@ GEMINI_IMAGE_MODEL = os.environ.get("GEMINI_IMAGE_MODEL", "gemini-2.5-flash-imag
 # Default to Gemini when a key exists: it follows the distinct per-tool archetype
 # prompts far better than Flux (which regressed every hero to a generic figure).
 PROVIDER = os.environ.get("ART_PROVIDER") or ("gemini" if GEM_KEYS else "pollinations")
+ARTLOG = ROOT / ".github" / "last-art.txt"
 _gem_idx = 0
+LAST_ERR = ""                                   # last generator error, for the log
 W = H = 1024
 
 BASE = (
@@ -107,7 +109,9 @@ def gen_gemini(prompt, dest, retries=None):
             r = requests.post(
                 f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_IMAGE_MODEL}:generateContent",
                 params={"key": key},
-                json={"contents": [{"parts": [{"text": prompt}]}]},
+                json={"contents": [{"parts": [{"text": prompt}]}],
+                      # image models only return an image when IMAGE is requested
+                      "generationConfig": {"responseModalities": ["TEXT", "IMAGE"]}},
                 timeout=180)
         except requests.RequestException as e:
             last = str(e); time.sleep(3 * (attempt + 1)); continue
@@ -124,6 +128,8 @@ def gen_gemini(prompt, dest, retries=None):
             if r.status_code == 429 and len(GEM_KEYS) > 1:
                 _gem_idx += 1                       # quota hit: next key in pool
         time.sleep(5 * (attempt + 1))
+    global LAST_ERR
+    LAST_ERR = last
     print(f"  FAILED {dest.name}: {last}", file=sys.stderr)
     return False
 
@@ -177,6 +183,16 @@ def main():
             failed += 1
         time.sleep(2)                       # be gentle with the free tier
     print(f"art: {done} generated, {skipped} already present, {failed} failed")
+    # Committed receipt so failures are visible from git (job logs need admin).
+    ts = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    try:
+        ARTLOG.parent.mkdir(parents=True, exist_ok=True)
+        ARTLOG.write_text(
+            f"{ts} provider={PROVIDER} model={GEMINI_IMAGE_MODEL} "
+            f"done={done} skipped={skipped} failed={failed} "
+            f"last_err={' '.join(LAST_ERR.split())[:240] or 'none'}\n", encoding="utf-8")
+    except Exception as e:
+        print(f"art log write failed: {e}", file=sys.stderr)
     # Failures are fine: rerun later, existing art is skipped. Only fail the
     # run when nothing at all could be generated.
     if done == 0 and skipped == 0:
