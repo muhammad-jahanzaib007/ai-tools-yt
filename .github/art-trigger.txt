@@ -1,1 +1,1 @@
-﻿smoke test 1 hero via dall-e-3 hd, response_format fix + attempt-cap 2026-07-03 #7
+﻿smoke test 1 hero via gpt-image-1-mini 2026-07-03 #8
