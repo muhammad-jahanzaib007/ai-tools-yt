@@ -74,7 +74,12 @@ jobs:
           git add briefs automation/topics.json automation/latest.txt automation/universe.json
           if ! git diff --cached --quiet; then
             git commit -m "brief: $(date -u +%Y-%m-%d)"
-            git push
+            # Rebase + retry: a concurrent push to main must not fail the whole pipeline.
+            for i in 1 2 3; do
+              git pull --rebase --quiet && git push && break
+              echo "push attempt $i rejected, retrying"
+              sleep 5
+            done
           fi
 
       - name: Render video
