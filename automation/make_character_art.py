@@ -9,6 +9,7 @@ episodes reuse the same art forever = high quality, zero cost, no API key.
 Pollinations serves Flux with no auth. Deterministic per file via a seed so
 reruns reproduce the same character. Env: POLLINATIONS_MODEL (default flux).
 """
+import base64
 import json
 import os
 import re
@@ -26,6 +27,13 @@ UNIVERSE = ROOT / "automation" / "universe.json"
 ROSTER = ROOT / "automation" / "roster.json"
 
 MODEL = os.environ.get("POLLINATIONS_MODEL", "flux")
+GEM_KEYS = [k for k in (os.environ.get("GEMINI_API_KEY"),
+                        os.environ.get("GEMINI_API_KEY_2")) if k]
+GEMINI_IMAGE_MODEL = os.environ.get("GEMINI_IMAGE_MODEL", "gemini-2.5-flash-image")
+# Default to Gemini when a key exists: it follows the distinct per-tool archetype
+# prompts far better than Flux (which regressed every hero to a generic figure).
+PROVIDER = os.environ.get("ART_PROVIDER") or ("gemini" if GEM_KEYS else "pollinations")
+_gem_idx = 0
 W = H = 1024
 
 BASE = (
@@ -33,12 +41,12 @@ BASE = (
     "cel shading, halftone accents, highly detailed, centered composition, plain solid white "
     "background, no text, no words, no real brand logos, no watermark, no signature."
 )
-# Heroes: sleek modern tech-armor (deliberately NOT the Superman/Batman
-# cape-and-trunks silhouette Flux defaults to), bright and hopeful.
-HERO_STYLE = (BASE + " A sleek modern high-tech superhero in a form-fitting armored suit with "
-    "glowing neon energy lines and a smooth helmet with a glowing visor. NO cape, NO trunks, "
-    "not Superman, not Batman, an original futuristic design. Uplifting hopeful mood, bright "
-    "optimistic lighting, radiant glow, cool confident and inspiring.")
+# Heroes: the distinct look comes from each tool's ARCHETYPE (passed in per
+# hero), not a single fixed silhouette. Keep only the shared "original + bright
+# + hopeful" framing here so every hero reads different.
+HERO_STYLE = (BASE + " An original comic superhero, bright and hopeful, uplifting heroic mood, "
+    "radiant optimistic lighting. Fully original design, NOT Superman, NOT Batman, no generic "
+    "cape-and-trunks default.")
 # Villains: the opposite. Dark, ominous, hopeless.
 VILLAIN_STYLE = (BASE + " Dark ominous menacing mood, grim shadows, cold sinister lighting, "
     "hopeless and threatening atmosphere.")
@@ -67,7 +75,7 @@ def color_name(hexstr):
     return min(_NAMED, key=lambda n: sum((a - c) ** 2 for a, c in zip(_NAMED[n], (r, g, b))))
 
 
-def gen_image(prompt, dest, retries=5):
+def gen_pollinations(prompt, dest, retries=5):
     """Pollinations Flux: GET the prompt URL, save the returned image bytes."""
     url = (f"https://image.pollinations.ai/prompt/{quote(prompt)}"
            f"?width={W}&height={H}&nologo=true&model={MODEL}&seed={_seed(dest.stem)}")
@@ -87,6 +95,46 @@ def gen_image(prompt, dest, retries=5):
     return False
 
 
+def gen_gemini(prompt, dest, retries=None):
+    """Gemini image model (nano-banana): returns an inline base64 PNG. Rotates
+    across the key pool on quota (429), same pattern as the TTS path."""
+    global _gem_idx
+    retries = retries if retries is not None else 2 * max(1, len(GEM_KEYS))
+    last = ""
+    for attempt in range(retries):
+        key = GEM_KEYS[_gem_idx % len(GEM_KEYS)]
+        try:
+            r = requests.post(
+                f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_IMAGE_MODEL}:generateContent",
+                params={"key": key},
+                json={"contents": [{"parts": [{"text": prompt}]}]},
+                timeout=180)
+        except requests.RequestException as e:
+            last = str(e); time.sleep(3 * (attempt + 1)); continue
+        if r.status_code < 400:
+            parts = r.json().get("candidates", [{}])[0].get("content", {}).get("parts", [])
+            for p in parts:
+                data = p.get("inlineData") or p.get("inline_data")
+                if data and data.get("data"):
+                    dest.write_bytes(base64.b64decode(data["data"]))
+                    return True
+            last = "no image in response"
+        else:
+            last = f"{r.status_code}: {r.text[:200]}"
+            if r.status_code == 429 and len(GEM_KEYS) > 1:
+                _gem_idx += 1                       # quota hit: next key in pool
+        time.sleep(5 * (attempt + 1))
+    print(f"  FAILED {dest.name}: {last}", file=sys.stderr)
+    return False
+
+
+def gen_image(prompt, dest):
+    """Dispatch to the configured provider (Gemini preferred; Flux fallback)."""
+    if PROVIDER == "gemini" and GEM_KEYS:
+        return gen_gemini(prompt, dest)
+    return gen_pollinations(prompt, dest)
+
+
 def slugify(s):
     return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
 
@@ -103,10 +151,12 @@ def main():
         s = slugify(h["tool"])
         col = color_name(h["color"])
         power = powers.get(h["tool"]) or f"the powers of the {h['tool']} AI tool"
-        base = (f"{HERO_STYLE} An original superhero character called {h['alias']}. Costume and "
-                f"cape are primarily {col} (a {col} colour scheme), with a clean plain chest and "
-                "no chest logo (an emblem is added separately). Not Superman, not a diamond crest, "
-                f"a fully original hero design. Their power: {power}.")
+        # The archetype gives each hero its own silhouette/theme so they don't
+        # all look alike; fall back to a generic line for any tool without one.
+        archetype = h.get("archetype") or "an original futuristic superhero"
+        base = (f"{HERO_STYLE} The hero is called {h['alias']}, depicted as {archetype}. "
+                f"Primarily a {col} colour scheme. Clean plain chest with no chest logo "
+                f"(an emblem is added separately). Their power: {power}.")
         jobs.append((OUT / f"hero-{s}-idle.png", base + " Confident, calm, hopeful heroic stance, facing the viewer, standing tall."))
         jobs.append((OUT / f"hero-{s}-action.png", base + " Dynamic mid-action pose, unleashing their power with a bright energy burst."))
     for v in uni["villains"]:
