@@ -700,9 +700,16 @@ def _render_scenes(brief, comp, props, label, voices=None):
     run([NPX, "remotion", "render", "src/index.ts", comp, str(graphics.resolve()),
          f"--props={props_file.resolve()}", "--log=error"], cwd=str(REMOTION_DIR))
 
-    # 4. captions timed to the delayed narration
-    all_words = [(w, delays[i] + s, delays[i] + e)
-                 for i, ws in enumerate(words_per) for (w, s, e) in ws]
+    # 4. captions timed to the delayed narration. Clamp each word inside its
+    # own scene's audio window so a Whisper timing wobble can never drift a
+    # caption past the voice it belongs to (keeps subs and voiceover locked).
+    all_words = []
+    for i, ws in enumerate(words_per):
+        d = durs[i]
+        for (w, s, e) in ws:
+            s2 = max(0.0, min(s, d))
+            e2 = max(s2 + 0.05, min(e, d))
+            all_words.append((w, delays[i] + s2, delays[i] + e2))
     if karaoke and all_words:
         build_karaoke_ass(all_words, WORK / "subs.ass")     # no hook overlay: VsIntro is the hook
     else:
