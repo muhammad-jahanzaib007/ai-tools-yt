@@ -1,1 +1,1 @@
-﻿manual full-pipeline test 2026-07-03T01:19:25.7541086+01:00
+manual battle recovery 2026-07-03T14:00Z (noon slot failed on push race)
