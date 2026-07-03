@@ -68,7 +68,21 @@ def main():
             desc += ("\n\nSome links above are affiliate links and may earn the channel a "
                      "commission at no extra cost to you.")
 
-    desc = (desc + "\n\n#AI #AItools #technology").strip()[:4900]
+    # Hashtags: #Shorts + one per named tool (topical clustering + search) + a
+    # couple of niche tags, then generic. First 3 surface above the title on YT.
+    def _hash(s):
+        h = "".join(ch for ch in s if ch.isalnum())
+        return f"#{h}" if h else ""
+    seen, htags = set(), []
+    for h in (["#Shorts"]
+              + [_hash(l["name"]) for l in links]
+              + [_hash(t) for t in brief.get("tags", [])]
+              + ["#AItools", "#AI", "#technology"]):
+        k = h.lower()
+        if h and k not in seen:
+            seen.add(k)
+            htags.append(h)
+    desc = (desc + "\n\n" + " ".join(htags[:12])).strip()[:4900]
     tags = [t for t in brief.get("tags", []) if t][:15]
 
     creds = Credentials(
