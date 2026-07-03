@@ -103,6 +103,17 @@ jobs:
           YT_CATEGORY: ${{ vars.YT_CATEGORY || '28' }}
         run: python automation/upload_video.py
 
+      # Optional cross-post to IG/FB Reels. No-ops (exit 0) until Meta secrets exist.
+      - name: Cross-post to Instagram + Facebook Reels
+        continue-on-error: true
+        env:
+          META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          CROSSPOST_TARGETS: ${{ vars.CROSSPOST_TARGETS || 'ig,fb' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python automation/crosspost.py
+
       - name: Audio QA + record
         if: always()
         continue-on-error: true
