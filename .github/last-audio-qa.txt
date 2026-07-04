@@ -1,1 +1,1 @@
-no audio found
+voice_pitch_std=7.01st(expressive) script_wer=0.02(clear) mix_rms=0.150 peak=1.04 dur=61s
