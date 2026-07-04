@@ -1,1 +1,1 @@
-﻿clean comic validation: transparent heroes 2026-07-04 #2
+﻿format=comic : manual run with the new portrait heroes, per user request 2026-07-04. Cron slots unaffected (override only applies to pushed triggers).
