@@ -1,1 +1,1 @@
-FULL BATCH #21: all 46 heroes, portrait 1024x1536, head-to-toe, transparent. Defaults from repo vars (mini). gpt-image-2 rejected: no transparent-background support (tested run 20). No pushes to main while this runs. 2026-07-04
+﻿REGEN 1: hero-speechify-action had 2 semi-opaque corners (fails alpha passthrough). Defaults (mini). 2026-07-04 #22
