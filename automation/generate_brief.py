@@ -150,6 +150,30 @@ def chat_json(user, max_tokens=3000):
         return json.loads(m.group(0))
 
 
+# Hook styles rotate deterministically across briefs so ~30 videos give a
+# comparable sample per style; analytics_report.py joins hook_type back to
+# retention so the winning opener can be doubled down on.
+HOOK_STYLES = {
+    "question": "a sharp QUESTION the viewer needs answered "
+                "(e.g. 'Which AI actually writes better ads?')",
+    "bold_claim": "a surprising BOLD CLAIM stated flat as fact "
+                  "(e.g. 'One of these tools is a waste of money.')",
+    "result_first": "the RESULT teased up front without the reasoning "
+                    "(e.g. 'The winner shocked me, and it was not ChatGPT.')",
+    "conflict_tease": "pure CONFLICT and stakes, movie-trailer style "
+                      "(e.g. 'Two AI giants walk in. One limps out.')",
+    "pain_point": "the viewer's PAIN named in one line "
+                  "(e.g. 'Still paying for the wrong AI writer?')",
+}
+
+
+def pick_hook_style():
+    """Rotate through HOOK_STYLES by brief count: even coverage, reproducible."""
+    order = sorted(HOOK_STYLES)
+    n = len(list(BRIEFS.glob("*.json"))) if BRIEFS.exists() else 0
+    return order[n % len(order)]
+
+
 CLASSIC_BULLETS = (
     "- narration: an array of 9-14 segments. Each segment is an object with "
     '"text" (ONE short spoken sentence, max 14 words, punchy and fast-paced; no filler, '
@@ -213,8 +237,8 @@ def _clean_battle(bt, narration):
         return None
 
 
-def generate_brief(topic):
-    b = _generate_once(topic)
+def generate_brief(topic, hook_style):
+    b = _generate_once(topic, hook_style)
     if " vs " in topic.lower() and not b.get("battle"):
         print("battle block missing/invalid; retrying with a stern reminder", file=sys.stderr)
         stern = (
@@ -224,21 +248,22 @@ def generate_brief(topic):
             "AND exactly rounds+2 narration segments (one for the intro, one per "
             "round, one for the verdict). Count the segments before answering."
         )
-        b2 = _generate_once(topic, extra=stern)
+        b2 = _generate_once(topic, hook_style, extra=stern)
         if b2.get("battle"):
             b = b2
     return b
 
 
-def _generate_once(topic, extra=""):
+def _generate_once(topic, hook_style, extra=""):
     is_battle = " vs " in topic.lower()
     user = (
         f'Write the script and metadata for a 60-90 second faceless YouTube video on: "{topic}".\n\n'
         "Return a single JSON object with these keys:\n"
         "- slug: kebab-case, 3-6 words, no dates\n"
         "- title: a clear, honest, clickable YouTube title, <=70 chars, no clickbait lies\n"
-        "- hook: the spoken opening line (<=14 words). Make it a scroll-stopping pattern-interrupt: "
-        "a surprising claim, a sharp question, or a bold promise. No generic intros like 'In this video'.\n"
+        "- hook: the spoken opening line (<=14 words). It must be a scroll-stopping "
+        f"pattern-interrupt of this exact style: {HOOK_STYLES[hook_style]}. "
+        "No generic intros like 'In this video'.\n"
         + (BATTLE_BULLETS if is_battle else CLASSIC_BULLETS) +
         "- description: a YouTube description, 2 or 3 sentences. Do NOT list links here.\n"
         "- links: an array of the tools/resources you mention, each an object "
@@ -313,7 +338,7 @@ def _clean_common(b):
     return b
 
 
-def generate_comic_brief(villain, uni):
+def generate_comic_brief(villain, uni, hook_style):
     heroes_txt = "\n".join(f"- {h['tool']} ({h['alias']}): {h['power']}" for h in uni["heroes"])
     user = (
         'Write one episode of "The AI Toolverse", a superhero comic told as a 60-90 second '
@@ -323,7 +348,8 @@ def generate_comic_brief(villain, uni):
         "Return a single JSON object with these keys:\n"
         "- slug: kebab-case, 3-6 words\n"
         "- title: episode-style, <=70 chars (e.g. 'The Blank Page strikes. Two heroes answer.')\n"
-        "- hook: <=14 words, dramatic movie-trailer opener\n"
+        "- hook: <=14 words, a dramatic opener in this exact style: "
+        f"{HOOK_STYLES[hook_style]}\n"
         '- comic: {"threat": "the villain name", "heroes": [1 or 2 of {"tool": "EXACT tool name '
         'from the list", "powerLine": "<=10 words: the move they use, grounded in the real '
         'feature"}], "resolution": "<=25 words: how the day was saved and why that tool"}\n'
@@ -410,6 +436,10 @@ def replenish(topics, want=12):
 
 
 def main():
+    hook_style = os.environ.get("HOOK_STYLE") or pick_hook_style()
+    if hook_style not in HOOK_STYLES:
+        sys.exit(f"unknown HOOK_STYLE {hook_style!r}; options: {', '.join(sorted(HOOK_STYLES))}")
+    print(f"Hook style: {hook_style}")
     if FORMAT == "comic" and UNIVERSE_JSON.exists():
         uni = load(UNIVERSE_JSON)
         used = set(uni.get("published_threats", []))
@@ -419,7 +449,7 @@ def main():
         villain = random.choice(pool)
         topic = f"Toolverse episode: {villain['name']}"
         print(f"Generating comic episode: {villain['name']}")
-        brief = generate_comic_brief(villain, uni)
+        brief = generate_comic_brief(villain, uni, hook_style)
         uni.setdefault("published_threats", []).append(villain["name"])
         save(UNIVERSE_JSON, uni)
     else:
@@ -430,7 +460,7 @@ def main():
                 sys.exit("no topics available and replenish failed")
         topic = topics["queue"].pop(0)
         print(f"Generating brief for: {topic}")
-        brief = generate_brief(topic)
+        brief = generate_brief(topic, hook_style)
         topics["published"].append(topic)
         if len(topics["queue"]) < 5:
             replenish(topics)
@@ -439,6 +469,7 @@ def main():
     today = os.environ.get("POST_DATE") or dt.datetime.now(dt.timezone.utc).date().isoformat()
     brief["topic"] = topic
     brief["date"] = today
+    brief["hook_type"] = hook_style
 
     BRIEFS.mkdir(exist_ok=True)
     out = BRIEFS / f"{brief['slug']}.json"

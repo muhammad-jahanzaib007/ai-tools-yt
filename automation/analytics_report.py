@@ -22,7 +22,9 @@ YT_REFRESH_TOKEN repo secret.
 
 import os
 import sys
+import json
 import datetime as dt
+from collections import defaultdict
 from pathlib import Path
 
 from google.oauth2.credentials import Credentials
@@ -39,6 +41,20 @@ SCOPES = [
     "https://www.googleapis.com/auth/youtube.readonly",
     "https://www.googleapis.com/auth/yt-analytics.readonly",
 ]
+
+
+def brief_meta():
+    """title -> (format, hook_type) from committed briefs, so retention can be
+    compared per hook style and per format (the whole point of hook rotation)."""
+    meta = {}
+    for f in (ROOT / "briefs").glob("*.json"):
+        try:
+            b = json.loads(f.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        fmt = "battle" if b.get("battle") else "comic" if b.get("comic") else "classic"
+        meta[b.get("title", "").strip().lower()] = (fmt, b.get("hook_type", "?"))
+    return meta
 
 
 def main():
@@ -94,18 +110,42 @@ def main():
         "",
         "## Videos by views",
         "",
-        "| Video | Views | Watch min | Avg view % | Likes | Comments | Subs |",
-        "|---|---|---|---|---|---|---|",
+        "| Video | Format | Hook | Views | Watch min | Avg view % | Likes | Comments | Subs |",
+        "|---|---|---|---|---|---|---|---|---|",
     ]
+    meta = brief_meta()
+    hook_stats = defaultdict(lambda: [0, 0.0, 0])   # hook -> [videos, sum avg%, views]
     for r in rows:
         vid, views, mins, avgpct, likes, comments, subs = r[:7]
-        title = titles.get(vid, vid).replace("|", "-")
+        title = titles.get(vid, vid)
+        fmt, hook = meta.get(title.strip().lower(), ("?", "?"))
+        if hook != "?":
+            hs = hook_stats[hook]
+            hs[0] += 1; hs[1] += avgpct; hs[2] += views
         lines.append(
-            f"| [{title}](https://youtu.be/{vid}) | {views} | {mins} "
-            f"| {avgpct:.1f} | {likes} | {comments} | {subs} |"
+            f"| [{title.replace('|', '-')}](https://youtu.be/{vid}) | {fmt} | {hook} "
+            f"| {views} | {mins} | {avgpct:.1f} | {likes} | {comments} | {subs} |"
         )
     if not rows:
-        lines.append("| (no video data in window) | | | | | | |")
+        lines.append("| (no video data in window) | | | | | | | | |")
+
+    # Which opener style actually retains: the decision table for hook rotation.
+    if hook_stats:
+        lines += [
+            "",
+            "## Retention by hook style",
+            "",
+            "| Hook | Videos | Avg view % | Total views |",
+            "|---|---|---|---|",
+        ]
+        for hook, (n, pct_sum, v) in sorted(
+                hook_stats.items(), key=lambda kv: kv[1][1] / kv[1][0], reverse=True):
+            lines.append(f"| {hook} | {n} | {pct_sum / n:.1f} | {v} |")
+        lines += [
+            "",
+            "_Needs ~5+ videos per hook style before the ranking means anything; "
+            "with a clear winner, set repo var HOOK_STYLE to lock it in._",
+        ]
 
     lines += [
         "",

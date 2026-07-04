@@ -58,6 +58,7 @@ jobs:
       - name: Generate brief
         env:
           FORMAT: ${{ steps.fmt.outputs.format }}
+          HOOK_STYLE: ${{ vars.HOOK_STYLE }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BLOG_MODEL: ${{ vars.BLOG_MODEL || 'openai/gpt-4o-mini' }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
