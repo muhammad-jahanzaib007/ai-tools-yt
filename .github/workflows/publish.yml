@@ -46,10 +46,21 @@ jobs:
       - run: pip install --upgrade requests anthropic google-api-python-client google-auth google-auth-httplib2 librosa soundfile faster-whisper pillow
 
       # Slot decides the format: midday = tool battle, evening = Toolverse comic.
+      # A manually pushed trigger may force one by putting "format=battle" or
+      # "format=comic" in publish-trigger.txt; cron runs always use the clock,
+      # so a leftover override can never hijack the schedule.
       - name: Pick format by slot
         id: fmt
         run: |
-          if [ "$(date -u +%H)" -lt 16 ]; then
+          ov=""
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            ov=$(grep -oiE "format=(battle|comic)" .github/publish-trigger.txt \
+                 | head -1 | cut -d= -f2 | tr "A-Z" "a-z") || true
+          fi
+          if [ -n "$ov" ]; then
+            echo "format=$ov (trigger override)"
+            echo "format=$ov" >> "$GITHUB_OUTPUT"
+          elif [ "$(date -u +%H)" -lt 16 ]; then
             echo "format=battle" >> "$GITHUB_OUTPUT"
           else
             echo "format=comic" >> "$GITHUB_OUTPUT"
