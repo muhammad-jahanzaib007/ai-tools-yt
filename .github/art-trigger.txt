@@ -1,1 +1,1 @@
-﻿BATCH regen all 46 heroes PORTRAIT 1024x1536 head-to-toe transparent 2026-07-04 #16
+REFIRE batch regen all 46 heroes PORTRAIT 1024x1536 head-to-toe transparent (run #17 was cancelled, heroes still deleted) 2026-07-04 #18
