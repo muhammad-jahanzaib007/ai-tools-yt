@@ -45,11 +45,16 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git pull --rebase --quiet || true
           git add assets/toolverse .github/last-art.txt
           if git diff --cached --quiet; then
             echo "No new art."
           else
             git commit -m "art: Toolverse characters"
-            git push
+            # Rebase + retry: a concurrent push to main must not throw away a
+            # whole (paid) generation batch. Same fix as publish.yml Save brief.
+            for i in 1 2 3; do
+              git pull --rebase --quiet && git push && break
+              echo "push attempt $i rejected, retrying"
+              sleep 5
+            done
           fi

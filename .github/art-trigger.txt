@@ -1,1 +1,1 @@
-REFIRE batch regen all 46 heroes PORTRAIT 1024x1536 head-to-toe transparent (run #17 was cancelled, heroes still deleted) 2026-07-04 #18
+REFIRE #19: batch regen all 46 heroes PORTRAIT 1024x1536 head-to-toe transparent. Run #18 generated fine but lost everything to a commit push race; commit step now rebase-retries. NO pushes to main while this runs. 2026-07-04
