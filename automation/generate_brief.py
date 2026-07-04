@@ -473,6 +473,11 @@ def main():
 
     BRIEFS.mkdir(exist_ok=True)
     out = BRIEFS / f"{brief['slug']}.json"
+    if out.exists():
+        # Recycled villains / rematch topics can regenerate an old slug;
+        # overwriting would clobber the old brief analytics joins against.
+        brief["slug"] += "-" + today.replace("-", "")[4:]
+        out = BRIEFS / f"{brief['slug']}.json"
     save(out, brief)
     (DATA / "latest.txt").write_text(brief["slug"], encoding="utf-8")   # render uses this
 

@@ -1,0 +1,69 @@
+name: Pipeline watchdog
+
+# The publish cron can die silently: a cancelled run, a hung job, or a cron
+# that never fires leaves no failure email and no trace except absence.
+# This checks daily that a video actually went out recently (via the commit
+# time of .github/last-upload.txt) and that the latest publish run succeeded.
+# On trouble it opens a GitHub issue, which lands in the owner's inbox.
+on:
+  schedule:
+    - cron: "45 14 * * *"   # after the 12:13 UTC slot should have finished
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  watchdog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check upload freshness and last publish run
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          problems=""
+
+          # 1) When did last-upload.txt last change? 2 uploads/day means the
+          #    gap should never exceed ~15h; 26h = something is wrong.
+          last=$(gh api "repos/$GITHUB_REPOSITORY/commits?path=.github/last-upload.txt&per_page=1" \
+                 --jq '.[0].commit.committer.date' || echo "")
+          if [ -z "$last" ]; then
+            problems="- could not read the last commit of .github/last-upload.txt"
+          else
+            age_h=$(( ( $(date -u +%s) - $(date -u -d "$last" +%s) ) / 3600 ))
+            echo "last upload telemetry: $last (${age_h}h ago)"
+            if [ "$age_h" -gt 26 ]; then
+              problems="$problems
+          - no upload telemetry for ${age_h}h (last: $last); a publish slot died silently"
+            fi
+          fi
+
+          # 2) Did the most recent publish run end in anything but success?
+          #    Catches cancelled runs, which send no failure email at all.
+          concl=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/publish.yml/runs?per_page=1" \
+                  --jq '.workflow_runs[0].conclusion // "in_progress"')
+          echo "latest publish run conclusion: $concl"
+          if [ "$concl" != "success" ] && [ "$concl" != "in_progress" ]; then
+            problems="$problems
+          - latest publish run ended: $concl"
+          fi
+
+          if [ -z "$problems" ]; then
+            echo "pipeline healthy"
+            exit 0
+          fi
+
+          # One open watchdog issue at a time; don't spam a new one daily.
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" \
+                     --label watchdog --state open --json number --jq 'length')
+          if [ "$existing" -gt 0 ]; then
+            echo "watchdog issue already open; not duplicating"
+            exit 0
+          fi
+          gh label create watchdog --repo "$GITHUB_REPOSITORY" \
+            --description "automated pipeline health alert" --color D93F0B 2>/dev/null || true
+          gh issue create --repo "$GITHUB_REPOSITORY" --label watchdog \
+            --title "Watchdog: publish pipeline needs attention" \
+            --body "$(printf 'Automated daily check found:\n%s\n\nCheck the Actions tab: https://github.com/%s/actions\n' "$problems" "$GITHUB_REPOSITORY")"

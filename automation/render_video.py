@@ -658,6 +658,11 @@ def render_comic(brief):
         want += [f"hero-{hs}-idle.png", f"hero-{hs}-action.png"]
     staged = _stage_art(want)
     print(f"  staged {len(staged)}/{len(want)} avatar files")
+    missing = set(want) - staged
+    if missing:
+        # Better a plain b-roll video than a comic with invisible characters:
+        # raising here lands in main()'s fallback to the Pexels render.
+        raise RuntimeError(f"avatar art missing: {', '.join(sorted(missing))}")
 
     props = {"episodeTitle": brief["title"], "threat": comic["threat"],
              "threatSlug": threat_slug, "heroes": heroes,

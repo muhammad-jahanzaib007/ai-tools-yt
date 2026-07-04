@@ -152,6 +152,13 @@ def main():
         "_Avg view % under ~50 on a Short usually means the hook or pacing is "
         "losing people; compare formats, not just totals._",
         "",
+        "## Standing checkpoint (set 2026-07-04)",
+        "",
+        "- **Kill/scale rule:** by 2026-08-18 (~45 days at 2/day), if the median "
+        "Short is still under ~200 views, change the format or the niche. Do not "
+        "respond to low views with more production polish.",
+        "- Scale to 3/day only after retention data shows a format worth scaling.",
+        "",
     ]
 
     # YouTube Analytics lags ~2-3 days; a young channel's first reports come

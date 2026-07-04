@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
-"""Audio QA after a render: is the voiceover expressive, is the mix sane?
+"""Media QA after a render: is the voiceover expressive, is the mix sane,
+does the video actually show something?
 
 Measures, from the narration clips in .render/ and the newest output mp4:
 - voice pitch variation in semitones (std of f0 around its median):
   under ~1.5 = monotone "reading from a book", 2-4 = lively speech
 - final-mix RMS/peak and duration
+- black-screen spans (ffmpeg blackdetect) and Shorts-eligible duration
 Writes a one-line summary to stdout and .github/last-audio-qa.txt so results
 are reviewable with git alone (repo is private, no public API).
 
-Runs in CI (ubuntu: ffmpeg + librosa work there). Never fails the build.
+Runs in CI (ubuntu: ffmpeg + librosa work there). Never fails the build
+unless invoked with --gate.
 """
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -69,11 +73,26 @@ def script_wer():
         return None
 
 
+def black_spans(path):
+    """(start, duration) of near-black video spans >=1s via ffmpeg blackdetect."""
+    p = subprocess.run(
+        ["ffmpeg", "-v", "info", "-i", str(path),
+         "-vf", "blackdetect=d=1:pix_th=0.10", "-an", "-f", "null", "-"],
+        capture_output=True, text=True)
+    return [(float(m.group(1)), float(m.group(2))) for m in re.finditer(
+        r"black_start:([\d.]+)\s+black_end:[\d.]+\s+black_duration:([\d.]+)",
+        p.stderr)]
+
+
 def main():
-    # --gate: exit non-zero on UNAMBIGUOUS audio failures so the publish job
-    # aborts BEFORE uploading. Kept deliberately narrow to avoid false positives:
+    # --gate: exit non-zero on UNAMBIGUOUS failures so the publish job aborts
+    # BEFORE uploading. Kept deliberately narrow to avoid false positives:
     #  - no/near-silent audio in the final video
     #  - GARBLED speech (high WER)
+    #  - a black-screen span >=3s (scenes are colourful gradients; real black
+    #    that long means a broken render, not a stylistic fade)
+    #  - duration outside 15-178s (>3min loses Shorts eligibility and the
+    #    video dies as a regular upload; <15s means the render broke)
     # Fuzzy signals (monotone pitch, mp4 peak) stay advisory only: the mp4 peak
     # is measured from lossy AAC, which overshoots slightly past 1.0 even when
     # the pre-encode mix was limited to 0.89, so it is NOT a reliable clip gate.
@@ -102,12 +121,23 @@ def main():
         try:
             y = load_audio(outs[-1])
             rms = float(np.sqrt(np.mean(y**2)))
+            dur = len(y) / SR
             parts.append(f"mix_rms={rms:.3f} peak={np.max(np.abs(y)):.2f} "
-                         f"dur={len(y)/SR:.0f}s")
+                         f"dur={dur:.0f}s")
             if rms < 0.01:
                 failures.append(f"silent mix (rms={rms:.3f})")
+            if not 15 <= dur <= 178:
+                failures.append(f"duration {dur:.0f}s outside Shorts range 15-178s")
         except Exception as e:
             parts.append(f"mix_qa_error={str(e)[:80]}")
+        try:
+            spans = black_spans(outs[-1])
+            worst = max(spans, key=lambda s: s[1]) if spans else None
+            parts.append("black=" + (f"{worst[1]:.1f}s@{worst[0]:.0f}s" if worst else "none"))
+            if worst and worst[1] >= 3:
+                failures.append(f"black screen {worst[1]:.1f}s at {worst[0]:.0f}s")
+        except Exception as e:
+            parts.append(f"video_qa_error={str(e)[:80]}")
     else:
         failures.append("no output video")
     if not have_voice and not outs:
