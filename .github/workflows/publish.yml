@@ -46,14 +46,12 @@ jobs:
       - run: pip install --upgrade requests anthropic google-api-python-client google-auth google-auth-httplib2 librosa soundfile faster-whisper pillow
 
       # Slot decides the format: midday = tool battle, evening = Toolverse comic.
+      # FORCE_COMIC_ONCE: validate the transparent hero avatars on a real comic.
+      # REVERT after this run.
       - name: Pick format by slot
         id: fmt
         run: |
-          if [ "$(date -u +%H)" -lt 16 ]; then
-            echo "format=battle" >> "$GITHUB_OUTPUT"
-          else
-            echo "format=comic" >> "$GITHUB_OUTPUT"
-          fi
+          echo "format=comic" >> "$GITHUB_OUTPUT"
 
       - name: Generate brief
         env:
