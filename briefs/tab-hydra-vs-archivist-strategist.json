@@ -1,0 +1,69 @@
+{
+  "slug": "tab-hydra-vs-archivist-strategist",
+  "title": "The Tab Hydra strikes. Two heroes answer.",
+  "hook": "Can AI truly organise your chaotic digital life?",
+  "comic": {
+    "threat": "The Tab Hydra",
+    "heroes": [
+      {
+        "tool": "Notion AI",
+        "alias": "The Archivist",
+        "color": "#9B9B9B",
+        "power": "I bring order to your scattered thoughts."
+      },
+      {
+        "tool": "Claude",
+        "alias": "The Strategist",
+        "color": "#D97757",
+        "power": "I devour information and reveal the whole strategy."
+      }
+    ],
+    "resolution": "Notion AI brought order to scattered notes, while Claude identified key insights. Chaos transformed into clarity."
+  },
+  "narration": [
+    {
+      "text": "The creator is drowning. A hundred open tabs. Notes scattered everywhere. The Tab Hydra strikes, threatening to stop all progress.",
+      "broll": "person overwhelmed computer"
+    },
+    {
+      "text": "I am The Archivist. Watch as Notion AI devours this chaos, organising every note into perfect, findable structure. No tab is safe.",
+      "broll": "organised digital notes"
+    },
+    {
+      "text": "I am The Strategist. Claude here. I consume these endless documents, seeing the connections the Tab Hydra hides. The whole battlefield is now clear.",
+      "broll": "AI processing documents"
+    },
+    {
+      "text": "Victory! The Tab Hydra is defeated. Use these tools to tame your information overload. Which hero tackles the next crisis? Tell us below, and subscribe!",
+      "broll": "celebration digital"
+    }
+  ],
+  "description": "When the villainous Tab Hydra strikes, scattering notes and overwhelming workflows, The Archivist and The Strategist answer the call. Discover how Notion AI and Claude bring order to chaos and clarify information overload. Learn to conquer your digital mess.",
+  "links": [
+    {
+      "name": "Notion AI",
+      "url": "https://www.notion.so/product/ai"
+    },
+    {
+      "name": "Claude",
+      "url": "https://www.anthropic.com/product/claude"
+    }
+  ],
+  "tags": [
+    "ai tools",
+    "ai news",
+    "youtube shorts",
+    "ai productivity",
+    "notion ai",
+    "claude ai",
+    "information overload",
+    "digital organisation",
+    "workflow tips",
+    "ai assistant",
+    "tech explained"
+  ],
+  "thumbnail_text": "Organise your tabs.",
+  "topic": "Toolverse episode: The Tab Hydra",
+  "date": "2026-07-04",
+  "hook_type": "question"
+}
