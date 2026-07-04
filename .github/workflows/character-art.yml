@@ -27,13 +27,23 @@ jobs:
 
       - run: pip install --upgrade requests
 
+      # The trigger file may carry per-run overrides (e.g. "limit=1
+      # model=gpt-image-2" for a one-image smoke test of a new model)
+      # so no repo-variable fiddling is needed between runs.
+      - name: Read trigger overrides
+        id: ov
+        run: |
+          t=.github/art-trigger.txt
+          echo "limit=$(grep -oiE 'limit=[0-9]+' $t | head -1 | cut -d= -f2)" >> "$GITHUB_OUTPUT"
+          echo "model=$(grep -oiE 'model=[a-zA-Z0-9.-]+' $t | head -1 | cut -d= -f2)" >> "$GITHUB_OUTPUT"
+
       - name: Generate missing art
         env:
           ART_PROVIDER: ${{ vars.ART_PROVIDER }}
-          ART_LIMIT: ${{ vars.ART_LIMIT }}
+          ART_LIMIT: ${{ steps.ov.outputs.limit || vars.ART_LIMIT }}
           ART_HEROES_ONLY: ${{ vars.ART_HEROES_ONLY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_IMAGE_MODEL: ${{ vars.OPENAI_IMAGE_MODEL }}
+          OPENAI_IMAGE_MODEL: ${{ steps.ov.outputs.model || vars.OPENAI_IMAGE_MODEL }}
           OPENAI_IMAGE_QUALITY: ${{ vars.OPENAI_IMAGE_QUALITY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}

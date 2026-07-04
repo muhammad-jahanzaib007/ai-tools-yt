@@ -1,1 +1,1 @@
-REFIRE #19: batch regen all 46 heroes PORTRAIT 1024x1536 head-to-toe transparent. Run #18 generated fine but lost everything to a commit push race; commit step now rebase-retries. NO pushes to main while this runs. 2026-07-04
+SMOKE TEST limit=1 model=gpt-image-2 : one portrait hero on gpt-image-2 to judge quality + cost before deciding the full 46 batch. 2026-07-04 #20
