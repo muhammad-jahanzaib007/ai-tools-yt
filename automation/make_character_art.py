@@ -63,9 +63,12 @@ HERO_BASE = (
     "CGI animated film — polished 3D render, smooth surfaces, soft cinematic studio lighting, "
     "subtle subsurface scattering, gentle ambient occlusion, expressive slightly stylised "
     "proportions, vibrant full colour (NOT a drawing, NOT a comic ink sketch, NOT flat 2D, "
-    "NOT greyscale). Single full-body character, highly detailed, centred composition with a "
-    "clear margin of empty space around the character so the ENTIRE figure and any banner are "
-    "fully inside the frame and nothing is cropped or cut off at the edges. NO background at all "
+    "NOT greyscale). ONE complete full-body character shown HEAD TO TOE, zoomed OUT so the whole "
+    "figure is small enough to sit fully inside the frame: the entire head and hair with clear "
+    "empty space ABOVE it, and both feet with clear empty space BELOW them. Absolutely nothing "
+    "cropped — do NOT cut off the top of the head, the hands, or the feet; leave a comfortable "
+    "margin on all four sides. Wide full shot of the standing character, not a close-up. NO "
+    "background at all "
     "— the character is fully isolated/cut out on a transparent background, with no scenery, no "
     "floor, no backdrop, no glow cloud behind them. No watermark, no signature. Do NOT reproduce "
     "any real company logo; any emblem "
@@ -167,7 +170,11 @@ def gen_openai(prompt, dest, retries=3):
     than Flux, and OpenAI billing sidesteps the blocked Google payment flow."""
     global LAST_ERR
     is_dalle = OPENAI_IMAGE_MODEL.startswith("dall-e")
-    body = {"model": OPENAI_IMAGE_MODEL, "prompt": prompt, "size": "1024x1024", "n": 1}
+    # Portrait by default: a standing full-body hero fits head-to-toe far better
+    # in 1024x1536 than in a square (square cropped heads + feet). dall-e-3 uses
+    # 1024x1792 for portrait; gpt-image-1 uses 1024x1536.
+    size = os.environ.get("OPENAI_IMAGE_SIZE") or ("1024x1792" if is_dalle else "1024x1536")
+    body = {"model": OPENAI_IMAGE_MODEL, "prompt": prompt, "size": size, "n": 1}
     # NOTE: do NOT send response_format — this endpoint rejects it ("unknown
     # parameter"). dall-e-3 then returns a URL (data[0].url); gpt-image-1 returns
     # base64 (data[0].b64_json). We handle whichever comes back below.

@@ -1,1 +1,1 @@
-﻿BATCH regen all 46 heroes with TRANSPARENT bg, gpt-image-1-mini 2026-07-04 #14
+﻿portrait full-body test: 1 hero (chatgpt idle) 1024x1536 head-to-toe 2026-07-04 #15
