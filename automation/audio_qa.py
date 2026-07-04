@@ -70,9 +70,19 @@ def script_wer():
 
 
 def main():
-    parts = []
+    # --gate: exit non-zero on UNAMBIGUOUS audio failures so the publish job
+    # aborts BEFORE uploading. Kept deliberately narrow to avoid false positives:
+    #  - no/near-silent audio in the final video
+    #  - GARBLED speech (high WER)
+    # Fuzzy signals (monotone pitch, mp4 peak) stay advisory only: the mp4 peak
+    # is measured from lossy AAC, which overshoots slightly past 1.0 even when
+    # the pre-encode mix was limited to 0.89, so it is NOT a reliable clip gate.
+    gate = "--gate" in sys.argv
+    parts, failures = [], []
+    have_voice = False
     voice = sorted((ROOT / ".render").glob("a*.mp3"))
     if voice:
+        have_voice = True
         try:
             y = np.concatenate([load_audio(v) for v in voice])
             ps = pitch_std_semitones(y)
@@ -85,17 +95,30 @@ def main():
         if wer is not None:
             verdict = "GARBLED" if wer > 0.35 else ("ok" if wer > 0.15 else "clear")
             parts.append(f"script_wer={wer:.2f}({verdict})")
+            if wer > 0.35:
+                failures.append(f"garbled speech (wer={wer:.2f})")
     outs = sorted((ROOT / "output").glob("*.mp4"), key=lambda p: p.stat().st_mtime)
     if outs:
         try:
             y = load_audio(outs[-1])
-            parts.append(f"mix_rms={np.sqrt(np.mean(y**2)):.3f} "
-                         f"peak={np.max(np.abs(y)):.2f} dur={len(y)/SR:.0f}s")
+            rms = float(np.sqrt(np.mean(y**2)))
+            parts.append(f"mix_rms={rms:.3f} peak={np.max(np.abs(y)):.2f} "
+                         f"dur={len(y)/SR:.0f}s")
+            if rms < 0.01:
+                failures.append(f"silent mix (rms={rms:.3f})")
         except Exception as e:
             parts.append(f"mix_qa_error={str(e)[:80]}")
+    else:
+        failures.append("no output video")
+    if not have_voice and not outs:
+        failures.append("no audio found")
     line = " ".join(parts) or "no audio found"
     print("AUDIO-QA:", line)
     (ROOT / ".github" / "last-audio-qa.txt").write_text(line + "\n", encoding="utf-8")
+    if gate and failures:
+        print("AUDIO-QA GATE FAILED:", "; ".join(failures), file=sys.stderr)
+        return 1
+    return 0
 
 
 if __name__ == "__main__":

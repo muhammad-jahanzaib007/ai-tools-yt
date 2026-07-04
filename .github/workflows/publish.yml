@@ -46,12 +46,14 @@ jobs:
       - run: pip install --upgrade requests anthropic google-api-python-client google-auth google-auth-httplib2 librosa soundfile faster-whisper pillow
 
       # Slot decides the format: midday = tool battle, evening = Toolverse comic.
-      # FORCE_COMIC_ONCE: validate the transparent hero avatars on a real comic.
-      # REVERT after this run.
       - name: Pick format by slot
         id: fmt
         run: |
-          echo "format=comic" >> "$GITHUB_OUTPUT"
+          if [ "$(date -u +%H)" -lt 16 ]; then
+            echo "format=battle" >> "$GITHUB_OUTPUT"
+          else
+            echo "format=comic" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Generate brief
         env:
@@ -92,6 +94,11 @@ jobs:
           GEMINI_VOICE: ${{ vars.GEMINI_VOICE }}
         run: python automation/render_video.py
 
+      # Gate BEFORE publishing: abort on silent/garbled audio so a broken video
+      # never reaches YouTube/IG/FB/TikTok. Peak + monotone stay advisory.
+      - name: Audio QA gate
+        run: python automation/audio_qa.py --gate
+
       - name: Upload to YouTube
         env:
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
@@ -116,11 +123,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python automation/crosspost.py
 
-      - name: Audio QA + record
+      - name: Record status
         if: always()
         continue-on-error: true
         run: |
-          python automation/audio_qa.py || true
+          python automation/audio_qa.py || true   # refresh telemetry post-upload
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git pull --rebase --quiet || true
