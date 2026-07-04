@@ -52,6 +52,9 @@ jobs:
         run: python automation/make_character_art.py
 
       - name: Commit art
+        # always(): when generation fails outright the last-art.txt receipt is
+        # the ONLY visible error trace (job logs need admin auth) — commit it.
+        if: always()
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

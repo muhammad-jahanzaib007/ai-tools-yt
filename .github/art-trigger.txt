@@ -1,1 +1,1 @@
-SMOKE TEST limit=1 model=gpt-image-2 : one portrait hero on gpt-image-2 to judge quality + cost before deciding the full 46 batch. 2026-07-04 #20
+FULL BATCH #21: all 46 heroes, portrait 1024x1536, head-to-toe, transparent. Defaults from repo vars (mini). gpt-image-2 rejected: no transparent-background support (tested run 20). No pushes to main while this runs. 2026-07-04
