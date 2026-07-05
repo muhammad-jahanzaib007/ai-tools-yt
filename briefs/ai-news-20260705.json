@@ -1,0 +1,82 @@
+{
+  "slug": "ai-news-20260705",
+  "title": "AI News: Anthropic's Drug Ambition, Alibaba Ban, Hollywood Disputes",
+  "hook": "The future of medicine is changing, thanks to AI.",
+  "news": {
+    "headline": "Anthropic's drug ambition takes centre stage.",
+    "outro": "Follow for your daily AI news brief tomorrow.",
+    "stories": [
+      {
+        "title": "Anthropic's New Lab",
+        "source": "The Verge",
+        "category": "models",
+        "detail": "wants to develop its own drugs"
+      },
+      {
+        "title": "Alibaba Bans AI Tool",
+        "source": "TechCrunch",
+        "category": "policy",
+        "detail": "classified Claude Code as high-risk"
+      },
+      {
+        "title": "Midjourney vs. Hollywood",
+        "source": "TechCrunch",
+        "category": "apps",
+        "detail": "wants studios to reveal AI usage"
+      },
+      {
+        "title": "Google's AI History",
+        "source": "TechCrunch",
+        "category": "apps",
+        "detail": "imagines Declaration with AI help"
+      }
+    ],
+    "dateLabel": "5 July 2026"
+  },
+  "narration": [
+    {
+      "text": "The future of medicine is changing, thanks to AI. Anthropic has revealed bold plans to develop new drugs.",
+      "broll": "AI lab drugs"
+    },
+    {
+      "text": "Anthropic announced Claude Science, a new AI workbench for scientists. The Verge reports it aims to develop its own drugs. This pulls fragmented tools and datasets into one environment, generating figures and visuals.",
+      "broll": "researcher science bench"
+    },
+    {
+      "text": "TechCrunch reports Alibaba has reportedly banned Claude Code. It classified the AI software as high-risk. This shows major companies are assessing AI tools for internal use.",
+      "broll": "laptop ban symbol"
+    },
+    {
+      "text": "Midjourney is challenging Hollywood studios. TechCrunch says it wants studios to reveal their own AI usage. This is part of an ongoing legal dispute for transparency.",
+      "broll": "film camera lawsuit"
+    },
+    {
+      "text": "Google's new commercial imagines a Declaration of Independence. TechCrunch reports it asks what if Founding Fathers had Google Workspace. This highlights AI's role in creative and historical contexts.",
+      "broll": "quill pen AI"
+    },
+    {
+      "text": "That's your AI news for today. Which story do you think is most impactful? Let us know in the comments. And be sure to follow us for tomorrow's AI brief.",
+      "broll": "futuristic data stream"
+    }
+  ],
+  "description": "Catch up on today's top AI headlines. Anthropic is stepping into drug development, while Alibaba bans a major AI tool. Midjourney takes Hollywood to task, and Google imagines history with AI.",
+  "links": [],
+  "tags": [
+    "ai news",
+    "artificial intelligence",
+    "anthropic",
+    "claude science",
+    "drug discovery",
+    "alibaba",
+    "midjourney",
+    "hollywood",
+    "google ai",
+    "tech news",
+    "ai policy",
+    "ai models"
+  ],
+  "thumbnail_text": "AI Drugs, Bans, Films",
+  "topic": "Daily AI news",
+  "date": "2026-07-05",
+  "hook_type": "result_first"
+}
