@@ -29,7 +29,7 @@ DATA = ROOT / "automation"
 BRIEFS = ROOT / "briefs"
 TOPICS_JSON = DATA / "topics.json"
 UNIVERSE_JSON = DATA / "universe.json"
-FORMAT = os.environ.get("FORMAT", "battle")   # battle | comic (AI Toolverse episode)
+FORMAT = os.environ.get("FORMAT", "battle")   # battle | comic (Toolverse) | news (daily AI news)
 
 MODEL = os.environ.get("BLOG_MODEL", "openai/gpt-4o-mini")
 ENDPOINT = os.environ.get("MODELS_ENDPOINT", "https://models.github.ai/inference/chat/completions")
@@ -385,6 +385,97 @@ def generate_comic_brief(villain, uni, hook_style):
     return b
 
 
+NEWS_CATEGORIES = ("chips", "models", "apps", "money", "policy", "research")
+
+
+def _clean_news(nw, narration):
+    """Validate the news block. None = unusable (caller aborts: a news video
+    with hallucinated stories must never ship)."""
+    if not isinstance(nw, dict):
+        return None
+    try:
+        stories = []
+        for s in nw.get("stories") or []:
+            cat = str(s.get("category", "")).strip().lower()
+            if cat not in NEWS_CATEGORIES:
+                cat = "apps"
+            stories.append({"title": strip_em(str(s["title"])).strip(),
+                            "source": strip_em(str(s["source"])).strip(),
+                            "category": cat,
+                            "detail": strip_em(str(s["detail"])).strip()})
+        if not 3 <= len(stories) <= 5:
+            raise ValueError(f"{len(stories)} stories")
+        if len(narration) != len(stories) + 2:
+            raise ValueError(f"narration {len(narration)} segs != stories+2")
+        out = {"headline": strip_em(str(nw["headline"])).strip(),
+               "outro": strip_em(str(nw["outro"])).strip(),
+               "stories": stories}
+        if not out["headline"] or not out["outro"]:
+            raise ValueError("empty field")
+        if any(not (s["title"] and s["source"] and s["detail"]) for s in stories):
+            raise ValueError("empty story field")
+        return out
+    except (KeyError, ValueError, TypeError) as e:
+        print(f"news block invalid ({e})", file=sys.stderr)
+        return None
+
+
+def generate_news_brief(stories, hook_style):
+    """Script today's AI-news Short, grounded ONLY in the fetched stories."""
+    lines = []
+    for i, s in enumerate(stories, 1):
+        lines.append(f"{i}. [{s['category']}] {s['title']} (sources: {', '.join(s['sources'])})\n"
+                     f"   {s['summary'][:320]}")
+    feed = "\n".join(lines)
+    user = (
+        "Script a 60-90 second faceless 'Daily AI News' YouTube Short from TODAY'S real "
+        "stories below. Pick the 4 most impactful, varied stories (avoid two takes on the "
+        "same theme; prefer different categories).\n\n"
+        f"TODAY'S STORIES (your ONLY permitted facts):\n{feed}\n\n"
+        "CRITICAL GROUNDING RULE: every claim in the narration and every story field must "
+        "come from the summaries above. Do NOT add numbers, product names, dates or details "
+        "that are not in them. If a summary is thin, stay general. Attribute each story to "
+        "its source by name in the narration (e.g. 'TechCrunch reports').\n\n"
+        "Return a single JSON object with these keys:\n"
+        "- slug: kebab-case, 3-6 words, no dates\n"
+        "- title: a clickable YouTube title for today's AI news roundup, <=70 chars, "
+        "name the single biggest story in it\n"
+        "- hook: the spoken opening line (<=14 words), a scroll-stopping pattern-interrupt "
+        f"of this exact style: {HOOK_STYLES[hook_style]}\n"
+        '- news: {"headline": "the day\'s biggest angle for the intro card, <=12 words", '
+        '"stories": [EXACTLY the 4 chosen, in the order you cover them, each '
+        '{"title": "display headline <=9 words", "source": "the outlet name", '
+        '"category": "one of chips|models|apps|money|policy|research", '
+        '"detail": "one concrete display line from the summary, <=14 words"}], '
+        '"outro": "a follow call-to-action <=12 words"}\n'
+        "- narration: EXACTLY stories+2 segments, each {\"text\", \"broll\" (2-4 word stock "
+        "query)}. Segment 1 = the hook plus a one-line tease of the biggest story (plays over "
+        "the intro card). Then ONE segment per story in the same order as news.stories: what "
+        "happened, why it matters, source named; 2-3 short sentences, max 32 words. Final "
+        "segment = quick sign-off, ask viewers which story matters most to them in the "
+        "comments, and nudge a follow for tomorrow's brief. READ LIKE AN ENERGETIC NEWS "
+        "ANCHOR: urgent, crisp, confident. Short punchy sentences. It must sound spoken.\n"
+        "- description: 2-3 sentences summarising today's brief. No links.\n"
+        '- links: [] (news videos have no tool links)\n'
+        "- tags: 8-12 lowercase search tags (do not include any year)\n"
+        "- thumbnail_text: 3-5 punchy words\n"
+        "No em dashes anywhere."
+    )
+    b = _clean_common(chat_json(user, max_tokens=4000))
+    news = _clean_news(b.get("news"), b["narration"])
+    if not news:
+        b = _clean_common(chat_json(
+            user + "\n\nYOUR PREVIOUS ATTEMPT FAILED validation: the news object was "
+            "missing/invalid or narration was not exactly stories+2 segments. Return "
+            "3-5 stories and count the narration segments before answering.",
+            max_tokens=4000))
+        news = _clean_news(b.get("news"), b["narration"])
+    if not news:
+        sys.exit("news brief failed validation twice; not risking a hallucinated news video")
+    b["news"] = news
+    return b
+
+
 def _trend_lines(limit=12):
     """Recent high-performing niche videos from trend_research.py, if present."""
     f = DATA / "trends.json"
@@ -440,7 +531,20 @@ def main():
     if hook_style not in HOOK_STYLES:
         sys.exit(f"unknown HOOK_STYLE {hook_style!r}; options: {', '.join(sorted(HOOK_STYLES))}")
     print(f"Hook style: {hook_style}")
-    if FORMAT == "comic" and UNIVERSE_JSON.exists():
+    if FORMAT == "news":
+        from news_sources import fetch_news
+        print("Fetching today's AI news...")
+        stories = fetch_news(limit=8)
+        if len(stories) < 3:
+            sys.exit(f"only {len(stories)} fresh AI stories found; not enough for a news video")
+        for s in stories:
+            print(f"  [{s['category']}] {s['title']}  ({', '.join(s['sources'])})")
+        topic = "Daily AI news"
+        brief = generate_news_brief(stories, hook_style)
+        today_d = dt.datetime.now(dt.timezone.utc).date()
+        brief["news"]["dateLabel"] = f"{today_d.day} {today_d.strftime('%B %Y')}"
+        brief["slug"] = f"ai-news-{today_d.strftime('%Y%m%d')}"
+    elif FORMAT == "comic" and UNIVERSE_JSON.exists():
         uni = load(UNIVERSE_JSON)
         used = set(uni.get("published_threats", []))
         pool = [v for v in uni["villains"] if v["name"] not in used]

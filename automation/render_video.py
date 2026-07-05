@@ -574,6 +574,20 @@ def render_battle(brief):
                    f"Battle render: {battle['toolA']} vs {battle['toolB']}")
 
 
+NEWS_ANCHOR_STYLE = ("Read this like an energetic breaking-news anchor: urgent, "
+                     "crisp and confident, fast but perfectly clear: ")
+
+
+def render_news(brief):
+    """Daily AI news: one anchor voice, NewsShort composition."""
+    news = brief["news"]
+    props = {"dateLabel": news["dateLabel"], "headline": news["headline"],
+             "stories": news["stories"], "outro": news["outro"]}
+    voices = [(None, NEWS_ANCHOR_STYLE)] * len(brief["narration"])
+    _render_scenes(brief, "NewsShort", props,
+                   f"AI news render: {news['dateLabel']}", voices=voices)
+
+
 def _art_slug(name):
     return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
 
@@ -801,7 +815,9 @@ def main():
 
     scene_render = None
     if (REMOTION_DIR / "package.json").exists():
-        if brief.get("comic"):
+        if brief.get("news"):
+            scene_render = render_news
+        elif brief.get("comic"):
             scene_render = render_comic
         elif brief.get("battle"):
             scene_render = render_battle

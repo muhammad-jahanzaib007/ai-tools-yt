@@ -28,11 +28,14 @@ jobs:
 
       - run: pip install --upgrade requests anthropic
 
-      # trigger.txt containing the word "comic" fires a Toolverse episode brief
+      # trigger.txt containing "news" fires a daily AI-news brief; "comic" a
+      # Toolverse episode; anything else a battle.
       - name: Pick format
         id: fmt
         run: |
-          if grep -qi comic .github/trigger.txt 2>/dev/null; then
+          if grep -qi news .github/trigger.txt 2>/dev/null; then
+            echo "format=news" >> "$GITHUB_OUTPUT"
+          elif grep -qi comic .github/trigger.txt 2>/dev/null; then
             echo "format=comic" >> "$GITHUB_OUTPUT"
           else
             echo "format=battle" >> "$GITHUB_OUTPUT"

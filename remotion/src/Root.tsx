@@ -3,6 +3,7 @@ import { CalculateMetadataFunction, Composition } from "remotion";
 import { BattleVideo } from "./battle/BattleVideo";
 import { BattleProps, FPS, battleDuration, totalFrames } from "./battle/types";
 import { ComicProps, ComicVideo, totalComicFrames } from "./comic/ComicVideo";
+import { NewsProps, NewsVideo, totalNewsFrames } from "./news/NewsVideo";
 
 const sampleBattle: BattleProps = {
   toolA: "ElevenLabs",
@@ -66,6 +67,36 @@ const comicMetadata: CalculateMetadataFunction<ComicProps> = ({ props }) => ({
   durationInFrames: totalComicFrames(props),
 });
 
+const sampleNews: NewsProps = {
+  dateLabel: "5 July 2026",
+  headline: "Alibaba bans Claude Code as the AI tool wars heat up",
+  stories: [
+    {
+      title: "Alibaba bans employees from using Claude Code",
+      source: "TechCrunch",
+      category: "policy",
+      detail: "The tool was reportedly classified as high-risk software internally.",
+    },
+    {
+      title: "Anthropic unveils Claude Science for researchers",
+      source: "The Verge",
+      category: "models",
+      detail: "A new AI workbench aimed squarely at scientific discovery.",
+    },
+    {
+      title: "Midjourney demands studios reveal their AI usage",
+      source: "TechCrunch",
+      category: "policy",
+      detail: "The legal fight with three Hollywood studios escalates.",
+    },
+  ],
+  outro: "Follow for tomorrow's AI brief. One minute, every day.",
+};
+
+const newsMetadata: CalculateMetadataFunction<NewsProps> = ({ props }) => ({
+  durationInFrames: totalNewsFrames(props),
+});
+
 export const RemotionRoot: React.FC = () => {
   return (
     <>
@@ -88,6 +119,16 @@ export const RemotionRoot: React.FC = () => {
         height={1920}
         defaultProps={sampleBattle}
         calculateMetadata={battleMetadata}
+      />
+      <Composition
+        id="NewsShort"
+        component={NewsVideo}
+        durationInFrames={totalNewsFrames(sampleNews)}
+        fps={FPS}
+        width={1080}
+        height={1920}
+        defaultProps={sampleNews}
+        calculateMetadata={newsMetadata}
       />
       <Composition
         id="ComicShort"
