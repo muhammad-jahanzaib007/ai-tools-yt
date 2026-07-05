@@ -150,5 +150,10 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git pull --rebase --quiet || true
-          git add .github/last-audio-qa.txt .github/last-upload.txt .github/last-crosspost.txt automation/playlists.json 2>/dev/null || true
+          # Add each receipt individually: one missing pathspec in a combined
+          # `git add a b c` fails the WHOLE add (nothing staged), which silently
+          # dropped all receipts when playlists.json didn't exist (2026-07-05).
+          for f in .github/last-audio-qa.txt .github/last-upload.txt .github/last-crosspost.txt automation/playlists.json; do
+            [ -f "$f" ] && git add "$f"
+          done
           git commit -m "audio qa" --quiet && git push --quiet || echo "nothing to record"
