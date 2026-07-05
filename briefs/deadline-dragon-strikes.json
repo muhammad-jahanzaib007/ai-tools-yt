@@ -1,0 +1,54 @@
+{
+  "slug": "deadline-dragon-strikes",
+  "title": "Deadline Dragon Strikes. The Campaigner fights back.",
+  "hook": "The Deadline Dragon vanished, and the marketing campaign was perfect.",
+  "comic": {
+    "threat": "Deadline Dragon",
+    "heroes": [
+      {
+        "tool": "Jasper",
+        "alias": "The Campaigner",
+        "color": "#FF5C8A",
+        "power": "Brand voice armour repels chaos, campaigns launch flawlessly."
+      }
+    ],
+    "resolution": "Jasper's brand-voice armour protected the campaign, allowing it to launch on time and on message."
+  },
+  "narration": [
+    {
+      "text": "The digital realm trembles. A crucial product launch looms. But the Deadline Dragon descends, devouring precious hours. The clock ticks faster. A creator's campaign teeters on the brink.",
+      "broll": "ticking clock"
+    },
+    {
+      "text": "I am The Campaigner. My tool, Jasper. I fire marketing campaigns that never miss. My brand-voice armour ensures every word is perfect. The Deadline Dragon cannot break my focus.",
+      "broll": "marketing campaign"
+    },
+    {
+      "text": "The day is saved. Jasper ensures brand consistency, even under immense pressure. Which hero do you want to see next? Let us know in the comments, and do not forget to subscribe.",
+      "broll": "victory celebration"
+    }
+  ],
+  "description": "The Deadline Dragon threatens a crucial product launch. See how Jasper, The Campaigner, uses its brand-voice armour to fight back and secure a flawless marketing campaign. Discover the real power of AI tools in action.",
+  "links": [
+    {
+      "name": "Jasper",
+      "url": "https://www.jasper.ai"
+    }
+  ],
+  "tags": [
+    "ai tools",
+    "ai marketing",
+    "jasper ai",
+    "deadline management",
+    "youtube shorts",
+    "ai for business",
+    "content creation",
+    "productivity tools",
+    "marketing automation",
+    "brand consistency"
+  ],
+  "thumbnail_text": "Dragon vs. Campaigner",
+  "topic": "Toolverse episode: Deadline Dragon",
+  "date": "2026-07-05",
+  "hook_type": "result_first"
+}
