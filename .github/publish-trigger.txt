@@ -1,1 +1,1 @@
-﻿format=comic : manual run with the new portrait heroes, per user request 2026-07-04. Cron slots unaffected (override only applies to pushed triggers).
+manual battle for missed 2026-07-05 midday slot format=battle
