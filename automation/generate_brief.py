@@ -139,48 +139,17 @@ def _raw_completion(user, max_tokens):
     sys.exit(f"GitHub Models request failed after retries ({last})")
 
 
-def _extract_first_json_block(text):
-    start = text.find("{")
-    if start == -1:
-        return None
-
-    depth = 0
-    for i in range(start, len(text)):
-        c = text[i]
-        if c == "{":
-            depth += 1
-        elif c == "}":
-            depth -= 1
-
-        if depth == 0:
-            return text[start:i + 1]
-
-    return None
-
-
-def _clean_response_text(s):
-    # Strip common markdown fences and surrounding whitespace
-    s = re.sub(r"^```(?:json)?\s*", "", s, flags=re.S)
-    s = re.sub(r"\s*```$", "", s, flags=re.S)
-    return s.strip()
-
-
 def chat_json(user, max_tokens=3000):
     content = _raw_completion(user, max_tokens)
-    content = _clean_response_text(content)
 
-    # Try parsing the whole response first
     try:
         return json.loads(content)
-    except Exception:
-        pass
+    except json.JSONDecodeError:
+        json_text = _extract_first_json_block(content)
+        if json_text is None:
+            sys.exit(f"Model did not return JSON:\n{content[:300]}")
 
-    # Otherwise extract the first JSON object
-    json_text = _extract_first_json_block(content)
-    if json_text is None:
-        raise ValueError("No JSON object found in response.")
-
-    return json.loads(json_text)
+        return json.loads(json_text)
 # comparable sample per style; analytics_report.py joins hook_type back to
 # retention so the winning opener can be doubled down on.
 HOOK_STYLES = {
