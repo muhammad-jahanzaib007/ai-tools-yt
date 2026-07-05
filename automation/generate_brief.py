@@ -122,7 +122,7 @@ def _raw_completion(user, max_tokens):
                     "model": MODEL,
                     "messages": [{"role": "system", "content": SYSTEM},
                                  {"role": "user", "content": user}],
-                    "temperature": 0.8,
+                    "temperature": 0.0,
                     "max_tokens": max_tokens,
                     "response_format": {"type": "json_object"},
                 },
