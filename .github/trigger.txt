@@ -1,1 +1,1 @@
-news diagnose brief failure 2026-07-05T2325Z
+news retest after 9664f4a syntax fix 2026-07-05T2333Z
