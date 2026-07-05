@@ -1,1 +1,1 @@
-manual battle for missed 2026-07-05 midday slot format=battle
+format=news manual run after outage fixes 2026-07-06
