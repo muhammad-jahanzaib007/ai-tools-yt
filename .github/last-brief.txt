@@ -1,6 +1,1 @@
-2026-07-05T23:26:46Z failure brief=canva-ai-vs-adobe-express-design
---- log tail ---
-  File "/home/runner/work/ai-tools-yt/ai-tools-yt/automation/generate_brief.py", line 142
-    def _extract_first_json_block(text):start = text.find(”{”)if start == -1:return Nonedepth = 0for i in range(start, len(text)):c = text[i]if c == “{”:depth += 1elif c == “}”:depth -= 1if depth == 0:return text[start:i + 1]return None
-                                                          ^
-SyntaxError: invalid character '”' (U+201D)
+2026-07-05T23:31:03Z success brief=ai-news-20260705-0705
