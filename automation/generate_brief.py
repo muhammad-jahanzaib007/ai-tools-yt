@@ -446,7 +446,8 @@ def generate_news_brief(stories, hook_style):
         '"stories": [EXACTLY the 4 chosen, in the order you cover them, each '
         '{"title": "display headline <=9 words", "source": "the outlet name", '
         '"category": "one of chips|models|apps|money|policy|research", '
-        '"detail": "one concrete display line from the summary, <=14 words"}], '
+        '"detail": "one concrete display line from the summary: a complete capitalised '
+        'sentence <=14 words, readable on its own"}], '
         '"outro": "a follow call-to-action <=12 words"}\n'
         "- narration: EXACTLY stories+2 segments, each {\"text\", \"broll\" (2-4 word stock "
         "query)}. Segment 1 = the hook plus a one-line tease of the biggest story (plays over "

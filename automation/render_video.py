@@ -322,19 +322,21 @@ def _transcribe(path):
         return None
 
 
+def _norm_words(s):
+    return re.sub(r"[^a-z0-9' ]+", " ", s.lower()).split()
+
+
 def _wer(expected, path):
-    """Word error rate of the spoken take vs the script. None if unmeasurable.
-    Catches garbled TTS: pitch checks can't hear mangled words, Whisper can."""
+    """(word error rate, transcript) of the spoken take vs the script.
+    (None, None) if unmeasurable. Catches garbled TTS: pitch checks can't
+    hear mangled words, Whisper can."""
     hyp = _transcribe(path)
     if hyp is None:
-        return None
+        return None, None
 
-    def norm(s):
-        return re.sub(r"[^a-z0-9' ]+", " ", s.lower()).split()
-
-    r, h = norm(expected), norm(hyp)
+    r, h = _norm_words(expected), _norm_words(hyp)
     if not r:
-        return None
+        return None, hyp
     d = list(range(len(h) + 1))
     for i, rw in enumerate(r, 1):
         prev, d[0] = d[0], i
@@ -342,22 +344,41 @@ def _wer(expected, path):
             cur = d[j]
             d[j] = min(d[j] + 1, d[j - 1] + 1, prev + (rw != hw))
             prev = cur
-    return d[len(h)] / len(r)
+    return d[len(h)] / len(r), hyp
 
 
-def _take_score(ps, wer):
-    """Rank takes: intelligibility dominates, liveliness breaks ties."""
+def _style_leaked(style, text, hyp):
+    """True when the TTS spoke its style instruction aloud (Gemini prepends the
+    style prompt to the text and occasionally reads it: the first news render
+    opened with '...fast but perfectly clear.' on screen). Detected as several
+    distinctive style-prompt words appearing early in the transcript."""
+    if not style or hyp is None:
+        return False
+    text_words = set(_norm_words(text))
+    distinct = [w for w in _norm_words(style) if w not in text_words and len(w) > 3]
+    if not distinct:
+        return False
+    head = _norm_words(hyp)[:len(_norm_words(style)) + 8]
+    hits = sum(1 for w in distinct if w in head)
+    return hits >= 2
+
+
+def _take_score(ps, wer, leaked=False):
+    """Rank takes: intelligibility dominates, liveliness breaks ties.
+    A take that spoke its style prompt aloud is heavily penalised."""
     w = (1.0 - min(wer, 1.0)) if wer is not None else 0.6
     p = min((ps or 0) / 3.0, 1.0)
-    return w * 10 + p
+    return w * 10 + p - (8 if leaked else 0)
 
 
 def tts_take(text, dest, voice=None, style=None):
     """TTS with word timings, re-taking weak deliveries once. A take is weak
-    when it is garbled (high WER vs the script) or flat (low pitch variation).
-    TTS is non-deterministic, so a second take usually fixes it; the
-    better take wins. Returns (words, pitch_std_or_None)."""
-    takes = []                                   # (path, words, ps, wer)
+    when it is garbled (high WER vs the script), flat (low pitch variation),
+    or spoke the style prompt aloud. TTS is non-deterministic, so a second
+    take usually fixes it; the better take wins.
+    Returns (words, pitch_std_or_None)."""
+    eff_style = style or (_gem_style if VOICE_PROVIDER == "gemini" else None)
+    takes = []                                   # (path, words, ps, wer, leaked)
     for attempt in range(2):
         f = dest if attempt == 0 else dest.with_suffix(".take2.mp3")
         try:
@@ -366,16 +387,18 @@ def tts_take(text, dest, voice=None, style=None):
             if attempt == 0:
                 raise
             break
-        ps, wer = _pitch_std(f), _wer(text, f)
-        takes.append((f, words, ps, wer))
+        ps, (wer, hyp) = _pitch_std(f), _wer(text, f)
+        leaked = _style_leaked(eff_style, text, hyp)
+        takes.append((f, words, ps, wer, leaked))
         garbled = wer is not None and wer > MAX_WER
         flat = ps is not None and ps < FLAT_TAKE
-        if not garbled and not flat:
+        if not garbled and not flat and not leaked:
             break
         if attempt == 0:
-            why = f"wer={wer:.2f}" if garbled else f"pitch={ps:.2f}st"
+            why = ("style prompt spoken aloud" if leaked
+                   else f"wer={wer:.2f}" if garbled else f"pitch={ps:.2f}st")
             print(f"    weak take ({why}); re-taking")
-    best = max(takes, key=lambda t: _take_score(t[2], t[3]))
+    best = max(takes, key=lambda t: _take_score(t[2], t[3], t[4]))
     if best[0] != dest:
         shutil.move(str(best[0]), str(dest))
         print(f"    retake wins (wer={best[3]}, pitch={best[2]})")
@@ -574,8 +597,9 @@ def render_battle(brief):
                    f"Battle render: {battle['toolA']} vs {battle['toolB']}")
 
 
-NEWS_ANCHOR_STYLE = ("Read this like an energetic breaking-news anchor: urgent, "
-                     "crisp and confident, fast but perfectly clear: ")
+# Short on purpose: long style prompts raise the odds Gemini TTS reads the
+# instruction aloud (happened on the first news render; _style_leaked gates it).
+NEWS_ANCHOR_STYLE = "Say the following like an urgent, confident news anchor:\n\n"
 
 
 def render_news(brief):
