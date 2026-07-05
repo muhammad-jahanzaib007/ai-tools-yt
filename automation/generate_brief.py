@@ -75,8 +75,12 @@ def _gemini_completion(user, max_tokens):
                 json={
                     "systemInstruction": {"parts": [{"text": SYSTEM}]},
                     "contents": [{"role": "user", "parts": [{"text": user}]}],
+                    # thinkingBudget 0: 2.5-flash otherwise spends thinking tokens
+                    # from maxOutputTokens and can truncate the JSON mid-object
+                    # (suspected cause of the 2026-07-05 news-slot failure).
                     "generationConfig": {"temperature": 0.9, "maxOutputTokens": max_tokens,
-                                         "responseMimeType": "application/json"},
+                                         "responseMimeType": "application/json",
+                                         "thinkingConfig": {"thinkingBudget": 0}},
                 },
                 timeout=120,
             )
@@ -122,7 +126,7 @@ def _raw_completion(user, max_tokens):
                     "model": MODEL,
                     "messages": [{"role": "system", "content": SYSTEM},
                                  {"role": "user", "content": user}],
-                    "temperature": 0.0,
+                    "temperature": 0.8,
                     "max_tokens": max_tokens,
                     "response_format": {"type": "json_object"},
                 },
@@ -139,17 +143,40 @@ def _raw_completion(user, max_tokens):
     sys.exit(f"GitHub Models request failed after retries ({last})")
 
 
+def _extract_first_json_block(text):
+    """First balanced {...} block, or None. Handles fenced or prose-wrapped
+    model output that plain json.loads rejects. Truncated output (a brace
+    that never closes) returns None instead of raising."""
+    text = re.sub(r"^\s*```(?:json)?\s*|\s*```\s*$", "", text)
+    start = text.find("{")
+    if start == -1:
+        return None
+    depth = 0
+    for i in range(start, len(text)):
+        if text[i] == "{":
+            depth += 1
+        elif text[i] == "}":
+            depth -= 1
+            if depth == 0:
+                return text[start:i + 1]
+    return None
+
+
 def chat_json(user, max_tokens=3000):
     content = _raw_completion(user, max_tokens)
-
     try:
         return json.loads(content)
     except json.JSONDecodeError:
         json_text = _extract_first_json_block(content)
         if json_text is None:
-            sys.exit(f"Model did not return JSON:\n{content[:300]}")
+            sys.exit(f"model did not return JSON: {content[:300]}")
+        try:
+            return json.loads(json_text)
+        except json.JSONDecodeError as e:
+            sys.exit(f"model JSON unparseable ({e}): {json_text[:300]}")
 
-        return json.loads(json_text)
+
+# Hook styles rotate deterministically across briefs so ~30 videos give a
 # comparable sample per style; analytics_report.py joins hook_type back to
 # retention so the winning opener can be doubled down on.
 HOOK_STYLES = {
@@ -582,6 +609,11 @@ def main():
         # overwriting would clobber the old brief analytics joins against.
         brief["slug"] += "-" + today.replace("-", "")[4:]
         out = BRIEFS / f"{brief['slug']}.json"
+        n = 2
+        while out.exists():          # date suffix can still collide (2nd news
+            out = BRIEFS / f"{brief['slug']}-{n}.json"   # brief the same day)
+            n += 1
+        brief["slug"] = out.stem
     save(out, brief)
     (DATA / "latest.txt").write_text(brief["slug"], encoding="utf-8")   # render uses this
 

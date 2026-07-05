@@ -74,6 +74,7 @@ jobs:
           fi
 
       - name: Generate brief
+        id: brief
         env:
           FORMAT: ${{ steps.fmt.outputs.format }}
           HOOK_STYLE: ${{ vars.HOOK_STYLE }}
@@ -84,7 +85,12 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
           GEMINI_MODEL: ${{ vars.GEMINI_MODEL || 'gemini-2.5-flash' }}
-        run: python automation/generate_brief.py
+        # tee the log so Record status can commit the error tail on failure
+        # (the 2026-07-05 news/comic failures left no readable trace: job logs
+        # need admin, and this step wrote nothing to the receipt).
+        run: |
+          set -o pipefail
+          python automation/generate_brief.py 2>&1 | tee /tmp/brief.log
 
       - name: Save brief
         run: |
@@ -150,10 +156,16 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git pull --rebase --quiet || true
+          # A failed brief step leaves its error tail in the receipt so the
+          # reason is readable via git alone (job logs need admin).
+          if [ "${{ steps.brief.outcome }}" = "failure" ] && [ -f /tmp/brief.log ]; then
+            { echo "$(date -u +%FT%TZ) failure (publish run)"; echo "--- log tail ---"
+              tail -c 1500 /tmp/brief.log; } > .github/last-brief.txt
+          fi
           # Add each receipt individually: one missing pathspec in a combined
           # `git add a b c` fails the WHOLE add (nothing staged), which silently
           # dropped all receipts when playlists.json didn't exist (2026-07-05).
-          for f in .github/last-audio-qa.txt .github/last-upload.txt .github/last-crosspost.txt automation/playlists.json; do
+          for f in .github/last-brief.txt .github/last-audio-qa.txt .github/last-upload.txt .github/last-crosspost.txt automation/playlists.json; do
             [ -f "$f" ] && git add "$f"
           done
           git commit -m "audio qa" --quiet && git push --quiet || echo "nothing to record"

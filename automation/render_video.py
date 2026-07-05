@@ -854,6 +854,12 @@ def main():
             raise
         except BaseException as e:      # incl. SystemExit from run(): keep the cron alive
             print(f"scene render failed ({e}); falling back to b-roll render", file=sys.stderr)
+            # Marker so the upload receipt shows fmt=<x>-FALLBACK: without it a
+            # persistent scene-render bug ships plain b-roll daily and telemetry
+            # still reads like the real format shipped.
+            OUT.mkdir(exist_ok=True)
+            (OUT / f"{slug}.fallback").write_text(
+                f"{type(e).__name__}: {e}\n", encoding="utf-8")
 
     _reset_work()
 

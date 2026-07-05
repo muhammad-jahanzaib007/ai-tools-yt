@@ -155,12 +155,17 @@ def main():
     req = yt.videos().insert(part="snippet,status", body=body, media_body=media)
     resp = None
     while resp is None:
-        status, resp = req.next_chunk()
+        # retry transient API/network errors: a single 503 here used to kill
+        # the run after ~30 min of brief+render work
+        status, resp = req.next_chunk(num_retries=5)
     vid = resp["id"]
     url = f"https://youtu.be/{vid}"
     print(f"Uploaded: {url}")
 
     fmt = brief_format(brief)
+    if (OUT / f"{slug}.fallback").exists():
+        fmt += "-FALLBACK"        # scene render fell back to plain b-roll;
+                                  # also keeps the b-roll video off the playlist
     pl = add_to_playlist(yt, vid, fmt)
 
     # Private repo: record the URL so it can be read back with git alone.
