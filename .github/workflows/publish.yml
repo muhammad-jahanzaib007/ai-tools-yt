@@ -1,10 +1,11 @@
 name: Publish (full pipeline)
 
 # Fully automated: generate a brief, render the video, upload to YouTube.
-# 2x/day (12:00 + 21:00 UTC = US morning and evening scroll). On demand too.
+# 3x/day: 12:00 battle, 17:00 AI news, 21:00 Toolverse comic (UTC). On demand too.
 on:
   schedule:
     - cron: "13 12 * * *"
+    - cron: "13 17 * * *"
     - cron: "13 21 * * *"
   workflow_dispatch:
   push:
@@ -45,23 +46,27 @@ jobs:
 
       - run: pip install --upgrade requests anthropic google-api-python-client google-auth google-auth-httplib2 librosa soundfile faster-whisper pillow
 
-      # Slot decides the format: midday = tool battle, evening = Toolverse comic.
-      # A manually pushed trigger may force one by putting "format=battle" or
-      # "format=comic" in publish-trigger.txt; cron runs always use the clock,
-      # so a leftover override can never hijack the schedule.
+      # Slot decides the format: midday = tool battle, late afternoon = AI news,
+      # evening = Toolverse comic. A manually pushed trigger may force one by
+      # putting "format=battle|news|comic" in publish-trigger.txt; cron runs
+      # always use the clock, so a leftover override can never hijack the
+      # schedule.
       - name: Pick format by slot
         id: fmt
         run: |
           ov=""
           if [ "$GITHUB_EVENT_NAME" = "push" ]; then
-            ov=$(grep -oiE "format=(battle|comic)" .github/publish-trigger.txt \
+            ov=$(grep -oiE "format=(battle|comic|news)" .github/publish-trigger.txt \
                  | head -1 | cut -d= -f2 | tr "A-Z" "a-z") || true
           fi
+          h=$(date -u +%H)
           if [ -n "$ov" ]; then
             echo "format=$ov (trigger override)"
             echo "format=$ov" >> "$GITHUB_OUTPUT"
-          elif [ "$(date -u +%H)" -lt 16 ]; then
+          elif [ "$h" -lt 16 ]; then
             echo "format=battle" >> "$GITHUB_OUTPUT"
+          elif [ "$h" -lt 19 ]; then
+            echo "format=news" >> "$GITHUB_OUTPUT"
           else
             echo "format=comic" >> "$GITHUB_OUTPUT"
           fi
@@ -143,5 +148,5 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git pull --rebase --quiet || true
-          git add .github/last-audio-qa.txt .github/last-upload.txt .github/last-crosspost.txt 2>/dev/null || true
+          git add .github/last-audio-qa.txt .github/last-upload.txt .github/last-crosspost.txt automation/playlists.json 2>/dev/null || true
           git commit -m "audio qa" --quiet && git push --quiet || echo "nothing to record"

@@ -25,6 +25,59 @@ from googleapiclient.http import MediaFileUpload
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "output"
 BRIEFS = ROOT / "briefs"
+PLAYLISTS_JSON = ROOT / "automation" / "playlists.json"
+
+# Each format gets its own playlist; created on first use, id persisted in
+# playlists.json (committed by the workflow's record step).
+PLAYLIST_TITLES = {
+    "battle": "AI Tool Battles",
+    "comic": "The AI Toolverse",
+    "news": "Daily AI News",
+}
+
+
+def brief_format(brief):
+    for f in ("news", "comic", "battle"):
+        if brief.get(f):
+            return f
+    return "battle"
+
+
+def add_to_playlist(yt, vid, fmt):
+    """Create the format's playlist if needed and add the video. Best-effort:
+    needs the full youtube scope; a scope-limited token skips with a hint."""
+    title = PLAYLIST_TITLES.get(fmt)
+    if not title:
+        return "skip"
+    try:
+        m = json.loads(PLAYLISTS_JSON.read_text(encoding="utf-8")) if PLAYLISTS_JSON.exists() else {}
+    except Exception:
+        m = {}
+    try:
+        pid = m.get(fmt)
+        if not pid:
+            resp = yt.playlists().insert(part="snippet,status", body={
+                "snippet": {"title": title,
+                            "description": f"Snackbyte AI · {title}, new videos daily."},
+                "status": {"privacyStatus": "public"},
+            }).execute()
+            pid = resp["id"]
+            m[fmt] = pid
+            PLAYLISTS_JSON.write_text(json.dumps(m, indent=2) + "\n", encoding="utf-8")
+            print(f"Created playlist {title!r} ({pid})")
+        yt.playlistItems().insert(part="snippet", body={
+            "snippet": {"playlistId": pid,
+                        "resourceId": {"kind": "youtube#video", "videoId": vid}},
+        }).execute()
+        print(f"Added to playlist {title!r}")
+        return f"ok:{pid}"
+    except Exception as e:
+        print(f"playlist step skipped: {e}", file=sys.stderr)
+        if "insufficient" in str(e).lower() or "403" in str(e):
+            print("hint: re-mint YT_REFRESH_TOKEN with the "
+                  "https://www.googleapis.com/auth/youtube scope to enable playlists",
+                  file=sys.stderr)
+        return "fail"
 
 CID = os.environ.get("YT_CLIENT_ID")
 CSEC = os.environ.get("YT_CLIENT_SECRET")
@@ -85,10 +138,11 @@ def main():
     desc = (desc + "\n\n" + " ".join(htags[:12])).strip()[:4900]
     tags = [t for t in brief.get("tags", []) if t][:15]
 
+    # No scopes pinned: the refresh grants whatever the token was authorised
+    # with, so a broad token enables playlists without breaking a narrow one.
     creds = Credentials(
         None, refresh_token=RT, client_id=CID, client_secret=CSEC,
         token_uri="https://oauth2.googleapis.com/token",
-        scopes=["https://www.googleapis.com/auth/youtube.upload"],
     )
     yt = build("youtube", "v3", credentials=creds, cache_discovery=False)
 
@@ -105,10 +159,14 @@ def main():
     vid = resp["id"]
     url = f"https://youtu.be/{vid}"
     print(f"Uploaded: {url}")
+
+    fmt = brief_format(brief)
+    pl = add_to_playlist(yt, vid, fmt)
+
     # Private repo: record the URL so it can be read back with git alone.
     try:
         (ROOT / ".github" / "last-upload.txt").write_text(
-            f"{video.stem} {PRIVACY} {url}\n", encoding="utf-8")
+            f"{video.stem} {PRIVACY} {url} fmt={fmt} pl={pl}\n", encoding="utf-8")
     except Exception:
         pass
 
