@@ -1,0 +1,81 @@
+{
+  "slug": "ai-news-20260705-0705-2",
+  "title": "AI News: Google's Declaration Disaster, Midjourney's Hollywood Fight",
+  "hook": "Is AI really the future of education?",
+  "news": {
+    "headline": "Wealthy Use AI For Kids",
+    "outro": "Follow for your daily AI news!",
+    "stories": [
+      {
+        "title": "Rich Kids Learn AI",
+        "source": "The Verge",
+        "category": "apps",
+        "detail": "Some of the nation’s rich are letting AI teach their kids."
+      },
+      {
+        "title": "Google's AI Ad Flop",
+        "source": "The Verge",
+        "category": "apps",
+        "detail": "Infuriating Google commercial imagines the founding fathers embracing AI."
+      },
+      {
+        "title": "Midjourney's AI Fight",
+        "source": "TechCrunch",
+        "category": "apps",
+        "detail": "Midjourney wants Hollywood studios to reveal their AI usage."
+      },
+      {
+        "title": "Alibaba Bans Claude",
+        "source": "TechCrunch",
+        "category": "policy",
+        "detail": "Alibaba reportedly bans employees from using Claude Code."
+      }
+    ],
+    "dateLabel": "5 July 2026"
+  },
+  "narration": [
+    {
+      "text": "Is AI really the future of education? Some wealthy Americans think so, turning to AI for their children's learning. More on that first.",
+      "broll": "futuristic school classroom"
+    },
+    {
+      "text": "The Verge reports that some of the nation’s wealthy are letting AI teach their children. This is happening despite general public distrust of AI. Companies like Forge Prep and Alpha are mentioned.",
+      "broll": "luxury home kids"
+    },
+    {
+      "text": "Also from The Verge, an infuriating Google commercial imagines the founding fathers embracing AI. It shows them using Google's collaboration tools and Gemini. The ad imagines them drafting the Declaration of Independence with AI help.",
+      "broll": "founding fathers ai"
+    },
+    {
+      "text": "TechCrunch reports that Midjourney wants Hollywood studios to reveal their AI usage. This is part of an ongoing legal dispute. Midjourney seeks to compel studios to show how they use AI themselves.",
+      "broll": "hollywood film studio"
+    },
+    {
+      "text": "TechCrunch also reports that Alibaba has reportedly banned employees from using Claude Code. Alibaba has classified Claude Code as high-risk software. This is a significant policy shift.",
+      "broll": "office code screen"
+    },
+    {
+      "text": "That's your daily AI news brief. Which story do you think is most impactful? Let us know in the comments. And follow for tomorrow's AI news.",
+      "broll": "ai news logo"
+    }
+  ],
+  "description": "Today's AI news dives into the unexpected trend of wealthy parents using AI for their children's education. We also cover Google's controversial new ad campaign, Midjourney's legal challenge to Hollywood studios, and Alibaba's reported ban on Claude Code.",
+  "links": [],
+  "tags": [
+    "ai news",
+    "artificial intelligence",
+    "daily ai",
+    "ai education",
+    "google ai",
+    "midjourney",
+    "hollywood ai",
+    "alibaba ai",
+    "claude code",
+    "tech news",
+    "ai tools"
+  ],
+  "thumbnail_text": "AI News Daily",
+  "topic": "Daily AI news",
+  "date": "2026-07-05",
+  "hook_type": "question"
+}
