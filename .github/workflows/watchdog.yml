@@ -7,7 +7,7 @@ name: Pipeline watchdog
 # On trouble it opens a GitHub issue, which lands in the owner's inbox.
 on:
   schedule:
-    - cron: "45 14 * * *"   # after the 12:13 UTC slot should have finished
+    - cron: "45 13 * * *"   # after the midday UK slot should have finished (UTC, set for BST)
   workflow_dispatch:
 
 permissions:

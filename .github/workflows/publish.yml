@@ -1,12 +1,14 @@
 name: Publish (full pipeline)
 
 # Fully automated: generate a brief, render the video, upload to YouTube.
-# 3x/day: 12:00 battle, 17:00 AI news, 21:00 Toolverse comic (UTC). On demand too.
+# 3x/day at UK times: 12:13 battle, 17:13 AI news, 21:13 Toolverse comic.
+# Crons are UTC, set for BST (UK = UTC+1); after the October clock change
+# these fire an hour early UK-side unless shifted back.
 on:
   schedule:
-    - cron: "13 12 * * *"
-    - cron: "13 17 * * *"
-    - cron: "13 21 * * *"
+    - cron: "13 11 * * *"
+    - cron: "13 16 * * *"
+    - cron: "13 20 * * *"
   workflow_dispatch:
   push:
     paths:
@@ -63,9 +65,9 @@ jobs:
           if [ -n "$ov" ]; then
             echo "format=$ov (trigger override)"
             echo "format=$ov" >> "$GITHUB_OUTPUT"
-          elif [ "$h" -lt 16 ]; then
+          elif [ "$h" -lt 15 ]; then
             echo "format=battle" >> "$GITHUB_OUTPUT"
-          elif [ "$h" -lt 19 ]; then
+          elif [ "$h" -lt 18 ]; then
             echo "format=news" >> "$GITHUB_OUTPUT"
           else
             echo "format=comic" >> "$GITHUB_OUTPUT"

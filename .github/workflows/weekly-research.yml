@@ -1,11 +1,11 @@
 name: Weekly research (trends + analytics)
 
-# Sundays 08:00 UTC: refresh niche trend data (feeds topic replenishment)
-# and generate the channel analytics report.
+# Sundays 08:00 UK (07:00 UTC during BST): refresh niche trend data (feeds
+# topic replenishment) and generate the channel analytics report.
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 8 * * 0"
+    - cron: "0 7 * * 0"
 
 permissions:
   contents: write
