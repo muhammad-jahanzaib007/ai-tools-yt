@@ -1,80 +1,82 @@
 {
   "slug": "ai-news-20260705-0705",
-  "title": "Anthropic's Drug Ambition Rocks AI News Today",
-  "hook": "AI could soon develop new drugs.",
+  "title": "Rich Kids, Hollywood, and AI: Today's Top AI Stories",
+  "hook": "Is AI making your kids smarter? Some wealthy parents think so.",
   "news": {
-    "headline": "Anthropic to Develop Drugs",
-    "outro": "Stay informed, subscribe now.",
+    "headline": "Wealthy parents use AI for kids",
+    "outro": "Follow us for tomorrow's AI updates.",
     "stories": [
       {
-        "title": "Alibaba Bans AI Code",
-        "source": "TechCrunch",
-        "category": "policy",
-        "detail": "Classified as high-risk software."
+        "title": "AI Teaching Kids",
+        "source": "The Verge",
+        "category": "apps",
+        "detail": "Some of the nation’s rich are letting AI teach their kids."
       },
       {
         "title": "Midjourney vs Hollywood",
         "source": "TechCrunch",
         "category": "apps",
-        "detail": "Seeks details of AI usage."
+        "detail": "Midjourney wants Hollywood studios to reveal their AI usage."
       },
       {
-        "title": "Google's AI History Ad",
+        "title": "Alibaba Bans Claude Code",
         "source": "TechCrunch",
-        "category": "apps",
-        "detail": "Imagines Declaration with AI."
+        "category": "policy",
+        "detail": "Alibaba has reportedly classified Claude Code as high-risk software."
       },
       {
-        "title": "Anthropic's Drug Ambition",
+        "title": "Fanfiction AI War",
         "source": "The Verge",
         "category": "models",
-        "detail": "Wants to develop its own drugs."
+        "detail": "The fanfiction community is at war with AI."
       }
     ],
     "dateLabel": "5 July 2026"
   },
   "narration": [
     {
-      "text": "AI could soon develop new drugs. Anthropic aims to develop its own drugs, as The Verge reports.",
-      "broll": "medical research ai"
+      "text": "Is AI making your kids smarter? Some wealthy parents think so. We dive into today's top AI news.",
+      "broll": "Wealthy kids studying"
     },
     {
-      "text": "TechCrunch reports that Alibaba has reportedly banned its employees from using Claude Code. The company classified it as high-risk software. This highlights growing corporate caution with AI tools.",
-      "broll": "corporate office laptops"
+      "text": "The Verge reports some wealthy American families are now turning to AI to teach their children. They are choosing AI over traditional schools. This shows a growing, albeit specific, trust in AI education.",
+      "broll": "Kids with tablets"
     },
     {
-      "text": "Midjourney is seeking details of AI usage from Hollywood studios. TechCrunch states this is part of an ongoing legal dispute. This reveals tensions over AI's role in creative industries.",
-      "broll": "film studio ai"
+      "text": "TechCrunch reveals Midjourney is in a legal dispute with Hollywood studios. Midjourney wants these studios to disclose their own AI usage. This highlights rising tensions in creative industries.",
+      "broll": "Film studio lot"
     },
     {
-      "text": "A new Google commercial imagines historical moments with AI. TechCrunch reports the ad asks what if the Founding Fathers had Google Workspace. It offers a unique look at AI's potential societal impact.",
-      "broll": "old documents ai"
+      "text": "TechCrunch also reports that Alibaba has reportedly banned its employees from using Claude Code. The company has classified this as high-risk software. This indicates corporate concerns over AI tool security.",
+      "broll": "Corporate building"
     },
     {
-      "text": "The Verge reports Anthropic wants to develop its own drugs. They announced Claude Science, an AI workbench for scientists. It aims to pull fragmented tools and data into one environment.",
-      "broll": "scientist lab ai"
+      "text": "Finally, The Verge covers a new conflict within the fanfiction community. Authors are trying to root out AI-generated works. Detection methods are causing controversy and division.",
+      "broll": "People typing"
     },
     {
-      "text": "That is today's AI news. Which story matters most to you? Let us know in the comments. Follow for tomorrow's AI brief.",
-      "broll": "tech news graphics"
+      "text": "That's your AI news brief for today. Tell us which story interests you most in the comments. And follow us for tomorrow's AI updates.",
+      "broll": "Digital news interface"
     }
   ],
-  "description": "Today's AI news includes Alibaba banning specific AI software, Midjourney's legal challenge to Hollywood, and Google's imaginative new commercial. We also cover Anthropic's ambitious plans to develop its own drugs using AI. Stay up-to-date with the latest in artificial intelligence.",
+  "description": "Today, some wealthy families are using AI to educate their children. Meanwhile, Midjourney is seeking details on Hollywood's AI usage. Alibaba bans employees from using Claude Code, and the fanfiction community faces new AI-related conflicts.",
   "links": [],
   "tags": [
     "ai news",
     "artificial intelligence",
-    "alibaba ai",
-    "midjourney legal",
-    "google ai",
-    "anthropic ai",
-    "ai policy",
-    "ai models",
+    "ai education",
+    "midjourney",
+    "hollywood ai",
+    "alibaba",
+    "claude code",
+    "fanfiction ai",
+    "tech news",
     "daily ai",
-    "tech news"
+    "generative ai",
+    "ai policy"
   ],
-  "thumbnail_text": "AI Drug Ambition",
+  "thumbnail_text": "Rich kids, AI?",
   "topic": "Daily AI news",
   "date": "2026-07-05",
-  "hook_type": "bold_claim"
+  "hook_type": "pain_point"
 }
