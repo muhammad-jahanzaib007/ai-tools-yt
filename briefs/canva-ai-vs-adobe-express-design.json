@@ -1,0 +1,82 @@
+{
+  "slug": "canva-ai-vs-adobe-express-design",
+  "title": "Canva AI vs Adobe Express: Who Wins the Design Battle?",
+  "hook": "Two AI design titans clash! Only one will reign supreme.",
+  "battle": {
+    "toolA": "Canva",
+    "toolB": "Adobe Express",
+    "tagline": "Design AI: Who wins?",
+    "rounds": [
+      {
+        "title": "AI Templates",
+        "aPoint": "Vast library, easy setup for beginners.",
+        "bPoint": "Strong templates, Text to Template.",
+        "winner": "a"
+      },
+      {
+        "title": "Image Generation",
+        "aPoint": "Quick, good for general use.",
+        "bPoint": "Firefly quality, often artistic results.",
+        "winner": "b"
+      },
+      {
+        "title": "Magic Editing",
+        "aPoint": "Comprehensive Magic Studio tools.",
+        "bPoint": "Powerful generative fill and edits.",
+        "winner": "a"
+      }
+    ],
+    "verdict": "Canva wins for all-round quick design. Adobe Express shines with its superior image generation."
+  },
+  "narration": [
+    {
+      "text": "Two AI design titans clash! Only one will reign supreme. This is the ultimate face-off: Canva AI versus Adobe Express!",
+      "broll": "AI design tools"
+    },
+    {
+      "text": "Round one, AI Templates! Canva brings its massive library and intuitive AI integration. Adobe Express counters with strong templates and \"Text to Template\" wizardry. But Canva's sheer volume and ease of use takes the point! What a start!",
+      "broll": "design templates scrolling"
+    },
+    {
+      "text": "Next up, AI Image Generation! Canva's \"Magic Media\" is fast, but Adobe Express unleashes Firefly. The artistic quality from Firefly is often just stunning. No contest here! Adobe Express takes this round! Ouch, that one hurts Canva!",
+      "broll": "AI generating images"
+    },
+    {
+      "text": "Final round, Magic Editing! Canva's \"Magic Studio\" offers powerful edits like Magic Erase. Adobe Express has incredible generative fill capabilities too. Both are fantastic, but Canva's overall suite for quick fixes feels slightly more integrated. Canva secures the win!",
+      "broll": "AI photo editing"
+    },
+    {
+      "text": "So, the verdict is in! Canva wins for all-round quick design, making it your go-to for daily creative tasks. However, Adobe Express shines with its superior image generation. Which AI design tool would you pick? Tell us in the comments! Follow for more daily AI battles!",
+      "broll": "AI battle conclusion"
+    }
+  ],
+  "description": "Two of the biggest names in design go head-to-head with their AI features! We compare Canva AI and Adobe Express across key design challenges, from templates to image generation and magic editing. Discover which tool comes out on top for your everyday creative needs.",
+  "links": [
+    {
+      "name": "Canva",
+      "url": "https://www.canva.com/"
+    },
+    {
+      "name": "Adobe Express",
+      "url": "https://www.adobe.com/uk/express/"
+    }
+  ],
+  "tags": [
+    "ai tools",
+    "ai design",
+    "canva ai",
+    "adobe express",
+    "generative ai",
+    "design software",
+    "ai comparison",
+    "graphic design",
+    "text to image",
+    "ai editing",
+    "firefly",
+    "magic studio"
+  ],
+  "thumbnail_text": "Canva AI vs Express",
+  "topic": "Canva AI vs Adobe Express: quick design face-off",
+  "date": "2026-07-05",
+  "hook_type": "conflict_tease"
+}
