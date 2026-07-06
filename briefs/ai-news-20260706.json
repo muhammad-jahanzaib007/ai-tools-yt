@@ -1,0 +1,80 @@
+{
+  "slug": "ai-news-20260706",
+  "title": "Microsoft Layoffs Fuel AI Job Fears, Plus Claude Tracker Exposed!",
+  "hook": "Is AI taking your job? Today's news sparks big questions.",
+  "news": {
+    "headline": "Microsoft Layoffs Spark AI Job Fears",
+    "outro": "Follow for daily AI news!",
+    "stories": [
+      {
+        "title": "Microsoft Cuts Jobs",
+        "source": "TechCrunch",
+        "category": "apps",
+        "detail": "Microsoft cut around 4,800 roles, 2.1% of its global workforce."
+      },
+      {
+        "title": "Claude Tracker Shocks",
+        "source": "Ars Technica",
+        "category": "models",
+        "detail": "Anthropic accused of spying on users with a secret tracker."
+      },
+      {
+        "title": "NHS Accelerates AI",
+        "source": "Wired-Gov",
+        "category": "chips",
+        "detail": "NHS accelerates AI rollout to cut waiting times for millions."
+      },
+      {
+        "title": "UK AI Finance Warning",
+        "source": "Ars Technica",
+        "category": "money",
+        "detail": "UK regulator warns of \"arms race\" in financial services."
+      }
+    ],
+    "dateLabel": "6 July 2026"
+  },
+  "narration": [
+    {
+      "text": "Is AI taking your job? Today's news sparks big questions. Microsoft's latest layoffs are stoking fears of AI replacing jobs.",
+      "broll": "robots in office"
+    },
+    {
+      "text": "TechCrunch reports that Microsoft cut around 4,800 roles, 2.1% of its global workforce. These layoffs hit Xbox and commercial sales hardest. This fuels concerns about AI's impact on employment.",
+      "broll": "layoff announcement"
+    },
+    {
+      "text": "Next, a surprising reveal from Ars Technica. Anthropic, known for its anti-surveillance stance, stands accused of spying on users. A secret Claude tracker shocked users, though an engineer claims the \"experiment\" is over.",
+      "broll": "data privacy lock"
+    },
+    {
+      "text": "Good news for healthcare, as Wired-Gov reports the NHS is accelerating its AI rollout. This move aims to cut waiting times and improve care for millions. It is a major push for efficiency.",
+      "broll": "NHS hospital tech"
+    },
+    {
+      "text": "Finally, from Ars Technica, the UK regulator has issued a warning. They see an \"arms race\" to keep up with AI use in financial services. Millions are now using AI for personal finance decisions.",
+      "broll": "finance data graph"
+    },
+    {
+      "text": "That's your AI news brief for today. Which story impacts you most? Let us know in the comments. And hit follow for tomorrow's AI news.",
+      "broll": "subscribe button animation"
+    }
+  ],
+  "description": "Today's AI news dives into Microsoft's significant layoffs, sparking fears of AI replacing jobs. We also uncover a secret Claude tracker that shocked users. Plus, the NHS accelerates its AI rollout, and the UK financial regulator issues an AI \"arms race\" warning.",
+  "links": [],
+  "tags": [
+    "ai news",
+    "artificial intelligence",
+    "microsoft layoffs",
+    "ai jobs",
+    "claude ai",
+    "anthropic",
+    "nhs ai",
+    "uk finance",
+    "ai policy",
+    "daily ai"
+  ],
+  "thumbnail_text": "AI Job Fears Surge",
+  "topic": "Daily AI news",
+  "date": "2026-07-06",
+  "hook_type": "pain_point"
+}
