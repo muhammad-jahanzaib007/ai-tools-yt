@@ -59,7 +59,9 @@ Committed one-liners in `.github/` (job logs need admin; receipts don't):
 1. **Never edit code via the GitHub web editor** — a pasted hot-fix with
    smart quotes + stripped newlines bricked all briefs on 2026-07-05.
 2. **"Re-run" on a failed run re-executes its ORIGINAL commit**, not current
-   main. To test a fix, push a trigger instead.
+   main — AND "Pick format" re-reads the clock, so re-running a slot after
+   its boundary silently changes the video format (a re-run news slot once
+   generated a comic). To test a fix, push a trigger instead.
 3. **Music only from the YouTube Audio Library** (committed pool in
    assets/music + manifest.json). Pixabay caused a global Content ID block.
    NCS/Infraction/MokkaMusic "preview/watermark" files are claim-risky —
