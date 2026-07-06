@@ -1,1 +1,1 @@
-2026-07-06T00:07:18Z scope=ok battle=created:PLCChUfm7Q8ys comic=created:PLU0aizduxfow news=exists:PLTRI84I5aGbI
+2026-07-06T21:17:40Z scope=ok battle=exists:PLCChUfm7Q8ys comic=recreating(was PLU0aizduxfow, gone) comic=created:PLVeChltoXc1k news=exists:PLTRI84I5aGbI
