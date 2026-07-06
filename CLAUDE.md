@@ -165,3 +165,22 @@ commit, so the other sessions know who did what.
   already published after that slot time — so a late-replayed cron can
   never duplicate a covered slot again. Manual dispatches, trigger pushes,
   and merely-late-but-uncovered crons are unaffected.
+- 2026-07-06 21:15 — claude.ai/code web session (same as above): covered
+  the evening slots during GitHub's all-day scheduler outage (nothing
+  scheduled fired again). Blog 20:00 dispatched → gradient-clipping post +
+  LinkedIn ok (20:57). YT 20:13 dispatched → comic camera-fright-vs-
+  synthesia-pictory live+public (youtu.be/rTTrJmHtQEE), IG/FB/TikTok ok,
+  BUT pl=fail: the comic playlist PLU0aizduxfow (created 00:07 today)
+  now returns "Playlist not found" — deleted from YouTube during the day.
+  Root-cause + fix: create_playlists.py trusted any id already in
+  playlists.json without verifying it, so the token-check could never
+  self-heal a deleted playlist (would keep reporting exists: the dead id,
+  failing every comic upload = 1/3 of videos). Now it verifies each stored
+  id via playlists().list and drops+recreates a missing one. Dedupe-guard
+  confirmed working in prod: the 18:20 late cron replay of the 16:13 slot
+  was SKIPPED (publish job=skipped) because news had already published.
+  Minor: publish.yml "Record status" runs audio_qa.py (writes
+  last-audio-qa.txt) before its pre-commit `git pull --rebase`, which then
+  errors "unstaged changes" (harmless — masked by || true, and the
+  post-commit retry loop rebases fine); tidy later by moving the pull
+  after the commit.
