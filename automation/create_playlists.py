@@ -44,8 +44,21 @@ def main():
     parts, failed = [], False
     for fmt, title in PLAYLIST_TITLES.items():
         if m.get(fmt):
-            parts.append(f"{fmt}=exists:{m[fmt]}")
-            continue
+            # Verify the stored playlist still exists — a deleted playlist
+            # leaves a dead id in playlists.json, and blindly trusting it made
+            # every comic upload fail pl=fail with "Playlist not found"
+            # (2026-07-06, PLU0aizduxfow). If it's gone, drop it and recreate
+            # below so the pipeline self-heals.
+            try:
+                r = yt.playlists().list(part="id", id=m[fmt]).execute()
+                if r.get("items"):
+                    parts.append(f"{fmt}=exists:{m[fmt]}")
+                    continue
+                parts.append(f"{fmt}=recreating(was {m[fmt]}, gone)")
+                m.pop(fmt, None)
+            except Exception as e:
+                parts.append(f"{fmt}=checkfail:{' '.join(str(e).split())[:80]}")
+                continue
         try:
             resp = yt.playlists().insert(part="snippet,status", body={
                 "snippet": {"title": title,
