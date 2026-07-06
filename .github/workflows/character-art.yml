@@ -18,6 +18,7 @@ concurrency:
 jobs:
   art:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -65,9 +66,11 @@ jobs:
             git commit -m "art: Toolverse characters"
             # Rebase + retry: a concurrent push to main must not throw away a
             # whole (paid) generation batch. Same fix as publish.yml Save brief.
+            ok=""
             for i in 1 2 3; do
-              git pull --rebase --quiet && git push && break
+              if git pull --rebase --quiet && git push; then ok=1; break; fi
               echo "push attempt $i rejected, retrying"
               sleep 5
             done
+            [ -n "$ok" ] || { echo "art push failed after 3 attempts"; exit 1; }
           fi

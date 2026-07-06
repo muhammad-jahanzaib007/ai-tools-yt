@@ -25,6 +25,9 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # A hung API call must not hold the yt-publish concurrency group for
+    # GitHub's 6h default and starve the next cron slot.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
@@ -100,11 +103,13 @@ jobs:
           if ! git diff --cached --quiet; then
             git commit -m "brief: $(date -u +%Y-%m-%d)"
             # Rebase + retry: a concurrent push to main must not fail the whole pipeline.
+            ok=""
             for i in 1 2 3; do
-              git pull --rebase --quiet && git push && break
+              if git pull --rebase --quiet && git push; then ok=1; break; fi
               echo "push attempt $i rejected, retrying"
               sleep 5
             done
+            [ -n "$ok" ] || { echo "brief push failed after 3 attempts"; exit 1; }
           fi
 
       - name: Render video
@@ -168,4 +173,17 @@ jobs:
           for f in .github/last-brief.txt .github/last-audio-qa.txt .github/last-upload.txt .github/last-crosspost.txt automation/playlists.json; do
             [ -f "$f" ] && git add "$f"
           done
-          git commit -m "audio qa" --quiet && git push --quiet || echo "nothing to record"
+          # Retry the push: a lost race here silently drops the receipts, and
+          # the watchdog then misreads the stale receipt as a dead slot.
+          if git commit -m "audio qa" --quiet; then
+            ok=""
+            for i in 1 2 3; do
+              if git push --quiet; then ok=1; break; fi
+              echo "push attempt $i rejected; rebasing"
+              git pull --rebase --quiet || true
+              sleep 5
+            done
+            [ -n "$ok" ] || { echo "receipt push failed after 3 attempts"; exit 1; }
+          else
+            echo "nothing to record"
+          fi

@@ -119,22 +119,24 @@ def stage_public_url(video: Path):
     h = {"Authorization": f"Bearer {GH_TOKEN}", "Accept": "application/vnd.github+json"}
     tag = "crosspost-assets"
     # get-or-create the release
-    r = requests.get(f"{api}/releases/tags/{tag}", headers=h)
+    r = requests.get(f"{api}/releases/tags/{tag}", headers=h, timeout=30)
     if r.status_code == 404:
         r = requests.post(f"{api}/releases", headers=h, json={
             "tag_name": tag, "name": "Crosspost assets",
             "body": "Auto-staged Reels videos for IG/FB cross-posting.",
-            "prerelease": True})
+            "prerelease": True}, timeout=30)
     r.raise_for_status()
     rel = r.json()
     name = video.name
-    # remove an old asset with the same name (idempotent re-runs)
+    # prune ALL existing assets: previous runs' videos are already posted,
+    # and unpruned assets accumulate in the release forever. Also keeps
+    # re-runs of the same slug idempotent.
     for a in rel.get("assets", []):
-        if a["name"] == name:
-            requests.delete(f"{api}/releases/assets/{a['id']}", headers=h)
+        requests.delete(f"{api}/releases/assets/{a['id']}", headers=h, timeout=30)
     up = rel["upload_url"].split("{")[0]
     with open(video, "rb") as f:
-        r = requests.post(f"{up}?name={name}", headers={**h, "Content-Type": "video/mp4"}, data=f)
+        r = requests.post(f"{up}?name={name}", headers={**h, "Content-Type": "video/mp4"},
+                          data=f, timeout=600)
     r.raise_for_status()
     return r.json()["browser_download_url"]
 
@@ -145,14 +147,14 @@ def post_instagram(video_url, caption):
     # 1. create a REELS media container from the public url
     r = requests.post(f"{GRAPH}/{IG_USER_ID}/media", data={
         "media_type": "REELS", "video_url": video_url,
-        "caption": caption, "access_token": TOKEN})
+        "caption": caption, "access_token": TOKEN}, timeout=60)
     r.raise_for_status()
     cid = r.json()["id"]
     # 2. poll until the container finishes processing (IG pulls + transcodes)
     for _ in range(30):
         time.sleep(10)
         s = requests.get(f"{GRAPH}/{cid}", params={
-            "fields": "status_code", "access_token": TOKEN}).json()
+            "fields": "status_code", "access_token": TOKEN}, timeout=30).json()
         code = s.get("status_code")
         if code == "FINISHED":
             break
@@ -162,7 +164,7 @@ def post_instagram(video_url, caption):
         raise RuntimeError("IG container did not finish in time")
     # 3. publish
     r = requests.post(f"{GRAPH}/{IG_USER_ID}/media_publish", data={
-        "creation_id": cid, "access_token": TOKEN})
+        "creation_id": cid, "access_token": TOKEN}, timeout=60)
     r.raise_for_status()
     return r.json().get("id")
 
@@ -172,18 +174,20 @@ def post_instagram(video_url, caption):
 def post_facebook(video_url, caption):
     # start -> obtain a video id
     r = requests.post(f"{GRAPH}/{FB_PAGE_ID}/video_reels", data={
-        "upload_phase": "start", "access_token": TOKEN})
+        "upload_phase": "start", "access_token": TOKEN}, timeout=60)
     r.raise_for_status()
     vid = r.json()["video_id"]
-    # upload by hosted-file url (rupload accepts a file_url header)
+    # upload by hosted-file url (rupload accepts a file_url header; FB fetches
+    # the file during this call, so give it the long timeout)
     r = requests.post(f"https://rupload.facebook.com/video-upload/v21.0/{vid}",
-                      headers={"Authorization": f"OAuth {TOKEN}", "file_url": video_url})
+                      headers={"Authorization": f"OAuth {TOKEN}", "file_url": video_url},
+                      timeout=600)
     r.raise_for_status()
     # finish + publish
     r = requests.post(f"{GRAPH}/{FB_PAGE_ID}/video_reels", data={
         "upload_phase": "finish", "video_id": vid,
         "video_state": "PUBLISHED", "description": caption,
-        "access_token": TOKEN})
+        "access_token": TOKEN}, timeout=120)
     r.raise_for_status()
     return vid
 
@@ -193,7 +197,7 @@ def post_facebook(video_url, caption):
 def _tiktok_access_token():
     r = requests.post("https://open.tiktokapis.com/v2/oauth/token/", data={
         "client_key": TT_KEY, "client_secret": TT_SECRET,
-        "grant_type": "refresh_token", "refresh_token": TT_REFRESH})
+        "grant_type": "refresh_token", "refresh_token": TT_REFRESH}, timeout=30)
     r.raise_for_status()
     return r.json()["access_token"]
 
@@ -206,7 +210,8 @@ def post_tiktok(video: Path, caption):
     size = video.stat().st_size
     # TikTok requires querying creator posting eligibility before init; it also
     # surfaces the clearest permission errors, so a 403 here tells us the reason.
-    ci = requests.post("https://open.tiktokapis.com/v2/post/publish/creator_info/query/", headers=h)
+    ci = requests.post("https://open.tiktokapis.com/v2/post/publish/creator_info/query/",
+                       headers=h, timeout=30)
     if not ci.ok:
         raise RuntimeError(f"creator_info {ci.status_code}: {ci.text[:300]}")
     # single-chunk upload (Shorts are small); TikTok caps a chunk at 64MB
@@ -215,7 +220,8 @@ def post_tiktok(video: Path, caption):
         json={"post_info": {"title": caption[:2200], "privacy_level": TT_PRIVACY,
                             "disable_comment": False, "disable_duet": False, "disable_stitch": False},
               "source_info": {"source": "FILE_UPLOAD", "video_size": size,
-                              "chunk_size": size, "total_chunk_count": 1}})
+                              "chunk_size": size, "total_chunk_count": 1}},
+        timeout=30)
     if not init.ok:
         raise RuntimeError(f"init {init.status_code}: {init.text[:300]}")
     d = init.json()["data"]
@@ -224,12 +230,12 @@ def post_tiktok(video: Path, caption):
         requests.put(upload_url, data=f.read(), headers={
             "Content-Type": "video/mp4",
             "Content-Range": f"bytes 0-{size-1}/{size}",
-            "Content-Length": str(size)}).raise_for_status()
+            "Content-Length": str(size)}, timeout=600).raise_for_status()
     # poll publish status
     for _ in range(30):
         time.sleep(10)
         s = requests.post("https://open.tiktokapis.com/v2/post/publish/status/fetch/",
-                          headers=h, json={"publish_id": publish_id}).json()
+                          headers=h, json={"publish_id": publish_id}, timeout=30).json()
         st = s.get("data", {}).get("status")
         if st in ("PUBLISH_COMPLETE", "SEND_TO_USER_INBOX"):
             return publish_id

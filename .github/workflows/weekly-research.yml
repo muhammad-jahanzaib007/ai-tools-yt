@@ -17,6 +17,7 @@ concurrency:
 jobs:
   research:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -51,5 +52,13 @@ jobs:
             echo "No changes."
           else
             git commit -m "research: $(date -u +%Y-%m-%d) trends + analytics"
-            git push
+            # Rebase + retry: a concurrent push to main must not fail the run.
+            ok=""
+            for i in 1 2 3; do
+              if git push; then ok=1; break; fi
+              echo "push attempt $i rejected; rebasing"
+              git pull --rebase --quiet || true
+              sleep 5
+            done
+            [ -n "$ok" ] || { echo "research push failed after 3 attempts"; exit 1; }
           fi

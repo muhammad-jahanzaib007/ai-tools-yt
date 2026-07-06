@@ -96,3 +96,28 @@ retention), not polish. Weekly analytics Sunday 08:00 UTC
 by 2026-08-18, median Short <~200 views → change format/niche, NOT more
 polish.** Affiliate goal: Synthesia live; Pictory next; Jasper/Speechify
 gated on traffic. Owner is UK-based.
+
+## Session log (cross-device attribution — KEEP UPDATED)
+
+Multiple Claude sessions touch this repo (laptop, claude.ai/code web,
+mobile). ANY session that changes code or makes a notable finding must
+append an entry here (date, surface, branch, one-line summary) in the same
+commit, so the other sessions know who did what.
+
+- 2026-07-06 — claude.ai/code web session, branch
+  `claude/pipeline-health-check-gtnyzy` (merged to main via PR #1):
+  health check + audit + hardening. Diagnosed the 2026-07-05 20:13
+  scheduled publish failure as the smart-quote brick in generate_brief.py
+  line 142 (fix already on main, a32ac7d; the 23:43/23:55 runs went
+  green) — the 16:13 failure was the separate missing-comma JSON case the
+  laptop session fixed in 138c5c2. Findings fixed on the branch: receipt
+  pushes swallowed lost races via `|| echo "nothing to record"` (now
+  rebase-retry x3 + fail loudly), bare `git push` in generate-brief/
+  weekly-research (retry added), save-brief + character-art retry loops
+  succeeded silently on exhaustion (now exit 1), no timeout-minutes on any
+  job (added — a hang could starve the next cron slot via the concurrency
+  group), crosspost.py had zero request timeouts (added) and release
+  assets accumulated forever (now pruned each run). Watchdog auto-close:
+  found independently by both sessions the same night; main's version
+  (4ac064d) kept on rebase. pl=fail from 2026-07-05 upload: playlists were
+  created by the 00:07 token check; next upload confirms.
