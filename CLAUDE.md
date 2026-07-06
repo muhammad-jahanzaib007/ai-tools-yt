@@ -104,6 +104,18 @@ mobile). ANY session that changes code or makes a notable finding must
 append an entry here (date, surface, branch, one-line summary) in the same
 commit, so the other sessions know who did what.
 
+- 2026-07-05/06 — laptop Claude Code session (direct commits to main):
+  diagnosed + fixed the 2026-07-05 outage (a32ac7d: restored
+  _extract_first_json_block, thinkingBudget=0, temp 0.8, slug-collision
+  loop, publish.yml brief error capture, upload num_retries, fallback
+  receipt marker; 138c5c2: chat_json fresh-completion retry after the job
+  log confirmed a missing-comma JSON as root cause). Shipped the
+  self-sustaining layer (d264d44: pinned requirements, tests/ + tests.yml,
+  self-heal.yml retry+backstops), token-check workflow + playlists
+  (9ce669a), watchdog auto-close (4ac064d), runbooks. Verified live news
+  publish end-to-end (youtu.be/xEaXeFMiriU, IG+FB+TikTok ok). Deleted
+  local claim-risky music files (untracked). gh CLI now authenticated on
+  the laptop.
 - 2026-07-06 — claude.ai/code web session, branch
   `claude/pipeline-health-check-gtnyzy` (merged to main via PR #1):
   health check + audit + hardening. Diagnosed the 2026-07-05 20:13
