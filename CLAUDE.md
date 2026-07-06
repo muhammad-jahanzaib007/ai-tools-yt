@@ -145,3 +145,13 @@ commit, so the other sessions know who did what.
   clear, IG/FB/TikTok all ok, and pl=ok — confirming the 2026-07-05
   playlist failure is fixed. Web session is covering today's remaining
   slots (16:13, 20:13) with scheduled check-ins in case the outage holds.
+- 2026-07-06 14:57 — claude.ai/code web session (same as above): the
+  scheduler outage appears OVER — GitHub delivered the morning cron ~3h20m
+  late at 14:35 (event=schedule), which ran green end-to-end
+  (descript-vs-premiere-pro, youtu.be/4WFuuA-vgd4, pl=ok, IG/FB/TikTok ok)
+  but produced a SECOND battle video today: the 12:53 manual dispatch had
+  already covered the slot, and the late cron picked battle again off the
+  clock (hour<15). Not a bug — expect duplicate-format days whenever a
+  slot is covered manually and GitHub later replays the cron. YT repo's
+  own Pages builds (unused by the pipeline) still hit the "try again
+  later" transient; ignore.
