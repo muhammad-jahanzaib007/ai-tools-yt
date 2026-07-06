@@ -52,6 +52,14 @@ jobs:
 
           if [ -z "$problems" ]; then
             echo "pipeline healthy"
+            # Self-clean: a lingering resolved issue would mask the next real
+            # alert (open-issue dedupe below files at most one at a time).
+            open_issue=$(gh issue list --repo "$GITHUB_REPOSITORY" --label watchdog \
+                         --state open --json number --jq '.[0].number // empty')
+            if [ -n "$open_issue" ]; then
+              gh issue close "$open_issue" --repo "$GITHUB_REPOSITORY" \
+                --comment "Watchdog: all checks healthy again; auto-closing."
+            fi
             exit 0
           fi
 
