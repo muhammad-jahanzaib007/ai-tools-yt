@@ -1,0 +1,48 @@
+name: YouTube token check
+
+# Verifies YT_REFRESH_TOKEN has the full youtube scope by doing the exact
+# operation that fails on an upload-only token: creating the per-format
+# playlists. Idempotent (existing ids in playlists.json are kept). Result is
+# committed to .github/last-token-test.txt so it is readable without admin.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/token-check-trigger.txt"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: yt-token-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: pip install --upgrade google-api-python-client google-auth google-auth-httplib2
+
+      - name: Create format playlists (scope probe)
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+        run: python automation/create_playlists.py
+
+      - name: Record result
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase --quiet || true
+          for f in .github/last-token-test.txt automation/playlists.json; do
+            [ -f "$f" ] && git add "$f"
+          done
+          git commit -m "token check" --quiet && git push --quiet || echo "nothing to record"
