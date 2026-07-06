@@ -23,7 +23,47 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # A GitHub cron can be REPLAYED hours late (2026-07-06: the 11:13 slot
+  # fired at 14:35 after a scheduler outage, duplicating a slot a manual
+  # dispatch had already covered — the duplicate video had to be deleted by
+  # hand). Skip a scheduled run when its own slot time has long passed AND
+  # a video already published after that slot time. Manual dispatches and
+  # trigger pushes are never blocked, and a merely-late cron whose slot was
+  # NOT otherwise covered still runs.
+  precheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      skip: ${{ steps.dedupe.outputs.skip }}
+    steps:
+      - name: Detect a late-replayed cron slot
+        id: dedupe
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          skip=false
+          if [ "$GITHUB_EVENT_NAME" = "schedule" ]; then
+            slot='${{ github.event.schedule }}'
+            m=$(echo "$slot" | cut -d' ' -f1)
+            h=$(echo "$slot" | cut -d' ' -f2)
+            slot_ts=$(date -u -d "$(date -u +%F) ${h}:${m}:00" +%s)
+            lag_min=$(( ( $(date -u +%s) - slot_ts ) / 60 ))
+            echo "cron slot '$slot' fired ${lag_min} min after its slot time"
+            if [ "$lag_min" -gt 90 ]; then
+              last=$(gh api "repos/$GITHUB_REPOSITORY/commits?path=.github/last-upload.txt&per_page=1" \
+                     --jq '.[0].commit.committer.date' 2>/dev/null || echo "")
+              if [ -n "$last" ] && [ "$(date -u -d "$last" +%s)" -gt "$slot_ts" ]; then
+                echo "a video already published after this slot's time - skipping the replay"
+                skip=true
+              fi
+            fi
+          fi
+          echo "skip=$skip" >> "$GITHUB_OUTPUT"
+
   publish:
+    needs: precheck
+    if: needs.precheck.outputs.skip != 'true'
     runs-on: ubuntu-latest
     # A hung API call must not hold the yt-publish concurrency group for
     # GitHub's 6h default and starve the next cron slot.

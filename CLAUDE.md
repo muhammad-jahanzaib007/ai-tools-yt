@@ -155,3 +155,13 @@ commit, so the other sessions know who did what.
   slot is covered manually and GitHub later replays the cron. YT repo's
   own Pages builds (unused by the pipeline) still hit the "try again
   later" transient; ignore.
+- 2026-07-06 ~15:30 — claude.ai/code web session (same as above): owner
+  deleted the duplicate battle Short (descript-vs-premiere-pro,
+  youtu.be/4WFuuA-vgd4 now dead — its receipt line in git history is
+  expected to 404) because the duplicate hurt the channel's upload flow.
+  NOTE: its IG/FB/TikTok crossposts were NOT deleted and are still live.
+  Shipped a dedupe guard in publish.yml: a new precheck job skips a
+  scheduled run when its cron slot time passed >90 min ago AND a video
+  already published after that slot time — so a late-replayed cron can
+  never duplicate a covered slot again. Manual dispatches, trigger pushes,
+  and merely-late-but-uncovered crons are unaffected.
