@@ -20,6 +20,7 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -45,4 +46,15 @@ jobs:
           for f in .github/last-token-test.txt automation/playlists.json; do
             [ -f "$f" ] && git add "$f"
           done
-          git commit -m "token check" --quiet && git push --quiet || echo "nothing to record"
+          if git commit -m "token check" --quiet; then
+            ok=""
+            for i in 1 2 3; do
+              if git push --quiet; then ok=1; break; fi
+              echo "push attempt $i rejected; rebasing"
+              git pull --rebase --quiet || true
+              sleep 5
+            done
+            [ -n "$ok" ] || { echo "receipt push failed after 3 attempts"; exit 1; }
+          else
+            echo "nothing to record"
+          fi

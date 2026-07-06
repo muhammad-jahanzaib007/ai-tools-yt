@@ -17,6 +17,7 @@ permissions:
 jobs:
   watchdog:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Check upload freshness and last publish run
         env:
@@ -25,8 +26,8 @@ jobs:
           set -euo pipefail
           problems=""
 
-          # 1) When did last-upload.txt last change? 2 uploads/day means the
-          #    gap should never exceed ~15h; 26h = something is wrong.
+          # 1) When did last-upload.txt last change? 3 uploads/day means the
+          #    gap should never exceed ~9h; 26h = something is wrong.
           last=$(gh api "repos/$GITHUB_REPOSITORY/commits?path=.github/last-upload.txt&per_page=1" \
                  --jq '.[0].commit.committer.date' || echo "")
           if [ -z "$last" ]; then

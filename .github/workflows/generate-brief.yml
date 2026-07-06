@@ -19,6 +19,7 @@ concurrency:
 jobs:
   brief:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -71,11 +72,19 @@ jobs:
             echo "No changes."
           else
             git commit -m "brief: $(date -u +%Y-%m-%d)"
-            git push
+            # Rebase + retry: a concurrent push to main must not fail the run.
+            ok=""
+            for i in 1 2 3; do
+              if git push; then ok=1; break; fi
+              echo "push attempt $i rejected; rebasing"
+              git pull --rebase --quiet || true
+              sleep 5
+            done
+            [ -n "$ok" ] || { echo "brief push failed after 3 attempts"; exit 1; }
           fi
 
-      # Private repo: no public API to watch runs, so failures are recorded
-      # as a committed status line readable with git alone.
+      # Job logs need admin auth, so failures are recorded as a committed
+      # status line readable with git alone.
       - name: Record status
         if: always()
         run: |
@@ -90,4 +99,15 @@ jobs:
             tail -c 1500 /tmp/brief.log >> .github/last-brief.txt
           fi
           git add .github/last-brief.txt
-          git commit -m "brief status" --quiet && git push --quiet || echo "nothing to record"
+          if git commit -m "brief status" --quiet; then
+            ok=""
+            for i in 1 2 3; do
+              if git push --quiet; then ok=1; break; fi
+              echo "push attempt $i rejected; rebasing"
+              git pull --rebase --quiet || true
+              sleep 5
+            done
+            [ -n "$ok" ] || { echo "receipt push failed after 3 attempts"; exit 1; }
+          else
+            echo "nothing to record"
+          fi
