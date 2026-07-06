@@ -1,0 +1,68 @@
+{
+  "slug": "camera-fright-vs-synthesia-pictory",
+  "title": "Camera Fright strikes. Two heroes answer.",
+  "hook": "Ever feel that cold dread of filming yourself?",
+  "comic": {
+    "threat": "Camera Fright",
+    "heroes": [
+      {
+        "tool": "Synthesia",
+        "alias": "Avatar",
+        "color": "#6C5CE7",
+        "power": "I spawn digital humans to speak your script."
+      },
+      {
+        "tool": "Pictory",
+        "alias": "The Cutter",
+        "color": "#35B5AA",
+        "power": "I slice text and footage into video reels."
+      }
+    ],
+    "resolution": "Synthesia created a perfect avatar, then Pictory quickly edited it into a complete video, banishing Camera Fright."
+  },
+  "narration": [
+    {
+      "text": "Tonight, a creator faces a terrifying foe. Camera Fright looms. Their script is ready. But the thought of recording their own face is paralysing. The deadline fast approaches.",
+      "broll": "person looking nervous"
+    },
+    {
+      "text": "I am Avatar. Call upon Synthesia. I spawn a digital human who will speak your script. Any language. Any voice. No camera needed for you.",
+      "broll": "digital human speaking"
+    },
+    {
+      "text": "I am The Cutter. Look to Pictory. I will take your raw text or footage. Then I slice it into polished video reels. Perfect for your social media.",
+      "broll": "video editing timeline"
+    },
+    {
+      "text": "Camera Fright is defeated. You can create engaging videos without ever showing your face. Which AI hero should we feature next? Let us know in the comments. Like and subscribe.",
+      "broll": "victory celebration animation"
+    }
+  ],
+  "description": "Ever get camera fright when trying to film content? This episode shows how two powerful AI tools, Synthesia and Pictory, team up to help creators overcome this common challenge. Learn how to create professional videos without ever stepping in front of the camera yourself.",
+  "links": [
+    {
+      "name": "Synthesia",
+      "url": "https://www.synthesia.io/"
+    },
+    {
+      "name": "Pictory",
+      "url": "https://pictory.ai/"
+    }
+  ],
+  "tags": [
+    "ai tools",
+    "ai video",
+    "synthesia",
+    "pictory",
+    "faceless youtube",
+    "content creation",
+    "video editing",
+    "ai avatars",
+    "youtube shorts",
+    "ai for creators"
+  ],
+  "thumbnail_text": "No camera needed!",
+  "topic": "Toolverse episode: Camera Fright",
+  "date": "2026-07-06",
+  "hook_type": "question"
+}
