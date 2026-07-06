@@ -133,3 +133,15 @@ commit, so the other sessions know who did what.
   found independently by both sessions the same night; main's version
   (4ac064d) kept on rebase. pl=fail from 2026-07-05 upload: playlists were
   created by the 00:07 token check; next upload confirms.
+- 2026-07-06 12:36-13:15 — claude.ai/code web session (same as above):
+  GitHub's scheduler outage continued into the afternoon — the 11:13
+  battle slot AND its 12:48 self-heal backstop were both silently eaten
+  (nothing scheduled has fired in either repo all day; the blog's 08:00 +
+  08:50 were eaten the same way). Backstops cannot catch a wholesale
+  scheduler outage because they are crons too — an external heartbeat
+  (e.g. Cloudflare Worker cron hitting workflow_dispatch) is the only
+  full fix; proposed to the owner. Slot recovered by manual dispatch at
+  12:53: battle Short live + public (youtu.be/2qVfb_OhS3U), audio QA
+  clear, IG/FB/TikTok all ok, and pl=ok — confirming the 2026-07-05
+  playlist failure is fixed. Web session is covering today's remaining
+  slots (16:13, 20:13) with scheduled check-ins in case the outage holds.
