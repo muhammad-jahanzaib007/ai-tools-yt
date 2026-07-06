@@ -1,0 +1,91 @@
+name: Self-heal
+
+# Keeps the pipeline self-sustaining for in-domain failures; humans are only
+# pulled in for out-of-domain problems (credentials, quota, billing).
+#
+# Layer 1 (workflow_run): a failed publish run is retried once — transient
+#   flakes (LLM hiccups, network, API blips) usually clear on retry. A second
+#   failure opens ONE labelled issue, titled needs-human when the receipt
+#   smells like credentials/quota.
+# Layer 2 (schedule): backstops ~95 min after each publish cron re-dispatch
+#   the pipeline when GitHub's cron never fired at all (it silently ate the
+#   12:13 slot on 2026-07-05 — a failure mode retries can't see because no
+#   run exists). workflow_dispatch runs pick the format from the clock, so a
+#   backstop dispatch produces the same video the missed cron would have.
+on:
+  workflow_run:
+    workflows: ["Publish (full pipeline)"]
+    types: [completed]
+  schedule:
+    - cron: "48 12 * * *"   # after the 11:13 battle slot
+    - cron: "48 17 * * *"   # after the 16:13 news slot
+    - cron: "48 21 * * *"   # after the 20:13 comic slot
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+  issues: write
+
+concurrency:
+  group: self-heal
+  cancel-in-progress: false
+
+jobs:
+  heal:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Retry a failed publish once, escalate a repeat
+        if: github.event_name == 'workflow_run'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+        run: |
+          set -euo pipefail
+          if [ "$CONCLUSION" != "failure" ]; then
+            echo "publish concluded: $CONCLUSION; nothing to heal"
+            exit 0
+          fi
+          if [ "$ATTEMPT" -lt 2 ]; then
+            echo "retrying failed publish run $RUN_ID (was attempt $ATTEMPT)"
+            gh run rerun "$RUN_ID" --failed --repo "$GITHUB_REPOSITORY"
+            exit 0
+          fi
+          echo "publish failed twice; escalating"
+          tail=$(curl -fsSL "https://raw.githubusercontent.com/$GITHUB_REPOSITORY/main/.github/last-brief.txt" || echo "(no receipt)")
+          title="Self-heal: publish failed twice, retry did not fix it"
+          if printf '%s' "$tail" | grep -qiE "401|403|invalid_grant|unauthorized|insufficient|billing|suspended|quota|expired"; then
+            title="Self-heal: publish NEEDS A HUMAN (credentials/quota class)"
+          fi
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --label watchdog --state open --json number --jq 'length')
+          if [ "$existing" -gt 0 ]; then
+            echo "watchdog issue already open; not duplicating"
+            exit 0
+          fi
+          gh label create watchdog --repo "$GITHUB_REPOSITORY" \
+            --description "automated pipeline health alert" --color D93F0B 2>/dev/null || true
+          gh issue create --repo "$GITHUB_REPOSITORY" --label watchdog \
+            --title "$title" \
+            --body "$(printf 'Publish failed on both attempts: %s\n\nLast brief receipt:\n```\n%s\n```\n' "$RUN_URL" "$tail")"
+
+      - name: Backstop a missed publish slot
+        if: github.event_name != 'workflow_run'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          latest=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/publish.yml/runs?per_page=1" \
+                   --jq '.workflow_runs[0].created_at // empty')
+          if [ -n "$latest" ]; then
+            age_min=$(( ( $(date -u +%s) - $(date -u -d "$latest" +%s) ) / 60 ))
+            echo "latest publish run: $latest (${age_min} min ago)"
+            if [ "$age_min" -le 100 ]; then
+              echo "slot was served; no action"
+              exit 0
+            fi
+          fi
+          echo "no publish run in the last 100 min; the cron was missed — dispatching"
+          gh workflow run publish.yml --repo "$GITHUB_REPOSITORY"

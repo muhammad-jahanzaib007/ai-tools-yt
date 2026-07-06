@@ -1,0 +1,15 @@
+# Pinned 2026-07-06 to the exact set the last green publish run resolved.
+# Bump deliberately (one package at a time, watch the next run), never blind:
+# an unpinned `pip install --upgrade` 3x/day meant any breaking release could
+# halt the pipeline mid-schedule.
+# numpy is intentionally unpinned: librosa/numba own its compatible range and
+# a hard pin here can deadlock the resolver.
+requests==2.34.2
+anthropic==0.116.0
+google-api-python-client==2.198.0
+google-auth==2.55.1
+google-auth-httplib2==0.4.0
+librosa==0.11.0
+soundfile==0.14.0
+faster-whisper==1.2.1
+pillow==12.3.0

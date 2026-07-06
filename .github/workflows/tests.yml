@@ -1,0 +1,33 @@
+name: Tests
+
+# Pure-function tests for the automation scripts (JSON extraction, brief
+# validation, take scoring, news helpers). Runs on any code push so a broken
+# edit is caught before the next publish cron, not by it — the 2026-07-05
+# outage was a hand-edit that a 30-second import test would have caught.
+on:
+  push:
+    paths:
+      - "automation/**"
+      - "tests/**"
+      - "requirements.txt"
+      - ".github/workflows/tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Only what the tested modules import at module level; the heavy audio
+      # stack is imported lazily inside functions and isn't exercised here.
+      - run: pip install pytest==9.1.1 requests==2.34.2
+
+      - run: python -m pytest tests -q

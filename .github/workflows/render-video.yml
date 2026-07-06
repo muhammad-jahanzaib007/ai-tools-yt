@@ -41,7 +41,7 @@ jobs:
       - name: Install Remotion deps (battle graphics)
         run: npm ci --prefix remotion
 
-      - run: pip install --upgrade requests librosa soundfile faster-whisper pillow
+      - run: pip install -r requirements.txt
 
       - name: Render video
         env:

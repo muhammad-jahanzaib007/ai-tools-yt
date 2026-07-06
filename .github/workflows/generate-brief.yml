@@ -26,7 +26,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - run: pip install --upgrade requests anthropic
+      - run: pip install -r requirements.txt
 
       # trigger.txt containing "news" fires a daily AI-news brief; "comic" a
       # Toolverse episode; anything else a battle.

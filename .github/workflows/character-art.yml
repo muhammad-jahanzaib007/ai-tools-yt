@@ -25,7 +25,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - run: pip install --upgrade requests
+      - run: pip install -r requirements.txt
 
       # The trigger file may carry per-run overrides (e.g. "limit=1
       # model=gpt-image-2" for a one-image smoke test of a new model)

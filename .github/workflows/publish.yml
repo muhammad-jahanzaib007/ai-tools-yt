@@ -46,7 +46,7 @@ jobs:
       - name: Install Remotion deps (battle graphics)
         run: npm ci --prefix remotion
 
-      - run: pip install --upgrade requests anthropic google-api-python-client google-auth google-auth-httplib2 librosa soundfile faster-whisper pillow
+      - run: pip install -r requirements.txt
 
       # Slot decides the format: midday = tool battle, late afternoon = AI news,
       # evening = Toolverse comic. A manually pushed trigger may force one by

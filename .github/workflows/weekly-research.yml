@@ -24,7 +24,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - run: pip install --upgrade requests google-auth google-api-python-client
+      - run: pip install -r requirements.txt
 
       - name: Trend research (Data API, key only)
         env:
