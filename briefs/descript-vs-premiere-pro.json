@@ -1,0 +1,80 @@
+{
+  "slug": "descript-vs-premiere-pro",
+  "title": "Descript vs Premiere Pro: Editing by Typing or Timeline?",
+  "hook": "Two video editing titans clash. Only one truly innovates.",
+  "battle": {
+    "toolA": "Descript",
+    "toolB": "Premiere Pro",
+    "tagline": "Typing vs timeline, which is faster?",
+    "rounds": [
+      {
+        "title": "Workflow",
+        "aPoint": "Edit video by editing text. Fast, intuitive.",
+        "bPoint": "Traditional timeline editing. Precise control.",
+        "winner": "a"
+      },
+      {
+        "title": "Features",
+        "aPoint": "AI tools for transcription, voice cloning, eye contact.",
+        "bPoint": "Industry-standard effects, colour grading, audio suite.",
+        "winner": "b"
+      },
+      {
+        "title": "Learning Curve",
+        "aPoint": "Easy to learn for beginners. Simple interface.",
+        "bPoint": "Steep learning curve. Professional skills needed.",
+        "winner": "a"
+      }
+    ],
+    "verdict": "Descript wins for rapid content creation and AI assistance. Premiere Pro remains king for professional, detailed, and complex video projects."
+  },
+  "narration": [
+    {
+      "text": "Two video editing titans clash. Only one truly innovates. It is Descript versus Premiere Pro. Editing by typing versus the traditional timeline. Which workflow reigns supreme?",
+      "broll": "versus intro card"
+    },
+    {
+      "text": "First up, Workflow! Descript lets you edit video by editing text. Just delete words, and the video cuts. It is incredibly fast and intuitive! Premiere Pro uses a traditional timeline. This offers ultimate precision, but it is not as quick for basic edits. Descript takes round one!",
+      "broll": "descript text editing"
+    },
+    {
+      "text": "Next, Features! Descript boasts incredible AI tools. Think transcription, voice cloning, and even eye contact correction. Amazing! Premiere Pro offers industry-standard effects, advanced colour grading, and a comprehensive audio suite. No contest here! Premiere Pro snatches this round.",
+      "broll": "premiere pro timeline"
+    },
+    {
+      "text": "Round three, Learning Curve! Descript is incredibly easy to learn. Its interface is clean and simple. You can jump right in! Premiere Pro has a steep learning curve. Mastering it requires professional skills and dedicated time. Ouch, that one hurts for beginners! Descript wins this round!",
+      "broll": "person learning software"
+    },
+    {
+      "text": "So, what is the final verdict? Descript wins for rapid content creation and AI assistance. Premiere Pro remains king for professional, detailed, and complex video projects. Which tool would you pick? Tell us in the comments! And follow for daily AI battles!",
+      "broll": "ai battle conclusion"
+    }
+  ],
+  "description": "Descript and Premiere Pro offer very different video editing experiences. This video compares their unique approaches: editing by typing versus the traditional timeline. Discover which tool is best suited for your next project.",
+  "links": [
+    {
+      "name": "Descript",
+      "url": "https://www.descript.com/"
+    },
+    {
+      "name": "Adobe Premiere Pro",
+      "url": "https://www.adobe.com/uk/products/premiere.html"
+    }
+  ],
+  "tags": [
+    "descript",
+    "premiere pro",
+    "video editing",
+    "ai tools",
+    "ai video editor",
+    "timeline editing",
+    "content creation",
+    "ai software",
+    "tech battle",
+    "editing software"
+  ],
+  "thumbnail_text": "Descript vs Premiere",
+  "topic": "Descript vs Premiere Pro: editing by typing vs timeline",
+  "date": "2026-07-06",
+  "hook_type": "conflict_tease"
+}
