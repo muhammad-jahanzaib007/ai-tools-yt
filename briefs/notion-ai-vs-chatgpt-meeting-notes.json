@@ -1,0 +1,82 @@
+{
+  "slug": "notion-ai-vs-chatgpt-meeting-notes",
+  "title": "Notion AI vs ChatGPT: The Best AI for Meeting Notes?",
+  "hook": "One of these tools is a waste of money for meeting notes!",
+  "battle": {
+    "toolA": "Notion AI",
+    "toolB": "ChatGPT",
+    "tagline": "Meeting notes: Who wins?",
+    "rounds": [
+      {
+        "title": "Integration",
+        "aPoint": "Built-in, seamless for existing Notion users.",
+        "bPoint": "Copy and paste required, external tool.",
+        "winner": "a"
+      },
+      {
+        "title": "Ease of Use",
+        "aPoint": "Simple commands, context-aware. Easy!",
+        "bPoint": "Requires careful prompting, more effort.",
+        "winner": "a"
+      },
+      {
+        "title": "Cost",
+        "aPoint": "Add-on to Notion subscription. Extra cost.",
+        "bPoint": "Free version available, or Plus subscription.",
+        "winner": "b"
+      }
+    ],
+    "verdict": "Notion AI wins for convenience and integration into your workflow! ChatGPT is still fantastic for detailed summaries of existing text."
+  },
+  "narration": [
+    {
+      "text": "One of these tools is a waste of money for meeting notes! Today, we pit Notion AI against ChatGPT. Which AI triumphs?",
+      "broll": "AI versus graphic"
+    },
+    {
+      "text": "First, Integration. Notion AI is built right into your workspace. No copying and pasting needed! ChatGPT needs you to bring the notes to it. Notion AI takes round one!",
+      "broll": "Notion workspace screen"
+    },
+    {
+      "text": "Next up, Ease of Use. Notion AI understands the context of your notes. Just a few clicks and it is done! ChatGPT needs specific prompts for the best results. Another win for Notion AI!",
+      "broll": "typing meeting notes"
+    },
+    {
+      "text": "Finally, the big one: Cost. Notion AI is an add-on. You pay extra for it every month! ChatGPT offers a powerful free version. Ouch, that one hurts. ChatGPT snatches this round!",
+      "broll": "money falling down"
+    },
+    {
+      "text": "So, the champion is Notion AI! It wins for convenience and integration into your workflow. ChatGPT is still fantastic for detailed summaries of existing text. Which tool would you pick? Tell us in the comments! Follow for daily AI battles!",
+      "broll": "winner confetti"
+    }
+  ],
+  "description": "Notion AI and ChatGPT both summarise meeting notes. But which one is truly the best for your workflow? We break down the key differences.",
+  "links": [
+    {
+      "name": "Notion AI",
+      "url": "https://www.notion.so/product/ai"
+    },
+    {
+      "name": "ChatGPT",
+      "url": "https://chat.openai.com/"
+    }
+  ],
+  "tags": [
+    "notion ai",
+    "chatgpt",
+    "ai tools",
+    "meeting notes",
+    "productivity",
+    "ai comparison",
+    "notion",
+    "openai",
+    "ai assistant",
+    "business tools",
+    "workflow",
+    "ai review"
+  ],
+  "thumbnail_text": "Notion AI vs ChatGPT",
+  "topic": "Notion AI vs ChatGPT for meeting notes",
+  "date": "2026-07-06",
+  "hook_type": "bold_claim"
+}
