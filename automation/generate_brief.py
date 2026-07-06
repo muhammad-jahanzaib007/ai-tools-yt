@@ -163,17 +163,29 @@ def _extract_first_json_block(text):
 
 
 def chat_json(user, max_tokens=3000):
-    content = _raw_completion(user, max_tokens)
-    try:
-        return json.loads(content)
-    except json.JSONDecodeError:
-        json_text = _extract_first_json_block(content)
-        if json_text is None:
-            sys.exit(f"model did not return JSON: {content[:300]}")
+    # One fresh completion retry on unparseable output: the 2026-07-05 17:31
+    # failure was a missing comma in otherwise-valid model JSON (confirmed in
+    # the job log) — extraction can't fix that, but TTS-style regeneration
+    # usually can, and it's far cheaper than failing the whole publish run.
+    last = ""
+    for attempt in range(2):
+        content = _raw_completion(user, max_tokens)
         try:
-            return json.loads(json_text)
-        except json.JSONDecodeError as e:
-            sys.exit(f"model JSON unparseable ({e}): {json_text[:300]}")
+            return json.loads(content)
+        except json.JSONDecodeError:
+            pass
+        json_text = _extract_first_json_block(content)
+        if json_text is not None:
+            try:
+                return json.loads(json_text)
+            except json.JSONDecodeError as e:
+                last = f"unparseable ({e}): {json_text[:300]}"
+        else:
+            last = f"no JSON found: {content[:300]}"
+        if attempt == 0:
+            print(f"model output {last[:120]}; requesting a fresh completion",
+                  file=sys.stderr)
+    sys.exit(f"model did not return usable JSON twice: {last}")
 
 
 # Hook styles rotate deterministically across briefs so ~30 videos give a
