@@ -1,0 +1,68 @@
+{
+  "slug": "burnout-wraith-strikes-canva-notion-ai",
+  "title": "The Burnout Wraith attacks. Two heroes answer.",
+  "hook": "The Burnout Wraith feeds on manual work. Two heroes will fight back.",
+  "comic": {
+    "threat": "Burnout Wraith",
+    "heroes": [
+      {
+        "tool": "Canva",
+        "alias": "The Forge",
+        "color": "#00C4CC",
+        "power": "The Forge hammers out all the designs for the social campaign."
+      },
+      {
+        "tool": "Notion AI",
+        "alias": "The Archivist",
+        "color": "#9B9B9B",
+        "power": "The Archivist organises every note and every idea for the campaign."
+      }
+    ],
+    "resolution": "The Burnout Wraith was defeated by the seamless organisation and rapid content creation, thanks to Canva and Notion AI."
+  },
+  "narration": [
+    {
+      "text": "The Burnout Wraith feeds on creators doing everything by hand. Its latest victim is a social media manager. Drowning in endless tasks. The Wraith grows stronger with every manual post. But not today.",
+      "broll": "stressed creator working"
+    },
+    {
+      "text": "I am The Forge. Witness my power. Canva creates every social media post. Fast, branded and ready to go. The Wraith recoils from my speed.",
+      "broll": "Canva interface designing"
+    },
+    {
+      "text": "I am The Archivist. See my might. Notion AI brings order to chaos. All campaign notes, research, and ideas are perfectly structured. The Wraith weakens, unable to find purchase.",
+      "broll": "Notion AI organising"
+    },
+    {
+      "text": "The Burnout Wraith is defeated. Efficiency conquers exhaustion. Use AI to streamline your workflow and reclaim your time. Which hero do you want to see next? Subscribe for more AI Toolverse.",
+      "broll": "heroes standing victorious"
+    }
+  ],
+  "description": "The Burnout Wraith attacks a social media manager overwhelmed by manual tasks. Canva and Notion AI combine their powers to defeat the villain, showcasing the power of AI in streamlining creative workflows. Learn how these tools can help you conquer burnout.",
+  "links": [
+    {
+      "name": "Canva",
+      "url": "https://www.canva.com/"
+    },
+    {
+      "name": "Notion AI",
+      "url": "https://www.notion.so/product/ai"
+    }
+  ],
+  "tags": [
+    "ai tools",
+    "youtube shorts",
+    "canva",
+    "notion ai",
+    "ai for creators",
+    "productivity tools",
+    "social media manager",
+    "burnout prevention",
+    "ai workflow",
+    "content creation"
+  ],
+  "thumbnail_text": "AI vs Burnout",
+  "topic": "Toolverse episode: Burnout Wraith",
+  "date": "2026-07-07",
+  "hook_type": "conflict_tease"
+}
