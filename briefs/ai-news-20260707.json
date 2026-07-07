@@ -1,0 +1,82 @@
+{
+  "slug": "ai-news-20260707",
+  "title": "Daily AI News: Reddit Fights Spam, AI Scams Rise, UK Warns of 'Arms Race'",
+  "hook": "AI is fighting fire with fire. Today's top stories are next.",
+  "news": {
+    "headline": "Reddit fights spam with AI",
+    "outro": "Which story impacted you most?",
+    "stories": [
+      {
+        "title": "Reddit Fights Spam",
+        "source": "TechCrunch",
+        "category": "models",
+        "detail": "Reddit is using LLMs to solve an LLM problem."
+      },
+      {
+        "title": "AI Scams Protection",
+        "source": "TechCrunch",
+        "category": "money",
+        "detail": "Savi's app protects consumers from realistic AI scams."
+      },
+      {
+        "title": "UK AI 'Arms Race'",
+        "source": "Ars Technica",
+        "category": "money",
+        "detail": "UK regulator warns of 'arms race' to keep up with AI."
+      },
+      {
+        "title": "Autonomous Robots",
+        "source": "Ars Technica",
+        "category": "research",
+        "detail": "AI could enable autonomous robot workers in workplaces."
+      }
+    ],
+    "dateLabel": "7 July 2026"
+  },
+  "narration": [
+    {
+      "text": "AI is fighting fire with fire. Today, Reddit is using AI to solve a problem AI largely created. We will explain how. Also, new apps protect against AI scams, and the UK financial regulator issues a stark warning. Let's dive in.",
+      "broll": "futuristic city intro"
+    },
+    {
+      "text": "TechCrunch reports that Reddit is using large language models to tackle spam. In the AI era, platforms must fight fire with fire to cull unwanted content. It is a necessary move for online safety.",
+      "broll": "reddit app screen"
+    },
+    {
+      "text": "Savi's new app aims to protect consumers from realistic AI scams. TechCrunch says the company just raised seven million dollars in funding. The app launches for iPhone and Android this week.",
+      "broll": "phone scam warning"
+    },
+    {
+      "text": "Ars Technica reports that the UK regulator warns of an 'arms race' in financial services. An official makes a case for greater watchdog powers. Millions now use AI for personal finance decisions.",
+      "broll": "financial data charts"
+    },
+    {
+      "text": "Ars Technica also explains how AI could enable autonomous robot workers. Top robotics researchers detail how robot autonomy is evolving. This could transform workplaces and even homes.",
+      "broll": "robot at work"
+    },
+    {
+      "text": "That's your AI news for today. Which story do you think is most impactful? Let us know in the comments below. Follow for tomorrow's AI brief.",
+      "broll": "digital news outro"
+    }
+  ],
+  "description": "Daily AI news for a general audience. Today, Reddit uses AI to combat spam. A new app from Savi protects against AI scams. The UK financial regulator warns of an 'arms race' as AI use grows. Also, autonomous robots could soon be common in workplaces.",
+  "links": [],
+  "tags": [
+    "ai news",
+    "artificial intelligence",
+    "ai models",
+    "ai apps",
+    "ai scams",
+    "reddit ai",
+    "uk finance ai",
+    "robotics",
+    "autonomous robots",
+    "ai policy",
+    "tech news",
+    "daily ai"
+  ],
+  "thumbnail_text": "Reddit, Scams, Robots",
+  "topic": "Daily AI news",
+  "date": "2026-07-07",
+  "hook_type": "bold_claim"
+}
