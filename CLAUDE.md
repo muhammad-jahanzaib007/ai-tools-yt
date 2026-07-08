@@ -66,8 +66,10 @@ Committed one-liners in `.github/` (job logs need admin; receipts don't):
 
 - Failed publish run → auto-retried once; second failure → ONE `watchdog`
   issue (titled NEEDS A HUMAN when the receipt greps as credentials/quota).
-- Slot backstops 12:48/17:48/21:48 UTC re-dispatch publish.yml when the
-  GitHub cron never fired (it silently ate the 12:13 slot on 2026-07-05).
+- Slot backstops (12:48/17:48/21:48 schedule) were RETIRED 2026-07-08: the
+  external heartbeat now covers missed slots per-slot (no over-fire), and an
+  in-repo cron backstop dies in a GitHub scheduler outage anyway. The crude
+  "no run in 100 min" backstop had over-fired an extra video (2026-07-08).
 - `watchdog.yml` (13:45 UTC daily) checks upload freshness ≤26h.
 - `tests.yml` runs `tests/` (pure-function tests) on every automation push —
   a red X on a commit means DO NOT let the next cron run it; fix first.
@@ -275,3 +277,17 @@ commit, so the other sessions know who did what.
   the algorithm; focus one format (search demand + affiliate fit) then clone
   the winner to a high-income language. News + comic paused (code intact),
   cadence kept at 3/day. Takes effect from the next slot (16:13).
+- 2026-07-08 ~17:45 — claude.ai/code web session (same branch): dedupe
+  self-check PASSED — the late 11:13 schedule replay (run 28943924318) had
+  publish=skipped; the manual battle dispatch published ONE battle
+  (midjourney-vs-free-ai-art, pl=ok), no duplicate. BUT found a separate
+  over-fire: an extra news video (ai-news-20260708, 15:10) came from the
+  self-heal SCHEDULE backstop — GitHub replayed the 12:48 backstop cron late
+  (~15:00), its "no publish run in 100 min" heuristic saw the 12:57 battle as
+  123 min stale and dispatched publish.yml, which on the pre-battle-only code
+  picked news off the 15:00 clock. Fix: RETIRED the self-heal schedule
+  backstops (kept the workflow_run failure-retry). The heartbeat supersedes
+  them and checks per-slot coverage so it won't over-fire; under battle-only
+  an over-fire would have been a duplicate battle. TODO(next): the blog repo
+  has the same 08:50/20:50 self-heal backstop, now also redundant with the
+  heartbeat — retire it there too.
