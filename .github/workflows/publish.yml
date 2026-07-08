@@ -107,6 +107,20 @@ jobs:
       - name: Pick format by slot
         id: fmt
         run: |
+          # BATTLE-ONLY consolidation (2026-07-08). The channel is pre-traction
+          # (~25 views/28d); running 3 formats fragments the algorithm's
+          # audience-building on a young channel. Focus on ONE format — tool
+          # battles (real search demand + affiliate fit) — until it earns
+          # distribution, THEN clone the winner (languages/formats).
+          # This forces every run (cron, heartbeat dispatch, manual) to battle,
+          # so the heartbeat's per-slot format inputs are moot while it is set.
+          # TO RESTORE the 3-format rotation: set FORMAT_ONLY="" (one line).
+          FORMAT_ONLY="battle"
+          if [ -n "$FORMAT_ONLY" ]; then
+            echo "format=$FORMAT_ONLY (battle-only mode)"
+            echo "format=$FORMAT_ONLY" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           ov=""
           if [ "$GITHUB_EVENT_NAME" = "push" ]; then
             ov=$(grep -oiE "format=(battle|comic|news)" .github/publish-trigger.txt \

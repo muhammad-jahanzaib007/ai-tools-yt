@@ -29,9 +29,12 @@ honest, agreed version of that:
 ## Architecture (one video = one publish run)
 
 `publish.yml` (crons 11:13 / 16:13 / 20:13 UTC = 12:13/17:13/21:13 UK BST):
-1. **Pick format by slot** — UTC hour <15 battle, <18 news, else comic.
-   Push-event runs may override via `format=battle|news|comic` in
-   `.github/publish-trigger.txt` (cron runs always use the clock).
+1. **Pick format by slot** — normally UTC hour <15 battle, <18 news, else
+   comic (schedule runs derive the hour from the cron slot, not now(), so a
+   late replay keeps its format). **CURRENTLY BATTLE-ONLY** (2026-07-08
+   consolidation): `FORMAT_ONLY="battle"` at the top of the step forces every
+   run to battle; set it to `""` to restore the 3-format rotation. While it's
+   set, the heartbeat's per-slot format inputs are overridden.
 2. **Generate brief** (`automation/generate_brief.py`) — LLM provider chain
    Gemini free tier → Claude → GitHub Models. Output validated hard
    (`_clean_battle/_clean_comic/_clean_news`); news ABORTS rather than ship
@@ -119,15 +122,27 @@ Google/YouTube token re-mint (OAuth playground, scopes
 TikTok Production audit, Meta token expiry, ElevenLabs subscription
 (fallback voice dies if cancelled).
 
-## Strategy state (2026-07-06)
+## Strategy state (2026-07-08)
 
-Channel is pre-traction (near-zero views; young channel + API lag). All
+Channel is pre-traction (~25 views/28d; young channel + API lag). All
 engineering is DONE and FROZEN — effort goes to demand (hooks, topics,
 retention), not polish. Weekly analytics Sunday 08:00 UTC
 (`analytics/latest.md`, hook/format retention tables). **Kill/scale rule:
 by 2026-08-18, median Short <~200 views → change format/niche, NOT more
 polish.** Affiliate goal: Synthesia live; Pictory next; Jasper/Speechify
 gated on traffic. Owner is UK-based.
+
+**BATTLE-ONLY as of 2026-07-08** (`FORMAT_ONLY="battle"` in publish.yml):
+3 formats fragmented the algorithm's audience-building on a pre-traction
+channel, so all 3 daily slots now produce tool battles — the format with
+the clearest search demand + affiliate fit. News + comic are PAUSED, not
+deleted (the code paths are intact; flip `FORMAT_ONLY=""` to restore).
+Battle topic supply is ample (13-tool roster, auto-replenished). Plan: prove
+battle earns distribution, THEN clone the winner (first to a high-income
+language — DE/FR/ES — reusing the engine; NOT different niches, which throw
+the engine away). Do not split to more channels/languages before one format
+proves out. Cadence held at 3/day (consistency = the point); revisit only if
+matchup quality thins.
 
 ## Session log (cross-device attribution — KEEP UPDATED)
 
@@ -251,3 +266,12 @@ commit, so the other sessions know who did what.
   down. Note: I mis-diagnosed once mid-setup (claimed the Worker "should have
   fired in the last 93 min" — it had only just been created; owner correctly
   caught it). First real unattended test = whichever slot GitHub next misses.
+- 2026-07-08 ~13:10 — claude.ai/code web session (same branch): executed the
+  BATTLE-ONLY consolidation (FORMAT_ONLY="battle" in publish.yml Pick-format;
+  forces every run — cron/heartbeat/manual — to battle, exits before the
+  slot/clock logic, so no heartbeat redeploy needed; one-line revert). Checked
+  first: battle topic queue = 13, auto-replenished from a 13-tool roster, so
+  3/day is sustainable. Rationale = pre-traction channel, 3 formats fragment
+  the algorithm; focus one format (search demand + affiliate fit) then clone
+  the winner to a high-income language. News + comic paused (code intact),
+  cadence kept at 3/day. Takes effect from the next slot (16:13).
