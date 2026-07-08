@@ -200,15 +200,18 @@ def tts_gemini(text, dest, voice=None, style=None):
     raise RuntimeError(f"gemini tts failed ({last})")
 
 
-def _whisper_words(path):
-    """Word timings via forced transcription: Gemini TTS has no timestamp API,
-    so the karaoke captions align to what Whisper hears."""
+def _whisper_words(path, prompt=None):
+    """Word timings via forced transcription: Gemini TTS has no timestamp API.
+    `prompt` (the script) is passed as Whisper's initial_prompt to bias it
+    toward the real vocabulary — but the caption TEXT is corrected against the
+    script in _align_script_to_timings, so a mishear here is not fatal."""
     global _WHISPER
     from faster_whisper import WhisperModel
     if _WHISPER is None:
         _WHISPER = WhisperModel("tiny.en", device="cpu", compute_type="int8")
     segs, _ = _WHISPER.transcribe(str(path), language="en", beam_size=1,
-                                  word_timestamps=True)
+                                  word_timestamps=True,
+                                  initial_prompt=prompt or None)
     words = []
     for s in segs:
         for w in (s.words or []):
@@ -216,6 +219,51 @@ def _whisper_words(path):
             if token:
                 words.append((token, w.start, w.end))
     return words
+
+
+def _align_script_to_timings(text, whisper_words):
+    """Whisper mishears brand names — it captions 'ChatGPT' as 'Chachi Pt'.
+    We have the exact script, so keep Whisper's word TIMINGS but use the
+    SCRIPT's spelling: align the two token streams and substitute the script
+    words onto the audio timeline. Whisper-only hallucinations are dropped;
+    script words Whisper missed get a slice of the local gap. Falls back to the
+    raw Whisper words if either side is empty."""
+    import difflib
+    script = text.split()
+    if not script or not whisper_words:
+        return whisper_words
+
+    def norm(w):
+        return re.sub(r"[^a-z0-9]+", "", w.lower())
+
+    s_norm = [norm(w) for w in script]
+    w_norm = [norm(w) for (w, _, _) in whisper_words]
+    out = []
+    for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(
+            a=s_norm, b=w_norm, autojunk=False).get_opcodes():
+        if tag == "equal":
+            for si, wi in zip(range(i1, i2), range(j1, j2)):
+                _, st, en = whisper_words[wi]
+                out.append((script[si], st, en))
+        elif tag == "replace":
+            span = whisper_words[j1:j2]
+            t0, t1, n = span[0][1], span[-1][2], i2 - i1
+            if t1 <= t0:
+                t1 = t0 + 0.3 * n
+            step = (t1 - t0) / n
+            for k, si in enumerate(range(i1, i2)):
+                out.append((script[si], t0 + k * step, t0 + (k + 1) * step))
+        elif tag == "delete":
+            prev_end = out[-1][2] if out else whisper_words[0][1]
+            nxt = whisper_words[j2][1] if j2 < len(whisper_words) else prev_end + 0.3 * (i2 - i1)
+            n = i2 - i1
+            if nxt <= prev_end:
+                nxt = prev_end + 0.3 * n
+            step = (nxt - prev_end) / n
+            for k, si in enumerate(range(i1, i2)):
+                out.append((script[si], prev_end + k * step, prev_end + (k + 1) * step))
+        # tag == "insert": Whisper heard words not in the script -> drop them
+    return out or whisper_words
 
 
 def tts(text, dest, voice=None, style=None):
@@ -243,10 +291,12 @@ def tts_timed(text, dest, voice=None, style=None):
     if VOICE_PROVIDER == "gemini":
         try:
             tts_gemini(text, dest, voice, style)
-            words = _whisper_words(dest)
+            words = _whisper_words(dest, prompt=text)
             if not words:
                 raise RuntimeError("no word timings recoverable from gemini audio")
-            return words
+            # Caption the SCRIPT's words (correct spelling), timed by Whisper —
+            # so 'ChatGPT' is never captioned as Whisper's 'Chachi Pt'.
+            return _align_script_to_timings(text, words)
         except Exception as e:
             # Gemini free tier can hit daily quota; fall back to ElevenLabs
             # while its key still exists so the cron never misses a day.

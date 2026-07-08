@@ -151,3 +151,27 @@ def test_parse_date_rfc822_and_iso():
 
 def test_parse_date_garbage_none():
     assert ns._parse_date("not a date") is None
+
+
+def test_align_script_to_timings_fixes_brand_mishears():
+    # Whisper mishears "ChatGPT" as "Chachi Pt"; captions must use the script.
+    script = "Is ChatGPT better than Claude for coding"
+    whisper = [("Is", 0.0, 0.2), ("Chachi", 0.2, 0.5), ("Pt", 0.5, 0.8),
+               ("better", 0.8, 1.1), ("than", 1.1, 1.3), ("Claude", 1.3, 1.7),
+               ("for", 1.7, 1.9), ("coding", 1.9, 2.3)]
+    out = rv._align_script_to_timings(script, whisper)
+    assert [w for w, _, _ in out] == script.split()
+    assert all(s <= e for _, s, e in out)                 # each word well-formed
+    assert [s for _, s, _ in out] == sorted(s for _, s, _ in out)  # non-decreasing
+
+
+def test_align_drops_hallucinations_and_restores_missed_words():
+    script = "Synthesia makes avatars"
+    whisper = [("Synthesia", 0.0, 0.4), ("um", 0.4, 0.5), ("makes", 0.5, 0.8)]
+    out = rv._align_script_to_timings(script, whisper)
+    assert [w for w, _, _ in out] == ["Synthesia", "makes", "avatars"]
+
+
+def test_align_empty_falls_back():
+    assert rv._align_script_to_timings("", [("x", 0.0, 0.1)]) == [("x", 0.0, 0.1)]
+    assert rv._align_script_to_timings("hi", []) == []
