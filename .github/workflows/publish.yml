@@ -10,6 +10,11 @@ on:
     - cron: "13 16 * * *"
     - cron: "13 20 * * *"
   workflow_dispatch:
+    inputs:
+      format:
+        description: "battle|news|comic (blank = pick by clock)"
+        required: false
+        default: ""
   push:
     paths:
       - ".github/publish-trigger.txt"
@@ -106,6 +111,10 @@ jobs:
           if [ "$GITHUB_EVENT_NAME" = "push" ]; then
             ov=$(grep -oiE "format=(battle|comic|news)" .github/publish-trigger.txt \
                  | head -1 | cut -d= -f2 | tr "A-Z" "a-z") || true
+          elif [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            # The heartbeat Worker (and manual dispatch) can pin the format so
+            # a late external fire can't flip it off the wall clock.
+            ov=$(echo "${{ inputs.format }}" | tr "A-Z" "a-z" | grep -oE "battle|comic|news") || true
           fi
           if [ "$GITHUB_EVENT_NAME" = "schedule" ]; then
             # cron is "MIN HOUR * * *" — use the scheduled hour, not now().

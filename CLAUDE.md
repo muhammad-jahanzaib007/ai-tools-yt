@@ -68,6 +68,14 @@ Committed one-liners in `.github/` (job logs need admin; receipts don't):
 - `watchdog.yml` (13:45 UTC daily) checks upload freshness ≤26h.
 - `tests.yml` runs `tests/` (pure-function tests) on every automation push —
   a red X on a commit means DO NOT let the next cron run it; fix first.
+- **`heartbeat/` (Cloudflare Worker) — the EXTERNAL backstop.** All the above
+  are GitHub crons, so a wholesale GitHub scheduler outage (2026-07-06..08,
+  days long) kills the backstops too. The Worker runs on Cloudflare, checks
+  every slot 35–165 min out, and workflow_dispatches any that GitHub missed
+  (YT slots pinned to their format). Needs a fine-grained PAT (Actions R/W on
+  both repos) as the `GH_TOKEN` Worker secret — human-domain to mint/deploy;
+  see `heartbeat/README.md`. Until it is deployed, a scheduler outage still
+  needs a human/session to dispatch by hand.
 
 ## Triggers (push to fire; keep prose free of bare `format=`/`limit=`/`model=`)
 
@@ -220,3 +228,15 @@ commit, so the other sessions know who did what.
   IG/FB/TikTok crossposts are live and NOT auto-deleted. NOTE the deeper
   cause is still GitHub's multi-day scheduler outage forcing late replays;
   the external heartbeat remains the real fix.
+- 2026-07-08 (later) — claude.ai/code web session (same branch): built the
+  EXTERNAL heartbeat (heartbeat/ — Cloudflare Worker) after the owner made
+  Claude the operator and approved the plan. It is the only backstop that
+  survives a full GitHub scheduler outage (all in-repo backstops are crons
+  too). Also added a `format` workflow_dispatch input to publish.yml so the
+  Worker (or a manual dispatch) can pin a slot's format — closes the last
+  format-flip path for external fires. Owner must mint a fine-grained PAT
+  (Actions R/W, both repos) and `wrangler deploy` + `wrangler secret put
+  GH_TOKEN` to activate (human-domain). Standing operator calls this session:
+  (1) one channel / one format / English, prove before splitting to
+  channels or languages; (2) lead format = tool battles; pause news+comic on
+  the main channel once the owner is ready (not yet executed — flagged).
