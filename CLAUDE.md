@@ -184,3 +184,17 @@ commit, so the other sessions know who did what.
   errors "unstaged changes" (harmless — masked by || true, and the
   post-commit retry loop rebases fine); tidy later by moving the pull
   after the commit.
+- 2026-07-08 07:35 — claude.ai/code web session (same as above): DUPLICATE
+  comic on 2026-07-07 (burnout-wraith 18:36 + typo-swarm 21:52, both
+  fmt=comic; no news for the 16:13 slot). Root cause = format-flip gotcha
+  (rule 2) through GitHub's late cron replays: "Pick format by slot" read
+  the WALL CLOCK, so the 16:13 news cron replayed at 18:20 picked comic
+  (hour 18) instead of news. NOT a dedupe-guard miss (the guard correctly
+  skipped the 07-06 21:47 replay; confirmed publish job=skipped). Fix:
+  Pick-format now derives the hour from the SCHEDULE cron slot
+  (github.event.schedule) for schedule events, not now() — a late replay
+  keeps its intended format. Manual dispatch/trigger still use the clock.
+  Owner has (or will) delete one of the two 07-07 comics; both their
+  IG/FB/TikTok crossposts are live and NOT auto-deleted. NOTE the deeper
+  cause is still GitHub's multi-day scheduler outage forcing late replays;
+  the external heartbeat remains the real fix.
