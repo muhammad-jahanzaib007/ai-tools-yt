@@ -1,0 +1,80 @@
+{
+  "slug": "ai-news-20260708",
+  "title": "SambaNova Lands 1 Billion, Claude Comes to Mobile",
+  "hook": "Massive money for AI chips, and Claude is going mobile. Let's get into it.",
+  "news": {
+    "headline": "AI Chips Attract Billions",
+    "outro": "Follow for tomorrow's AI news brief.",
+    "stories": [
+      {
+        "title": "SambaNova Raises $1B",
+        "source": "TechCrunch",
+        "category": "money",
+        "detail": "SambaNova raised $1B at an $11B valuation."
+      },
+      {
+        "title": "Claude Cowork Mobile",
+        "source": "TechCrunch",
+        "category": "models",
+        "detail": "Anthropic's Claude Cowork launches on mobile."
+      },
+      {
+        "title": "ZML Speeds AI Chips",
+        "source": "TechCrunch",
+        "category": "chips",
+        "detail": "ZML releases free software to speed AI chips."
+      },
+      {
+        "title": "Hackers Use AI Tools",
+        "source": "Ars Technica",
+        "category": "models",
+        "detail": "Hackers can use popular AI tools for botnets."
+      }
+    ],
+    "dateLabel": "8 July 2026"
+  },
+  "narration": [
+    {
+      "text": "Massive money for AI chips, and Claude is going mobile. Let's get into it.",
+      "broll": "futuristic city lights"
+    },
+    {
+      "text": "TechCrunch reports that AI chip maker SambaNova has raised 1 billion dollars. This puts their valuation at 11 billion pounds. It comes just months after their last mega-round.",
+      "broll": "money falling animation"
+    },
+    {
+      "text": "Anthropic's Claude Cowork platform is now available on mobile and web. TechCrunch reports this expanded access starts for Max subscribers. It will roll out to other Claude users in coming weeks.",
+      "broll": "phone AI app"
+    },
+    {
+      "text": "Hot French startup ZML has released free software, ZML/LLMD. TechCrunch states this product could make running AI less costly. It is designed to speed inference across many AI chips.",
+      "broll": "microchip circuit board"
+    },
+    {
+      "text": "Ars Technica reports that hackers can use nine popular AI tools. This allows them to assemble massive botnets. It weaponises large language models' inability to say 'I don't know'.",
+      "broll": "hacker typing code"
+    },
+    {
+      "text": "That's your AI news for today. Which story do you think is most important? Let us know in the comments. And follow for tomorrow's AI news brief.",
+      "broll": "subscribe button animation"
+    }
+  ],
+  "description": "Catch up on today's top AI headlines. We cover SambaNova's huge new funding round, Anthropic's Claude Cowork expanding to mobile, and a new free tool from ZML to speed up AI chips. Plus, we look at how hackers are exploiting popular AI tools.",
+  "links": [],
+  "tags": [
+    "ai news",
+    "artificial intelligence",
+    "ai chips",
+    "anthropic",
+    "claude ai",
+    "samba nova",
+    "zml",
+    "ai models",
+    "cybersecurity",
+    "tech news"
+  ],
+  "thumbnail_text": "AI News Daily",
+  "topic": "Daily AI news",
+  "date": "2026-07-08",
+  "hook_type": "result_first"
+}
