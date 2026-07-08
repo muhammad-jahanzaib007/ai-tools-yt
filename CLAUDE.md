@@ -68,14 +68,16 @@ Committed one-liners in `.github/` (job logs need admin; receipts don't):
 - `watchdog.yml` (13:45 UTC daily) checks upload freshness ≤26h.
 - `tests.yml` runs `tests/` (pure-function tests) on every automation push —
   a red X on a commit means DO NOT let the next cron run it; fix first.
-- **`heartbeat/` (Cloudflare Worker) — the EXTERNAL backstop.** All the above
-  are GitHub crons, so a wholesale GitHub scheduler outage (2026-07-06..08,
-  days long) kills the backstops too. The Worker runs on Cloudflare, checks
-  every slot 35–165 min out, and workflow_dispatches any that GitHub missed
-  (YT slots pinned to their format). Needs a fine-grained PAT (Actions R/W on
-  both repos) as the `GH_TOKEN` Worker secret — human-domain to mint/deploy;
-  see `heartbeat/README.md`. Until it is deployed, a scheduler outage still
-  needs a human/session to dispatch by hand.
+- **`heartbeat/` (Cloudflare Worker) — the EXTERNAL backstop. LIVE since
+  2026-07-08.** All the above are GitHub crons, so a wholesale GitHub
+  scheduler outage (2026-07-06..08, days long) kills the backstops too. The
+  Worker runs on Cloudflare (cron `*/20 * * * *`), checks every slot 35–165
+  min out, and workflow_dispatches any that GitHub missed (YT slots pinned to
+  their format). Secret `GH_TOKEN` = fine-grained PAT, Actions R/W both repos;
+  deploy/rotate is human-domain (see `heartbeat/README.md`). Hit the Worker
+  URL in a browser for an on-demand self-test (one line per slot). This is
+  what replaced the manual per-slot dispatching during the outage — a session
+  should no longer need to hand-fire slots unless the Worker itself is down.
 
 ## Triggers (push to fire; keep prose free of bare `format=`/`limit=`/`model=`)
 
@@ -240,3 +242,12 @@ commit, so the other sessions know who did what.
   (1) one channel / one format / English, prove before splitting to
   channels or languages; (2) lead format = tool battles; pause news+comic on
   the main channel once the owner is ready (not yet executed — flagged).
+- 2026-07-08 ~13:00 — claude.ai/code web session (same branch): heartbeat
+  DEPLOYED and LIVE (owner set up the Cloudflare Worker; cron */20 confirmed,
+  GH_TOKEN secret works — the Worker URL self-test read the GitHub API and
+  correctly reported per-slot status). Deploy went via Cloudflare's "Hello
+  World" guided flow (dashboard), not wrangler. From now on missed slots
+  self-dispatch; sessions should NOT hand-fire slots unless the Worker is
+  down. Note: I mis-diagnosed once mid-setup (claimed the Worker "should have
+  fired in the last 93 min" — it had only just been created; owner correctly
+  caught it). First real unattended test = whichever slot GitHub next misses.
