@@ -1,0 +1,10 @@
+name = "pipeline-heartbeat"
+main = "worker.js"
+compatibility_date = "2026-07-08"
+
+# Fire every 20 minutes. The Worker only ACTS inside each slot's grace window
+# (see GRACE_MIN/CUTOFF_MIN in worker.js), so the vast majority of ticks are a
+# cheap clock check with no GitHub calls. Frequent ticks give automatic retries
+# if a dispatch fails or GitHub is briefly unreachable during an outage.
+[triggers]
+crons = ["*/20 * * * *"]
