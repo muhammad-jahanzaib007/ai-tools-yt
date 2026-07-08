@@ -1,0 +1,82 @@
+{
+  "slug": "tubebuddy-vidiq-channel-growth",
+  "title": "TubeBuddy vs vidIQ: Which Tool Actually Grows Your YouTube Channel?",
+  "hook": "One of these tools gives you an unfair advantage.",
+  "battle": {
+    "toolA": "TubeBuddy",
+    "toolB": "vidIQ",
+    "tagline": "Which grows your channel faster?",
+    "rounds": [
+      {
+        "title": "Keyword Research",
+        "aPoint": "Clear, simple keyword scores and trends. Very user-friendly.",
+        "bPoint": "Advanced keyword suggestions, competitor insights. In-depth data!",
+        "winner": "b"
+      },
+      {
+        "title": "Video Optimisation",
+        "aPoint": "Actionable checklist for tags, titles, and descriptions.",
+        "bPoint": "AI-powered title and description generators. Time-saving.",
+        "winner": "b"
+      },
+      {
+        "title": "Analytics & Tracking",
+        "aPoint": "Simple A/B testing, milestone tracking. Easy to grasp.",
+        "bPoint": "Deep competitor analysis, historical data, trend alerts. Detailed!",
+        "winner": "b"
+      }
+    ],
+    "verdict": "vidIQ wins this battle. Its AI features and deeper analytics give it the edge. TubeBuddy is still excellent for beginners needing straightforward guidance."
+  },
+  "narration": [
+    {
+      "text": "One of these tools gives you an unfair advantage. Today, it is TubeBuddy versus vidIQ. Which one actually grows your YouTube channel?",
+      "broll": "versus intro card"
+    },
+    {
+      "text": "First, keyword research. TubeBuddy offers clear, simple keyword scores. It is very user-friendly! But vidIQ brings advanced suggestions and competitor insights. That in-depth data is hard to beat! The round goes to vidIQ!",
+      "broll": "keyboard typing fast"
+    },
+    {
+      "text": "Next up, video optimisation. TubeBuddy gives you an actionable checklist for tags and titles. Very helpful! However, vidIQ boasts AI-powered title and description generators. Talk about a time saver! Ouch. vidIQ takes another round!",
+      "broll": "AI writing tools"
+    },
+    {
+      "text": "Finally, analytics and tracking. TubeBuddy provides simple A/B testing and milestone tracking. Easy to grasp! Yet vidIQ offers deep competitor analysis and trend alerts. No contest here! VidIQ wins the round!",
+      "broll": "data dashboard charts"
+    },
+    {
+      "text": "vidIQ wins this battle! Its AI features and deeper analytics give it the edge. TubeBuddy is still excellent for beginners needing straightforward guidance. Which tool would you pick? Tell us in the comments! Follow for daily AI battles!",
+      "broll": "trophy celebration fireworks"
+    }
+  ],
+  "description": "We compare TubeBuddy and vidIQ head-to-head to see which YouTube tool is better for growing your channel. Discover their strengths in keyword research, video optimisation, and analytics. Get our verdict on the ultimate channel growth tool.",
+  "links": [
+    {
+      "name": "TubeBuddy",
+      "url": "https://www.tubebuddy.com/"
+    },
+    {
+      "name": "vidIQ",
+      "url": "https://vidiq.com/"
+    }
+  ],
+  "tags": [
+    "tubebuddy",
+    "vidiq",
+    "youtube growth",
+    "youtube seo",
+    "channel growth",
+    "keyword research",
+    "video optimisation",
+    "youtube tools",
+    "creator tools",
+    "youtube tips",
+    "ai tools",
+    "content creation"
+  ],
+  "thumbnail_text": "TubeBuddy vs vidIQ",
+  "topic": "TubeBuddy vs vidIQ: which actually grows a channel",
+  "date": "2026-07-08",
+  "hook_type": "bold_claim"
+}
