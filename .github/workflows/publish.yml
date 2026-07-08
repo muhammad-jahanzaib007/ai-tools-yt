@@ -93,9 +93,12 @@ jobs:
 
       # Slot decides the format: midday = tool battle, late afternoon = AI news,
       # evening = Toolverse comic. A manually pushed trigger may force one by
-      # putting "format=battle|news|comic" in publish-trigger.txt; cron runs
-      # always use the clock, so a leftover override can never hijack the
-      # schedule.
+      # putting "format=battle|news|comic" in publish-trigger.txt.
+      # For a SCHEDULE run the format comes from the cron SLOT hour, not the
+      # wall clock: GitHub can replay a cron hours late (2026-07-07 the 16:13
+      # news slot fired at 18:20 and, read off the clock, produced a COMIC —
+      # a second comic that day and no news). Deriving from the slot keeps a
+      # late replay in its intended format (hard-won rule 2, format-flip).
       - name: Pick format by slot
         id: fmt
         run: |
@@ -104,7 +107,12 @@ jobs:
             ov=$(grep -oiE "format=(battle|comic|news)" .github/publish-trigger.txt \
                  | head -1 | cut -d= -f2 | tr "A-Z" "a-z") || true
           fi
-          h=$(date -u +%H)
+          if [ "$GITHUB_EVENT_NAME" = "schedule" ]; then
+            # cron is "MIN HOUR * * *" — use the scheduled hour, not now().
+            h=$(echo '${{ github.event.schedule }}' | cut -d' ' -f2)
+          else
+            h=$(date -u +%H)
+          fi
           if [ -n "$ov" ]; then
             echo "format=$ov (trigger override)"
             echo "format=$ov" >> "$GITHUB_OUTPUT"
