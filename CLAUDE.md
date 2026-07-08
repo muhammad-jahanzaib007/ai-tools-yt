@@ -291,3 +291,17 @@ commit, so the other sessions know who did what.
   an over-fire would have been a duplicate battle. TODO(next): the blog repo
   has the same 08:50/20:50 self-heal backstop, now also redundant with the
   heartbeat — retire it there too.
+- 2026-07-08 ~18:10 — claude.ai/code web session (same branch): fixed the
+  caption brand-name mishears the owner reported (ChatGPT captioned as
+  "Chachi Pt"/"Chachi BT"). Root cause: on the Gemini TTS path, karaoke
+  captions were built from Whisper's transcription of the audio
+  (_whisper_words), which has no vocabulary context — the ElevenLabs path
+  was already correct (uses the provider's char alignment = real script).
+  Fix in render_video.py: _align_script_to_timings() keeps Whisper's word
+  TIMINGS but substitutes the SCRIPT's spelling (difflib align; drops
+  Whisper hallucinations, restores missed words), and _whisper_words now
+  passes the script as initial_prompt. Captions now always match the brief.
+  3 unit tests added (tests/test_pipeline.py). NOTE per rule 8: eyeball the
+  first real Gemini render's captions frame-by-frame to confirm sync — the
+  alignment logic is unit-tested but caption timing wasn't visually verified
+  in-sandbox (no whisper/audio here).
