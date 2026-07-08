@@ -25,6 +25,9 @@ honest, agreed version of that:
   minting tokens, secrets, billing/quota, creating Google/YouTube accounts,
   deleting videos, TikTok/Meta account actions. Claude escalates these plus
   anything irreversible or account-level; it decides the rest itself.
+- **Keep replies TERSE** (owner ask, 2026-07-08). Answer, state the action,
+  done. No walls of text, no restating what the owner knows, no option
+  menus. Brevity conserves the owner's tokens.
 
 ## Architecture (one video = one publish run)
 
