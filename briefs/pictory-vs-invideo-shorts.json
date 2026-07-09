@@ -1,0 +1,81 @@
+{
+  "slug": "pictory-vs-invideo-shorts",
+  "title": "Pictory vs InVideo: Which AI Editor is Better for YouTube Shorts?",
+  "hook": "Struggling to make YouTube Shorts quickly?",
+  "battle": {
+    "toolA": "Pictory",
+    "toolB": "InVideo",
+    "tagline": "Shorts speed: Which AI reigns supreme?",
+    "rounds": [
+      {
+        "title": "Script to Video",
+        "aPoint": "Generates full video from text.",
+        "bPoint": "Uploads script for AI to edit.",
+        "winner": "a"
+      },
+      {
+        "title": "Stock Media",
+        "aPoint": "Vast library, but some premium.",
+        "bPoint": "Excellent free stock, royalty-free.",
+        "winner": "b"
+      },
+      {
+        "title": "Ease of Use",
+        "aPoint": "Intuitive, quick for simple edits.",
+        "bPoint": "More features, steeper learning curve.",
+        "winner": "a"
+      }
+    ],
+    "verdict": "Pictory wins for rapid Shorts creation, ideal for beginners. InVideo is better for those needing more editing control and customisation."
+  },
+  "narration": [
+    {
+      "text": "Struggling to make YouTube Shorts quickly? Today, it is Pictory versus InVideo! Which AI video editor dominates for rapid-fire short-form content?",
+      "broll": "versus intro card"
+    },
+    {
+      "text": "Round one, Script to Video! Pictory takes your text and crafts an entire video automatically. InVideo requires you to upload your script before its AI gets to work. No contest here! Pictory takes the point!",
+      "broll": "typing hands keyboard"
+    },
+    {
+      "text": "Next up, Stock Media! Pictory has a good library, but some premium content costs extra. InVideo, however, boasts an excellent free, royalty-free stock media selection. Ouch, that one hurts Pictory! InVideo wins this round!",
+      "broll": "stock video footage"
+    },
+    {
+      "text": "And finally, Ease of Use! Pictory is intuitive, getting you from script to Short in minutes. InVideo offers more features, but it is a steeper learning curve for beginners. Pictory zooms ahead, winning this round!",
+      "broll": "user interface simple"
+    },
+    {
+      "text": "So, the verdict is in! Pictory wins for rapid Shorts creation, ideal for beginners. InVideo is better for those needing more editing control and customisation. Which AI editor would you pick? Let us know in the comments, and follow for daily AI battles!",
+      "broll": "winner confetti celebration"
+    }
+  ],
+  "description": "Discover which AI video editor, Pictory or InVideo, is better for quickly creating YouTube Shorts. We compare them on key features like script to video, stock media, and ease of use. Find out the overall winner for your short-form content needs.",
+  "links": [
+    {
+      "name": "Pictory",
+      "url": "https://pictory.ai"
+    },
+    {
+      "name": "InVideo",
+      "url": "https://invideo.io"
+    }
+  ],
+  "tags": [
+    "ai video editor",
+    "youtube shorts",
+    "pictory",
+    "invideo",
+    "video creation",
+    "short form content",
+    "ai tools",
+    "content creation",
+    "video editing",
+    "ai comparison",
+    "online video editor"
+  ],
+  "thumbnail_text": "Pictory vs InVideo",
+  "topic": "Pictory vs InVideo: which AI video editor is better for YouTube Shorts",
+  "date": "2026-07-09",
+  "hook_type": "pain_point"
+}
