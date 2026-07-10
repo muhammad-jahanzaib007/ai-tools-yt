@@ -1,1 +1,1 @@
-2026-07-10T16:37:49Z jasper-vs-writesonic-ai-writing.mp4 ig=fail:400 {"error":{"message":"Invalid OAuth access token - Cannot parse access token","type":"OAuthException","code":190,"fbtrace_id":"AycdDZYCzkedarxv-br6Ek7"} fb=fail:400 {"error":{"message":"Invalid OAuth access token - Cannot parse access token","type":"OAuthException","code":190,"fbtrace_id":"Ah2nJX9qiHZScyDzwdniE6h"} tt=ok:v_pub_file~v2-1.7660939125016676374
+2026-07-10T16:51:22Z descript-vs-davinci-resolve-speed.mp4 ig=ok:18082868729644593 fb=ok:1377574434230347 tt=ok:v_pub_file~v2-1.7660942694662998038
