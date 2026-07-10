@@ -1,0 +1,82 @@
+{
+  "slug": "invideo-vs-canva-video",
+  "title": "InVideo vs Canva: Quick Video Creation for Small Businesses",
+  "hook": "One of these tools makes video editing 30% faster!",
+  "battle": {
+    "toolA": "InVideo",
+    "toolB": "Canva",
+    "tagline": "Video editing: 30% faster for small business!",
+    "rounds": [
+      {
+        "title": "Ease of Use",
+        "aPoint": "Templates, quick edits, guided workflow",
+        "bPoint": "Drag and drop, intuitive, familiar interface",
+        "winner": "b"
+      },
+      {
+        "title": "AI Features",
+        "aPoint": "Script to video, text to speech, auto-editing",
+        "bPoint": "Magic Design, limited video AI",
+        "winner": "a"
+      },
+      {
+        "title": "Cost",
+        "aPoint": "Free plan, paid from £20/month",
+        "bPoint": "Free plan, paid from £10/month",
+        "winner": "b"
+      }
+    ],
+    "verdict": "Canva is the overall winner for affordability and ease for beginners, but InVideo excels for those needing robust AI video editing features!"
+  },
+  "narration": [
+    {
+      "text": "One of these tools makes video editing 30% faster!",
+      "broll": "VS intro card"
+    },
+    {
+      "text": "First up, ease of use! Canva's drag and drop interface is incredibly intuitive, especially if you already use it. InVideo offers a more guided workflow, great for beginners too. But Canva's familiarity wins here! Canva takes the round!",
+      "broll": "People using laptops"
+    },
+    {
+      "text": "Round two: AI features. InVideo shines with script to video and advanced text to speech. Canva's Magic Design is good, but its video AI is still catching up. No contest here! InVideo wins this round!",
+      "broll": "AI robot thinking"
+    },
+    {
+      "text": "Finally, cost! Both offer free plans. InVideo's paid plans start around £20 a month. Canva's Pro starts at just £10 a month. Ouch! That one hurts. Canva is the clear winner on price!",
+      "broll": "Money falling"
+    },
+    {
+      "text": "Canva is the overall winner for its affordability and beginner-friendly approach, but InVideo definitely excels for anyone needing more advanced AI video editing. Which tool would you pick? Let us know in the comments! Follow for daily AI battles!",
+      "broll": "Thumbs up computer"
+    }
+  ],
+  "description": "Struggling to create quick videos for your small business? We pit InVideo against Canva to see which tool helps you produce content faster and more easily. Discover the pros and cons of each for video editing.",
+  "links": [
+    {
+      "name": "InVideo",
+      "url": "https://invideo.io/"
+    },
+    {
+      "name": "Canva",
+      "url": "https://www.canva.com/"
+    }
+  ],
+  "tags": [
+    "invideo",
+    "canva",
+    "video editing",
+    "small business",
+    "ai tools",
+    "content creation",
+    "youtube channel",
+    "faceless youtube",
+    "ai video editor",
+    "video marketing",
+    "business tools",
+    "online video maker"
+  ],
+  "thumbnail_text": "InVideo vs Canva Video",
+  "topic": "InVideo vs Canva: quick video creation for small businesses",
+  "date": "2026-07-10",
+  "hook_type": "bold_claim"
+}
