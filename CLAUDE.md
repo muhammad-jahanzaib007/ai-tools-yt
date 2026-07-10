@@ -360,3 +360,20 @@ commit, so the other sessions know who did what.
   open `<worker-url>/?selftest=1` and confirm it says WRITE OK — that is the
   trust signal. No rewrite of the coverage logic (it demonstrably skipped
   correct replays 07-06..08).
+- 2026-07-10 ~17:30 — laptop Claude Code session (same): heartbeat 403 BLOCKER
+  RESOLVED. New worker deployed; `/?selftest=1` returned 403 = confirmed the
+  PAT still could not dispatch even after the owner "fixed" it. Root cause: the
+  fine-grained PAT had been granted **Administration: Read and write** instead
+  of **Actions: Read and write** — similar names in GitHub's permission list,
+  but workflow_dispatch needs Actions, not Administration (that is why token
+  READ worked while dispatch 403'd). Owner switched the permission to Actions:
+  R/W; selftest then returned HTTP 204 → WRITE OK. Editing the fine-grained
+  token's permission kept its value, so no Cloudflare GH_TOKEN change was
+  needed. Operational facts for next session: worker HTTP host is
+  `wispy-tooth-238cpipeline-heartbeat.dani-malik507.workers.dev` (quick-create
+  auto-prefixed the name; the bare `pipeline-heartbeat.<sub>` host 404s);
+  `/?selftest=1` proves write, `/` shows per-slot coverage + token health.
+  Also this session: IG+FB crosspost was a dead META_PAGE_TOKEN — re-minted a
+  never-expiring Page token (verified live, ig=ok/fb=ok on two runs). Both
+  blockers that had forced manual slot-covering are now closed; the heartbeat
+  should auto-cover missed slots unattended from here.
