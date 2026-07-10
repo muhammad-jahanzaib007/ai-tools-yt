@@ -318,3 +318,12 @@ commit, so the other sessions know who did what.
   Read and write, both repos → update GH_TOKEN secret in the Worker.
   Until then sessions must keep covering missed slots. Cloudflare-primary
   cutover (checkpoint 2026-07-12) is blocked on this.
+- 2026-07-10 session close — OPEN STATE for next session: (1) BLOCKER —
+  heartbeat dispatch returns 403; owner must set the PAT to Actions:Read+write
+  (both repos) and update the Worker GH_TOKEN. Until fixed, cover missed slots
+  by hand (MCP dispatch publish.yml on main; battle-only forces format). A
+  cover check is armed for 11:50 UTC 07-10. (2) Cloudflare-primary cutover
+  checkpoint (07-12) is BLOCKED on that token. (3) Battle-only is LIVE
+  (FORMAT_ONLY="battle"). (4) Caption fix LIVE (_align_script_to_timings) —
+  still eyeball the first Gemini render's caption sync. All 2026-07-09 slots
+  published (manual), all battle, pl=ok.
