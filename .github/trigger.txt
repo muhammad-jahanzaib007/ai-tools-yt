@@ -1,1 +1,1 @@
-news retest after 9664f4a syntax fix 2026-07-05T2333Z
+test new hook engine 2026-07-10T21:24:07Z
