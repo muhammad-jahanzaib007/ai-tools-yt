@@ -491,6 +491,77 @@ def pexels_clip(query, dest):
     return False
 
 
+def pexels_photo(query, dest):
+    """Portrait Pexels PHOTO for a scene background (the ranking format uses
+    stills + a slow Ken Burns zoom in Remotion). Best-effort: False = the
+    composition falls back to its gradient background."""
+    if not PX_KEY:
+        return False
+    for q in (query, "technology dark background"):
+        try:
+            r = requests.get(
+                "https://api.pexels.com/v1/search",
+                params={"query": q, "per_page": 6, "orientation": "portrait"},
+                headers={"Authorization": PX_KEY}, timeout=60,
+            )
+            if r.status_code >= 400:
+                continue
+            photos = r.json().get("photos", [])
+        except requests.RequestException:
+            continue
+        for p in photos:
+            src = p.get("src") or {}
+            link = src.get("large2x") or src.get("large")
+            if not link:
+                continue
+            try:
+                dl = requests.get(link, timeout=120)
+                if dl.status_code < 400 and len(dl.content) > 10000:
+                    dest.write_bytes(dl.content)
+                    return True
+            except requests.RequestException:
+                continue
+    return False
+
+
+def _stage_ranking_media(brief):
+    """Fetch per-scene Pexels photos + per-tool favicons into
+    remotion/public/ranking/ (gitignored, like toolverse art). All
+    best-effort: a missing file just means that scene keeps the gradient
+    background / text-only card."""
+    pub = REMOTION_DIR / "public" / "ranking"
+    if pub.exists():
+        shutil.rmtree(pub)
+    pub.mkdir(parents=True)
+    bgs = []
+    for i, seg in enumerate(brief["narration"]):
+        dest = pub / f"bg{i}.jpg"
+        ok = pexels_photo(seg.get("broll") or "technology abstract", dest)
+        bgs.append(f"bg{i}.jpg" if ok else None)
+    print(f"  ranking backgrounds: {sum(1 for b in bgs if b)}/{len(bgs)} staged")
+    logos = {}
+    by_name = {l["name"].lower(): l.get("url", "")
+               for l in brief.get("links", [])
+               if isinstance(l, dict) and l.get("name")}
+    for it in brief["ranking"]["items"]:
+        url = by_name.get(it["name"].lower(), "")
+        dom = re.sub(r"^https?://(www\.)?", "", url).split("/")[0]
+        if not dom:
+            continue
+        dest = pub / f"logo{it['rank']}.png"
+        try:
+            r = requests.get("https://www.google.com/s2/favicons",
+                             params={"domain": dom, "sz": "128"}, timeout=30)
+            # A tiny payload is Google's generic globe placeholder - skip it.
+            if r.status_code < 400 and len(r.content) > 500:
+                dest.write_bytes(r.content)
+                logos[str(it["rank"])] = dest.name
+        except requests.RequestException:
+            pass
+    print(f"  ranking logos: {len(logos)}/5 staged")
+    return bgs, logos
+
+
 def _ass_header(primary, secondary):
     return (
         "[Script Info]\nScriptType: v4.00+\nPlayResX: 1080\nPlayResY: 1920\n"
@@ -648,9 +719,12 @@ def render_battle(brief):
 
 
 def render_ranking(brief):
-    """Top-5 countdown: one presenter voice, RankingShort composition."""
+    """Top-5 countdown: one presenter voice, RankingShort composition.
+    Scenes get Pexels photo backgrounds (Ken Burns) + real tool favicons."""
     ranking = brief["ranking"]
-    props = {"theme": ranking["theme"], "items": ranking["items"], "cta": ranking["cta"]}
+    bgs, logos = _stage_ranking_media(brief)
+    props = {"theme": ranking["theme"], "items": ranking["items"],
+             "cta": ranking["cta"], "bgs": bgs, "logos": logos}
     _render_scenes(brief, "RankingShort", props,
                    f"Ranking render: {ranking['theme']}")
 

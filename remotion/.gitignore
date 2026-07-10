@@ -9,3 +9,7 @@ out
 # Staged, white-keyed avatar art copied in at render time (source lives in
 # assets/toolverse/).
 public/toolverse
+
+# Staged ranking media (Pexels backgrounds + tool favicons), fetched fresh
+# each render by render_video.py _stage_ranking_media().
+public/ranking

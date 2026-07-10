@@ -1,8 +1,10 @@
 import React from "react";
 import {
   AbsoluteFill,
+  Img,
   interpolate,
   spring,
+  staticFile,
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
@@ -22,6 +24,11 @@ export type RankingProps = {
   theme: string; // big intro claim (the hook, compressed)
   items: RankItem[]; // countdown display order: rank 5 first ... rank 1 last
   cta: string; // outro line
+  // Staged by render_video.py into public/ranking/ (all optional):
+  // bgs[i] = Pexels photo behind scene i (intro, items..., outro),
+  // logos[rank] = tool favicon shown on that rank's card.
+  bgs?: (string | null)[];
+  logos?: Record<string, string>;
   sceneFrames?: { intro: number; rounds: number[]; verdict: number };
 };
 
@@ -91,14 +98,49 @@ const Bg: React.FC<{ hue?: string }> = ({ hue = COLORS.teal }) => {
   );
 };
 
-const IntroScene: React.FC<{ theme: string; count: number }> = ({ theme, count }) => {
+// Photo background with a slow Ken Burns zoom + dark overlay for text
+// legibility. No photo staged -> the gradient Bg carries the scene.
+const SceneBg: React.FC<{ photo?: string | null; hue?: string }> = ({ photo, hue }) => {
+  const frame = useCurrentFrame();
+  if (!photo) {
+    return <Bg hue={hue} />;
+  }
+  return (
+    <AbsoluteFill style={{ backgroundColor: COLORS.bg, overflow: "hidden" }}>
+      <Img
+        src={staticFile(`ranking/${photo}`)}
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          transform: `scale(${1.08 + frame * 0.0006})`,
+        }}
+      />
+      <AbsoluteFill
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(11,11,20,0.78) 0%, rgba(11,11,20,0.58) 45%, rgba(11,11,20,0.85) 100%)",
+        }}
+      />
+      {hue ? (
+        <AbsoluteFill
+          style={{
+            background: `radial-gradient(circle at 50% 32%, ${hue}30 0%, transparent 60%)`,
+          }}
+        />
+      ) : null}
+    </AbsoluteFill>
+  );
+};
+
+const IntroScene: React.FC<{ theme: string; count: number; photo?: string | null }> = ({ theme, count, photo }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const pop = spring({ frame, fps, config: { damping: 11, stiffness: 160 } });
   const up = spring({ frame: frame - 6, fps, config: { damping: 14 } });
   return (
     <AbsoluteFill>
-      <Bg />
+      <SceneBg photo={photo} hue={COLORS.teal} />
       <AbsoluteFill
         style={{
           justifyContent: "center",
@@ -146,7 +188,7 @@ const IntroScene: React.FC<{ theme: string; count: number }> = ({ theme, count }
   );
 };
 
-const RankScene: React.FC<{ item: RankItem }> = ({ item }) => {
+const RankScene: React.FC<{ item: RankItem; photo?: string | null; logo?: string }> = ({ item, photo, logo }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const isWinner = item.rank === 1;
@@ -156,7 +198,7 @@ const RankScene: React.FC<{ item: RankItem }> = ({ item }) => {
   const glow = isWinner ? 0.5 + Math.sin(frame / 9) * 0.2 : 0;
   return (
     <AbsoluteFill>
-      <Bg hue={accent} />
+      <SceneBg photo={photo} hue={accent} />
       {isWinner && (
         <Confetti colors={["#F5C542", COLORS.coral, COLORS.teal, COLORS.cream]} />
       )}
@@ -196,6 +238,19 @@ const RankScene: React.FC<{ item: RankItem }> = ({ item }) => {
             gap: 24,
           }}
         >
+          {logo ? (
+            <Img
+              src={staticFile(`ranking/${logo}`)}
+              style={{
+                width: 108,
+                height: 108,
+                borderRadius: 26,
+                boxShadow: "0 10px 34px rgba(0,0,0,0.45)",
+                backgroundColor: "rgba(255,255,255,0.92)",
+                padding: 10,
+              }}
+            />
+          ) : null}
           <div
             style={{
               fontFamily: "DejaVu Sans, sans-serif",
@@ -242,13 +297,13 @@ const RankScene: React.FC<{ item: RankItem }> = ({ item }) => {
   );
 };
 
-const OutroScene: React.FC<{ items: RankItem[]; cta: string }> = ({ items, cta }) => {
+const OutroScene: React.FC<{ items: RankItem[]; cta: string; photo?: string | null; logos?: Record<string, string> }> = ({ items, cta, photo, logos }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const byRank = [...items].sort((a, b) => a.rank - b.rank);
   return (
     <AbsoluteFill>
-      <Bg hue={"#F5C542"} />
+      <SceneBg photo={photo} hue={"#F5C542"} />
       <AbsoluteFill
         style={{
           justifyContent: "center",
@@ -292,6 +347,18 @@ const OutroScene: React.FC<{ items: RankItem[]; cta: string }> = ({ items, cta }
               >
                 #{it.rank}
               </div>
+              {logos && logos[String(it.rank)] ? (
+                <Img
+                  src={staticFile(`ranking/${logos[String(it.rank)]}`)}
+                  style={{
+                    width: it.rank === 1 ? 64 : 50,
+                    height: it.rank === 1 ? 64 : 50,
+                    borderRadius: 14,
+                    backgroundColor: "rgba(255,255,255,0.92)",
+                    padding: 5,
+                  }}
+                />
+              ) : null}
               <div
                 style={{
                   fontFamily: "DejaVu Sans, sans-serif",
@@ -333,7 +400,7 @@ export const RankingVideo: React.FC<RankingProps> = (props) => {
   const frames = framesOfRanking(props);
   const seq: React.ReactNode[] = [
     <TransitionSeries.Sequence key="intro" durationInFrames={frames.intro}>
-      <IntroScene theme={props.theme} count={props.items.length} />
+      <IntroScene theme={props.theme} count={props.items.length} photo={props.bgs?.[0]} />
     </TransitionSeries.Sequence>,
   ];
   props.items.forEach((it, i) => {
@@ -344,7 +411,7 @@ export const RankingVideo: React.FC<RankingProps> = (props) => {
         timing={linearTiming({ durationInFrames: TRANSITION_FRAMES })}
       />,
       <TransitionSeries.Sequence key={`i${i}`} durationInFrames={frames.rounds[i]}>
-        <RankScene item={it} />
+        <RankScene item={it} photo={props.bgs?.[i + 1]} logo={props.logos?.[String(it.rank)]} />
       </TransitionSeries.Sequence>,
     );
   });
@@ -355,7 +422,12 @@ export const RankingVideo: React.FC<RankingProps> = (props) => {
       timing={linearTiming({ durationInFrames: TRANSITION_FRAMES })}
     />,
     <TransitionSeries.Sequence key="outro" durationInFrames={frames.verdict}>
-      <OutroScene items={props.items} cta={props.cta} />
+      <OutroScene
+        items={props.items}
+        cta={props.cta}
+        photo={props.bgs ? props.bgs[props.bgs.length - 1] : undefined}
+        logos={props.logos}
+      />
     </TransitionSeries.Sequence>,
   );
   return <TransitionSeries>{seq}</TransitionSeries>;

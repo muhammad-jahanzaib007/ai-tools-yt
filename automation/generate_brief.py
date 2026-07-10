@@ -565,7 +565,11 @@ RANKING_BULLETS = (
     "- narration: an array of EXACTLY 7 segments (intro + one per tool + outro), each an "
     'object with "text" and "broll" (a 2-4 word stock-footage search query). Segment 1 = '
     "ONLY the hook, nothing else: one surprising concrete claim, max 12 words (plays over "
-    "the intro card, keep it SHORT; never 'in this video' or 'here are the top 5'). Then ONE "
+    "the intro card, keep it SHORT). NEVER a plain count or restatement of the theme: "
+    "'Five free AI tools', 'Here are the top 5', 'in this video' are DEAD openers that get "
+    "skipped instantly. The first sentence must contain a genuine surprise: a number, a "
+    "price, or a named result (GOOD: 'Number one writes a week of blog posts in an hour, "
+    "free.', 'The best tool on this list costs nothing.'). Then ONE "
     "segment per tool in countdown order 5 to 1: name the tool and give the concrete reason "
     "it earns the spot; 1 or 2 short sentences, max 22 words; build anticipation toward "
     "number 1. Final segment = crown number 1 in one line, then the cta question inviting a "

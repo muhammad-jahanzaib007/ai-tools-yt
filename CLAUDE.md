@@ -442,3 +442,21 @@ commit, so the other sessions know who did what.
   chose for descript-vs-davinci-resolve-speed; owner liked it). No
   GEMINI_STYLE var set, so code falls back to Puck's roster style (excited
   sports commentator). Roster rotation OFF until the var is deleted.
+- 2026-07-11 ~01:00 — laptop Claude Code session (direct commit to main):
+  RANKING V2 after owner REJECTED the first ranking video (all of: bland/
+  repetitive text-only scenes, no real tool visuals, voice, and "wanted to
+  skip at the very beginning" — hook failed). Diagnosis: (a) spoken opener
+  was "Five free AI tools." — a dull count the prompt didn't forbid; (b)
+  scenes were 5 near-identical text cards; (c) voice was Aoede — that video
+  rendered 10 min BEFORE the Puck pin, so voice is already fixed. Shipped:
+  _stage_ranking_media() in render_video.py fetches a portrait Pexels PHOTO
+  per scene (new pexels_photo(); Ken Burns zoom + dark overlay in the
+  composition via new SceneBg) and real tool favicons via Google
+  s2/favicons (>500-byte guard drops the generic globe; nominative use,
+  white-chip presentation) shown on rank cards + outro rows; all
+  best-effort with gradient/text-only fallbacks. RANKING_BULLETS now bans
+  count/theme-restatement openers with GOOD/BAD examples. public/ranking
+  gitignored (staged fresh each render). Stills verified locally with
+  staged media (intro wiring initially missed — whitespace-failed replace;
+  caught by byte-identical still, fixed). 31/31 tests. Rule 8: review the
+  first CI-rendered v2 ranking frames (15:59 slot or render-trigger).
