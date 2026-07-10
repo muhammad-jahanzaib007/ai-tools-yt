@@ -1,0 +1,80 @@
+{
+  "slug": "copy-ai-vs-rytr-free-trial",
+  "title": "Copy.ai vs Rytr: Which Free AI Writer is Best for You?",
+  "hook": "Which free AI writing tool actually delivers?",
+  "battle": {
+    "toolA": "Copy.ai",
+    "toolB": "Rytr",
+    "tagline": "Free AI writer, which is better?",
+    "rounds": [
+      {
+        "title": "Free Plan",
+        "aPoint": "2,000 words per month, all features",
+        "bPoint": "10,000 characters per month, limited features",
+        "winner": "a"
+      },
+      {
+        "title": "Interface",
+        "aPoint": "Modern, intuitive, easy navigation",
+        "bPoint": "Simple, functional, slightly less polished",
+        "winner": "a"
+      },
+      {
+        "title": "Output Quality",
+        "aPoint": "Creative, engaging, varied tones",
+        "bPoint": "Concise, factual, good for short-form",
+        "winner": "a"
+      }
+    ],
+    "verdict": "Copy.ai takes the crown for its generous free plan and versatile output! Rytr is still a solid choice for quick, factual content."
+  },
+  "narration": [
+    {
+      "text": "Which free AI writing tool actually delivers? It's Copy.ai versus Rytr, in a battle of the free plans! Who will win?",
+      "broll": "versus intro card"
+    },
+    {
+      "text": "First, the free plan showdown! Copy.ai offers 2,000 words per month, with access to all features. Rytr gives you 10,000 characters, but with limited features. Ouch, that one hurts for Rytr! Copy.ai takes round one!",
+      "broll": "free plan comparison"
+    },
+    {
+      "text": "Next up, the interface test! Copy.ai boasts a modern, intuitive layout, easy to navigate. Rytr is simple and functional, but a little less polished. No contest here! Copy.ai extends its lead!",
+      "broll": "user interface screens"
+    },
+    {
+      "text": "Finally, output quality! Copy.ai delivers creative, engaging, and varied tones. Rytr provides concise, factual content, great for short-form. For overall versatility and creativity, Copy.ai wins again!",
+      "broll": "AI writing examples"
+    },
+    {
+      "text": "Copy.ai takes the crown for its generous free plan and versatile output! Rytr is still a solid choice for quick, factual content. Which tool would you pick? Let us know in the comments! Follow for daily AI battles!",
+      "broll": "winner verdict animation"
+    }
+  ],
+  "description": "We put Copy.ai and Rytr head-to-head, comparing their free plans, interfaces, and content quality. Discover which AI writing assistant offers the best value for your needs without spending a penny.",
+  "links": [
+    {
+      "name": "Copy.ai",
+      "url": "https://www.copy.ai"
+    },
+    {
+      "name": "Rytr",
+      "url": "https://rytr.me"
+    }
+  ],
+  "tags": [
+    "copy ai",
+    "rytr",
+    "ai writing",
+    "free ai writer",
+    "content creation",
+    "ai tools",
+    "writing software",
+    "ai comparison",
+    "artificial intelligence",
+    "best free ai writer"
+  ],
+  "thumbnail_text": "Copy.ai VS Rytr",
+  "topic": "Copy.ai vs Rytr: free trial AI writing comparison",
+  "date": "2026-07-10",
+  "hook_type": "question"
+}
