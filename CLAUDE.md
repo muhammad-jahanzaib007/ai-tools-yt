@@ -344,3 +344,14 @@ commit, so the other sessions know who did what.
   (FORMAT_ONLY="battle"). (4) Caption fix LIVE (_align_script_to_timings) —
   still eyeball the first Gemini render's caption sync. All 2026-07-09 slots
   published (manual), all battle, pl=ok.
+- 2026-07-10 — claude.ai/code web session (branch
+  claude/memory-file-github-voe2u3): heartbeat 403 RESOLVED. Owner updated the
+  Worker GH_TOKEN and ran `<worker-url>/?probe` → 204 ok on both repos =
+  workflow_dispatch WRITE path now works (204 is GitHub's success code for
+  dispatch; it was 403 before). Root cause was the token value in the Worker,
+  not code (worker.js was already correct). The heartbeat now actually
+  dispatches missed slots unattended — sessions should NO LONGER hand-cover
+  slots unless the Worker itself is down. Unblocks the Cloudflare-primary
+  cutover checkpoint (07-12). Blog pipeline confirmed healthy throughout
+  (GitHub scheduler delivering since 07-08; last blog + LinkedIn share ok
+  07-09 21:23).
