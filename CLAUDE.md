@@ -308,3 +308,13 @@ commit, so the other sessions know who did what.
   first real Gemini render's captions frame-by-frame to confirm sync — the
   alignment logic is unit-tested but caption timing wasn't visually verified
   in-sandbox (no whisper/audio here).
+- 2026-07-10 ~01:00 — claude.ai/code web session (same branch): heartbeat
+  is NOT actually dispatching — owner reports every Worker dispatch returns
+  403 (reads work: "already covered"/"MISSED" lines render fine). 403 on
+  POST /dispatches = the GH_TOKEN PAT lacks Actions WRITE (likely minted
+  Read-only) or is expiring. My 2026-07-08 "LIVE" verification only proved
+  the READ path — dispatch was never exercised; owner covered all of
+  2026-07-09's slots by hand. Fix is human-domain: edit PAT → Actions:
+  Read and write, both repos → update GH_TOKEN secret in the Worker.
+  Until then sessions must keep covering missed slots. Cloudflare-primary
+  cutover (checkpoint 2026-07-12) is blocked on this.
