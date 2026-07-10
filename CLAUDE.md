@@ -406,3 +406,14 @@ commit, so the other sessions know who did what.
   FORMAT is dead (text-card battles = search content in an entertainment
   feed, no visual payoff) and the play is a format pivot, NOT more polish.
   Kill/pivot decision pulled forward from 2026-08-18 to ~2026-07-16.
+- 2026-07-10 ~21:45 — laptop Claude Code session (same, direct commit to
+  main): LENGTH CUT, second lever on completion. Battles now EXACTLY 2
+  rounds (was model's choice of 2-3 → 59-90s videos; text-card Shorts that
+  long don't get finished, and completion % is the feed's primary ranking
+  input), round narration max 30 words (was 35), final segment = verdict +
+  one comment question, max 25 words, follow-nudge REMOVED (a nudge at 30
+  views converts nobody and costs retention). Target runtime ~40-50s.
+  Validator still accepts 2-3 rounds as fallback. Both levers (hook + length)
+  aim at the same metric so the 07-16 IG-skip read stays clean. Rule-8 note:
+  EYEBALL the first new-style render (short intro + claim card + 2 rounds)
+  frame-by-frame after the 10:59 run.

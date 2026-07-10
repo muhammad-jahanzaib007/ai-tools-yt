@@ -227,7 +227,8 @@ BATTLE_BULLETS = (
     '{"toolA": "Name", "toolB": "Name", "tagline": "the hook compressed to 8 words or fewer, '
     "shown as big text on the intro card. A CLAIM or RESULT with a concrete specific, never a "
     'polite question (good: \'One writes a blog post in 90 seconds\'; bad: \'Which AI writer '
-    "wins?')\", \"rounds\": [2 or 3 items of {\"title\": \"1-3 words, e.g. Price\", "
+    "wins?')\", \"rounds\": [EXACTLY 2 items (pick the 2 most surprising, decision-relevant "
+    "angles) of {\"title\": \"1-3 words, e.g. Price\", "
     '"aPoint": "toolA in this round, 9 words or fewer", "bPoint": "same for toolB", '
     '"winner": "a" or "b"}], "verdict": "28 words or fewer naming the overall winner and '
     'what the loser is still better for"}.\n'
@@ -239,8 +240,9 @@ BATTLE_BULLETS = (
     "'battle for supremacy'); the on-screen card already shows both tools, and announcing it "
     "wastes the seconds that decide whether the viewer stays. Then ONE segment per round (say what the "
     "round tests, compare both tools concretely, declare the round winner; 2 or 3 short "
-    "sentences, max 35 words); final segment = the verdict spoken naturally, then ask viewers "
-    "which tool they would pick in the comments and nudge them to follow for daily AI battles. "
+    "sentences, max 30 words); final segment = the verdict spoken naturally plus ONE quick "
+    "question inviting a comment (e.g. 'Which one would you pick?'), max 25 words total; no "
+    "follow/subscribe nudge, it costs retention. "
     'Spoken round winners MUST match the "winner" fields and the spoken verdict MUST match '
     '"verdict". Do not add extra segments. WRITE THE NARRATION LIKE AN EXCITED SPORTS '
     "COMMENTATOR CALLING A MATCH: high energy, short punchy sentences, exclamation marks where "
