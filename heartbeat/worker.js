@@ -99,7 +99,10 @@ async function checkSlot(env, slot, now) {
     now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), slot.h, slot.m, 0,
   );
   const ageMin = (now.getTime() - slotTs) / 60000;
-  const label = `${slot.repo} ${String(slot.h).padStart(2, "0")}:${String(slot.m).padStart(2, "0")}`;
+  // Show the pinned format in every status line so a stale dashboard paste
+  // (SLOTS out of sync with publish.yml) is visible from the / endpoint.
+  const label = `${slot.repo} ${String(slot.h).padStart(2, "0")}:${String(slot.m).padStart(2, "0")}` +
+    (slot.format ? ` [${slot.format}]` : "");
   if (ageMin < GRACE_MIN || ageMin > CUTOFF_MIN) {
     return `${label} — outside window (${ageMin.toFixed(0)}m)`;
   }
