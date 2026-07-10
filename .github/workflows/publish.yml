@@ -231,7 +231,11 @@ jobs:
           python automation/audio_qa.py || true   # refresh telemetry post-upload
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git pull --rebase --quiet || true
+          # NOTE: no pre-commit `git pull --rebase` here - audio_qa.py above
+          # dirties the tree with fresh receipts, so a rebase would abort on
+          # "cannot pull with rebase: You have unstaged changes" (swallowed,
+          # but noisy + dead). The post-commit retry loop below rebases on a
+          # clean tree instead, which is the mechanism that actually works.
           # A failed brief step leaves its error tail in the receipt so the
           # reason is readable via git alone (job logs need admin).
           if [ "${{ steps.brief.outcome }}" = "failure" ] && [ -f /tmp/brief.log ]; then

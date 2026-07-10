@@ -327,3 +327,22 @@ commit, so the other sessions know who did what.
   (FORMAT_ONLY="battle"). (4) Caption fix LIVE (_align_script_to_timings) —
   still eyeball the first Gemini render's caption sync. All 2026-07-09 slots
   published (manual), all battle, pl=ok.
+- 2026-07-10 ~14:30 — laptop Claude Code session (direct commit to main):
+  diagnosed 2026-07-10's IG+FB crosspost failure. Both 400'd INSTANTLY at
+  their first Graph call (IG /media, FB video_reels start) ~0.3s apart while
+  staging succeeded and TikTok posted fine — signature of a dead/revoked
+  META_PAGE_TOKEN (the only thing IG+FB share; FB's failing call carries no
+  video_url so it is not a content/URL problem). Worked 07-03..07-09, died
+  ~07-10. Root fix is human-domain: owner re-mints the long-lived
+  META_PAGE_TOKEN and updates the secret. Code fix shipped: crosspost.py
+  raise_for_status hid the Graph error body (receipts only ever said "400
+  Bad Request", never the OAuthException subcode) — added _check() that
+  raises WITH r.text, wired into all 5 IG/FB Graph calls, so the next
+  failure names the cause (190/463 expired vs 100 param vs permission).
+  Also executed the web session's TODO: removed the dead pre-commit `git
+  pull --rebase` in publish.yml Record status (audio_qa.py dirties the tree
+  right before it, so it always aborted "unstaged changes" — the
+  post-commit retry loop is the mechanism that actually rebases). Owner
+  reports they regenerated the heartbeat PAT + pasted it on Cloudflare
+  today, but today's slot STILL needed a manual run — watch whether
+  tomorrow's crons self-fire; if not, the PAT still lacks Actions:write.

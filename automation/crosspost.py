@@ -60,6 +60,16 @@ def log(*a):
     print("[crosspost]", *a, file=sys.stderr)
 
 
+def _check(r):
+    """Like r.raise_for_status() but include the Graph API error body in the
+    message. Meta returns 400 with an OAuthException JSON that names the real
+    cause (subcode 190/463 = expired/invalid token, 100 = bad param, etc);
+    raise_for_status alone throws a generic 'Bad Request for url' and loses it."""
+    if not r.ok:
+        raise RuntimeError(f"{r.status_code} {' '.join(r.text.split())[:280]}")
+    return r
+
+
 def write_telemetry(video, results):
     """Commit a one-line per-run receipt like the other pipeline stages, so the
     IG/FB/TikTok outcome is visible from git without digging the Actions log.
@@ -148,7 +158,7 @@ def post_instagram(video_url, caption):
     r = requests.post(f"{GRAPH}/{IG_USER_ID}/media", data={
         "media_type": "REELS", "video_url": video_url,
         "caption": caption, "access_token": TOKEN}, timeout=60)
-    r.raise_for_status()
+    _check(r)
     cid = r.json()["id"]
     # 2. poll until the container finishes processing (IG pulls + transcodes)
     for _ in range(30):
@@ -165,7 +175,7 @@ def post_instagram(video_url, caption):
     # 3. publish
     r = requests.post(f"{GRAPH}/{IG_USER_ID}/media_publish", data={
         "creation_id": cid, "access_token": TOKEN}, timeout=60)
-    r.raise_for_status()
+    _check(r)
     return r.json().get("id")
 
 
@@ -175,20 +185,20 @@ def post_facebook(video_url, caption):
     # start -> obtain a video id
     r = requests.post(f"{GRAPH}/{FB_PAGE_ID}/video_reels", data={
         "upload_phase": "start", "access_token": TOKEN}, timeout=60)
-    r.raise_for_status()
+    _check(r)
     vid = r.json()["video_id"]
     # upload by hosted-file url (rupload accepts a file_url header; FB fetches
     # the file during this call, so give it the long timeout)
     r = requests.post(f"https://rupload.facebook.com/video-upload/v21.0/{vid}",
                       headers={"Authorization": f"OAuth {TOKEN}", "file_url": video_url},
                       timeout=600)
-    r.raise_for_status()
+    _check(r)
     # finish + publish
     r = requests.post(f"{GRAPH}/{FB_PAGE_ID}/video_reels", data={
         "upload_phase": "finish", "video_id": vid,
         "video_state": "PUBLISHED", "description": caption,
         "access_token": TOKEN}, timeout=120)
-    r.raise_for_status()
+    _check(r)
     return vid
 
 
