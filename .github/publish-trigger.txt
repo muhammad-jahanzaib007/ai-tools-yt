@@ -1,1 +1,1 @@
-format=news manual run after outage fixes 2026-07-06
+crosspost token retest 2026-07-10T16:30:52Z format=battle
