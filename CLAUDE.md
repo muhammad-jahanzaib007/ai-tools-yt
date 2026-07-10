@@ -355,3 +355,40 @@ commit, so the other sessions know who did what.
   cutover checkpoint (07-12). Blog pipeline confirmed healthy throughout
   (GitHub scheduler delivering since 07-08; last blog + LinkedIn share ok
   07-09 21:23).
+- 2026-07-10 ~12:25 — claude.ai/code web session (branch
+  claude/memory-file-github-voe2u3): heartbeat "RESOLVED" above was PREMATURE.
+  The 11:13 UTC slot on 07-10 was MISSED and the heartbeat did NOT auto-cover
+  it — zero publish runs existed today until I hand-dispatched publish.yml at
+  12:23 (run #46, battle, went fully green in 8 min: speechify-vs-naturalreader
+  live at youtu.be/1Cvbfi0saIQ, public, pl=ok). So the WRITE path works on
+  demand (/?probe 204, and my MCP dispatch 204) but the Worker's SCHEDULED
+  path is still not dispatching. Owner confirms the `*/20 * * * *` cron
+  trigger IS present on the Worker. UNCONFIRMED root cause — did NOT nail it,
+  only hypotheses: (a) TWO Workers — the cron may sit on a different Worker
+  than the one whose URL serves /?probe (guided "Hello World" flow leaves a
+  starter Worker); (b) scheduled() errors silently or its publish.yml dispatch
+  returns non-204 where the tests.yml probe returns 204. NEXT: open the
+  Worker → Logs (real-time) and watch ONE */20 tick — scheduled() console.logs
+  one line per slot (my worker.js prints the GitHub error body on non-204), so
+  the tick names the cause. Note /?probe (fetch handler) only proves the
+  MANUAL path, never the cron path — that's why the earlier "204 = fixed"
+  verification was insufficient. Until the scheduled path is proven, KEEP
+  hand-covering missed slots.
+- 2026-07-10 ~12:32 — SEPARATE unrelated breakage found via the same run:
+  Meta crossposts FAILING. Run #46's crosspost receipt = `ig=fail:400
+  .../media  fb=fail:400 .../video_reels  tt=ok`. Both Meta (IG + FB)
+  endpoints 400 while YouTube upload + TikTok accept the SAME video → an
+  expired/invalid Meta token (the runbook's human-domain "Meta token
+  expiry"), NOT a code regression and NOT related to the heartbeat. Failing
+  in CI too, not just the owner's manual `crosspost.py` run. crosspost.py
+  only prints the HTTP status line, so the exact Meta subcode isn't captured;
+  owner needs to re-mint/refresh the Meta token. HUMAN-DOMAIN.
+- 2026-07-10 handoff to DESKTOP Claude Code — OPEN STATE: (1) heartbeat
+  SCHEDULED dispatch unproven (see 12:25 entry) — diagnose via Worker live
+  logs on a */20 tick; keep hand-covering slots meanwhile. Cloudflare-primary
+  cutover (07-12) still BLOCKED. (2) Meta token expired — IG/FB 400 on every
+  crosspost; re-mint (human-domain). YouTube + TikTok unaffected. (3) 07-10
+  11:13 slot COVERED (run #46). 16:13 + 20:13 still to come — if GitHub
+  misses them and the Worker still doesn't auto-cover, hand-dispatch
+  publish.yml on main (battle-only forces format). (4) Battle-only + caption
+  fix still LIVE (caption sync still un-eyeballed).
