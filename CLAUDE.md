@@ -346,3 +346,17 @@ commit, so the other sessions know who did what.
   reports they regenerated the heartbeat PAT + pasted it on Cloudflare
   today, but today's slot STILL needed a manual run — watch whether
   tomorrow's crons self-fire; if not, the PAT still lacks Actions:write.
+- 2026-07-10 ~15:00 — laptop Claude Code session (direct commit to main):
+  rebuilt the heartbeat for TRUST after owner said they don't trust it (it had
+  failed silently for days). The design (cover-missed-slot) was sound; the gap
+  was that a failed dispatch (the 403) was never surfaced and only the READ
+  path was ever verified. worker.js now: (1) treats any dispatch != HTTP 204 as
+  a failure — logs loudly + pushes to optional NOTIFY_WEBHOOK (Discord/Slack);
+  (2) `/?selftest=1` actively PROVES the write path by dispatching the harmless
+  idempotent token-check.yml and reporting raw status (204=write ok, 403=PAT
+  still read-only, 404=no repo access) — the one check the old version skipped;
+  (3) `/` also prints a read-path token-health line. README documents the
+  self-test as a required setup step. Owner action: after re-minting the PAT,
+  open `<worker-url>/?selftest=1` and confirm it says WRITE OK — that is the
+  trust signal. No rewrite of the coverage logic (it demonstrably skipped
+  correct replays 07-06..08).

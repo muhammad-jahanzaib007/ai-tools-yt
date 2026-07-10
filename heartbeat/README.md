@@ -18,6 +18,22 @@ can't flip the format off the wall clock. GitHub replaying the same cron later
 is harmless — `publish.yml`'s dedupe precheck skips the replay because a video
 already published.
 
+## Trust model (why you can believe it now)
+
+The previous version failed **silently** for days: its dispatch POST returned
+403 (the PAT lacked "Actions: write") and nothing surfaced it, because only the
+read path (listing runs) was ever exercised. This version:
+
+1. Treats any dispatch that is **not HTTP 204** as a failure — logged loudly and
+   pushed to `NOTIFY_WEBHOOK` if set. A silent 403 can no longer hide.
+2. Ships a **write-path self-test** you can run in a browser any time:
+   `https://<worker-url>/?selftest=1` dispatches a harmless idempotent workflow
+   (YT `token-check.yml`) and prints the raw status —
+   **204 = write works**, 403 = PAT still read-only, 404 = token can't see repo.
+   Run it after every token change.
+3. `https://<worker-url>/` prints per-slot coverage **plus** a read-path token
+   health line.
+
 ## One-time setup (owner — human-domain)
 
 1. **Mint a GitHub fine-grained PAT** (github.com → Settings → Developer
@@ -36,14 +52,23 @@ already published.
    ```
    (Or, dashboard route: Cloudflare → Workers → Create → paste `worker.js`,
    add a Cron Trigger `*/20 * * * *`, and add an encrypted variable
-   `GH_TOKEN`.)
+   `GH_TOKEN`. Optional: add `NOTIFY_WEBHOOK` the same way.)
 
-3. **Verify:** open the Worker's URL in a browser — it runs the same check on
-   demand and prints one line per slot (`outside window` / `already covered` /
-   `MISSED, dispatched`).
+3. **PROVE the write path** (this is the step the old setup skipped): open
+   `https://<worker-url>/?selftest=1` in a browser. It must say
+   **`WRITE OK`**. If it says `FAIL 403`, the PAT is still read-only — fix its
+   Actions permission and update `GH_TOKEN`, then re-run the self-test.
+
+4. **Optional alerting:** set a `NOTIFY_WEBHOOK` variable to any URL that takes
+   a POST `{text}` / `{content}` body — a Discord or Slack channel webhook is
+   the zero-cost route. Every dispatch failure then pings you instead of dying
+   quietly.
 
 ## Notes
 
 - Free tier is ample (72 ticks/day, a few API reads each only near slots).
-- The only secret is `GH_TOKEN`; rotate it when the PAT nears expiry.
+- `?selftest=1` fires a real (harmless, idempotent) run each time — use it to
+  verify, don't hammer it.
+- The only required secret is `GH_TOKEN`; rotate it when the PAT nears expiry,
+  then re-run the self-test.
 - To change slots/formats, edit `SLOTS` in `worker.js` and `wrangler deploy`.
