@@ -1,6 +1,5 @@
 {
   "queue": [
-    "Speechify vs NaturalReader: text-to-speech for studying",
     "Jasper vs Writesonic: AI writing for long-form articles",
     "Descript vs DaVinci Resolve: AI video editing for speed",
     "Copy.ai vs Rytr: free trial AI writing comparison",
@@ -33,6 +32,7 @@
     "Writesonic vs Rytr: best AI writer for social media captions",
     "Pictory vs InVideo: which AI video editor is better for YouTube Shorts",
     "Synthesia vs HeyGen: AI video generation for beginners",
-    "ElevenLabs vs Murf: AI voice generation for podcasts"
+    "ElevenLabs vs Murf: AI voice generation for podcasts",
+    "Speechify vs NaturalReader: text-to-speech for studying"
   ]
 }
