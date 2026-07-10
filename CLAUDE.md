@@ -390,3 +390,19 @@ commit, so the other sessions know who did what.
   before GitHub's :00 peak; owner chose :59. ACTION PENDING (human-domain): the
   Worker must be REDEPLOYED for the new SLOT times to take effect — until then
   the Worker still watches the old :13 slots and would over-fire/miss.
+- 2026-07-10 ~21:30 — laptop Claude Code session (direct commit to main):
+  PERFORMANCE AUDIT (owner reports IG skip 80-90%, YT ~30 views/video; owner
+  asked Claude to lead the channel as its own). Root cause found IN THE PROMPT:
+  BATTLE_BULLETS mandated "segment 1 = the hook plus a one-line setup of the
+  matchup", so every video opened with ~8-10s of "Today we pit X against Y"
+  over a static VS card (intro scene length = segment-1 audio length). The
+  swipe decision happens in ~1.5s. Fix shipped: segment 1 = ONLY the hook
+  (max 12 words, one surprising concrete claim/result, matchup never spoken;
+  intro shrinks to ~3s automatically since scenes are audio-driven); tagline
+  = the claim as big card text (was "a question of 8 words"); all hooks must
+  carry a concrete specific (number/time/price/result). Hook-style A/B
+  rotation preserved. 26/26 tests pass. MEASUREMENT PLAN: 10-15 videos on the
+  new hooks (~5 days), primary metric = IG skip rate; if still >80% the
+  FORMAT is dead (text-card battles = search content in an entertainment
+  feed, no visual payoff) and the play is a format pivot, NOT more polish.
+  Kill/pivot decision pulled forward from 2026-08-18 to ~2026-07-16.

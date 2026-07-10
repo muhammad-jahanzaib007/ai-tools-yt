@@ -224,23 +224,28 @@ CLASSIC_BULLETS = (
 
 BATTLE_BULLETS = (
     "- battle: REQUIRED (this topic is an X vs Y battle): "
-    '{"toolA": "Name", "toolB": "Name", "tagline": "a question of 8 words or fewer for the '
-    'intro card", "rounds": [2 or 3 items of {"title": "1-3 words, e.g. Price", '
+    '{"toolA": "Name", "toolB": "Name", "tagline": "the hook compressed to 8 words or fewer, '
+    "shown as big text on the intro card. A CLAIM or RESULT with a concrete specific, never a "
+    'polite question (good: \'One writes a blog post in 90 seconds\'; bad: \'Which AI writer '
+    "wins?')\", \"rounds\": [2 or 3 items of {\"title\": \"1-3 words, e.g. Price\", "
     '"aPoint": "toolA in this round, 9 words or fewer", "bPoint": "same for toolB", '
     '"winner": "a" or "b"}], "verdict": "28 words or fewer naming the overall winner and '
     'what the loser is still better for"}.\n'
     "- narration: an array of EXACTLY rounds+2 segments (3 rounds -> 5 segments; 2 rounds -> 4). "
     'Each segment is an object with "text" and "broll" (a 2-4 word stock-footage search query). '
-    "The segments map 1:1 onto the video scenes: segment 1 = the hook plus a one-line setup of "
-    "the matchup (plays over the VS intro card); then ONE segment per round (say what the round "
-    "tests, compare both tools concretely, declare the round winner; 2 or 3 short sentences, "
-    "max 35 words); final segment = the verdict spoken naturally, then ask viewers which tool "
-    "they would pick in the comments and nudge them to follow for daily AI battles. Spoken "
-    'round winners MUST match the "winner" fields and the spoken verdict MUST match "verdict". '
-    "Do not add extra segments. WRITE THE NARRATION LIKE AN EXCITED SPORTS COMMENTATOR CALLING "
-    "A MATCH: high energy, short punchy sentences, exclamation marks where natural, a rhetorical "
-    "question or two, real reactions ('Ouch.', 'That one hurts.', 'No contest here!'). It must "
-    "sound spoken, never like an article being read aloud.\n"
+    "The segments map 1:1 onto the video scenes: segment 1 = ONLY the hook, nothing else: "
+    "one surprising concrete claim or result from this matchup, max 12 words (plays over the VS "
+    "intro card, which must stay SHORT). NEVER announce the matchup ('Today we pit X against Y', "
+    "'battle for supremacy'); the on-screen card already shows both tools, and announcing it "
+    "wastes the seconds that decide whether the viewer stays. Then ONE segment per round (say what the "
+    "round tests, compare both tools concretely, declare the round winner; 2 or 3 short "
+    "sentences, max 35 words); final segment = the verdict spoken naturally, then ask viewers "
+    "which tool they would pick in the comments and nudge them to follow for daily AI battles. "
+    'Spoken round winners MUST match the "winner" fields and the spoken verdict MUST match '
+    '"verdict". Do not add extra segments. WRITE THE NARRATION LIKE AN EXCITED SPORTS '
+    "COMMENTATOR CALLING A MATCH: high energy, short punchy sentences, exclamation marks where "
+    "natural, a rhetorical question or two, real reactions ('Ouch.', 'That one hurts.', "
+    "'No contest here!'). It must sound spoken, never like an article being read aloud.\n"
 )
 
 
@@ -299,8 +304,10 @@ def _generate_once(topic, hook_style, extra=""):
         "Return a single JSON object with these keys:\n"
         "- slug: kebab-case, 3-6 words, no dates\n"
         "- title: a clear, honest, clickable YouTube title, <=70 chars, no clickbait lies\n"
-        "- hook: the spoken opening line (<=14 words). It must be a scroll-stopping "
+        "- hook: the spoken opening line (<=12 words). It must be a scroll-stopping "
         f"pattern-interrupt of this exact style: {HOOK_STYLES[hook_style]}. "
+        "It MUST contain one concrete specific from this matchup (a number, a time, a price, "
+        "or a named surprising result) — never a generic line that fits any video. "
         "No generic intros like 'In this video'.\n"
         + (BATTLE_BULLETS if is_battle else CLASSIC_BULLETS) +
         "- description: a YouTube description, 2 or 3 sentences. Do NOT list links here.\n"
