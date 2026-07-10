@@ -433,3 +433,10 @@ commit, so the other sessions know who did what.
   mirror the split (OWNER MUST REDEPLOY the Worker again). 31/31 tests.
   07-16 checkpoint now reads battle-vs-ranking head-to-head on IG skip.
   Rule 8: first ranking render reviewed frame-by-frame before approval.
+  FIRST RANKING VIDEO VERIFIED LIVE same night: youtu.be/q4Xy0zJRalo
+  (top-free-ai-writing-tools, 48s, wer 0.14, pl=ok new "AI Tool Rankings"
+  playlist, IG+FB+TikTok ok); frames reviewed, approved. VOICE PINNED
+  (owner pick): repo var GEMINI_VOICE=Puck (the voice random.Random(slug)
+  chose for descript-vs-davinci-resolve-speed; owner liked it). No
+  GEMINI_STYLE var set, so code falls back to Puck's roster style (excited
+  sports commentator). Roster rotation OFF until the var is deleted.
