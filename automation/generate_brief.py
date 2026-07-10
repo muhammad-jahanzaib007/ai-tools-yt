@@ -29,7 +29,7 @@ DATA = ROOT / "automation"
 BRIEFS = ROOT / "briefs"
 TOPICS_JSON = DATA / "topics.json"
 UNIVERSE_JSON = DATA / "universe.json"
-FORMAT = os.environ.get("FORMAT", "battle")   # battle | comic (Toolverse) | news (daily AI news)
+FORMAT = os.environ.get("FORMAT", "battle")   # battle | ranking (top-5 countdown) | comic | news
 
 MODEL = os.environ.get("BLOG_MODEL", "openai/gpt-4o-mini")
 ENDPOINT = os.environ.get("MODELS_ENDPOINT", "https://models.github.ai/inference/chat/completions")
@@ -524,6 +524,121 @@ def generate_news_brief(stories, hook_style):
     return b
 
 
+def _clean_ranking(rk, narration):
+    """Validate the ranking block. None = unusable -> b-roll fallback."""
+    if not isinstance(rk, dict):
+        return None
+    try:
+        items = []
+        for it in rk.get("items") or []:
+            items.append({
+                "rank": int(it["rank"]),
+                "name": strip_em(str(it["name"])).strip(),
+                "reason": strip_em(str(it["reason"])).strip(),
+                "tag": strip_em(str(it["tag"])).strip(),
+            })
+        if len(items) != 5:
+            raise ValueError(f"{len(items)} items")
+        if [it["rank"] for it in items] != [5, 4, 3, 2, 1]:
+            raise ValueError("ranks not 5..1 countdown order")
+        if any(not it["name"] or not it["reason"] or not it["tag"] for it in items):
+            raise ValueError("empty item field")
+        if len(narration) != len(items) + 2:
+            raise ValueError(f"narration {len(narration)} segs != items+2")
+        return {"theme": strip_em(str(rk["theme"])).strip(),
+                "items": items,
+                "cta": strip_em(str(rk["cta"])).strip()}
+    except (KeyError, ValueError, TypeError) as e:
+        print(f"ranking block dropped ({e}); render falls back to b-roll", file=sys.stderr)
+        return None
+
+
+RANKING_BULLETS = (
+    "- ranking: REQUIRED: "
+    '{"theme": "the hook compressed to 8 words or fewer, shown as big text on the intro card '
+    "(a CLAIM, e.g. 'Free AI tools that beat the paid ones', never a polite question)\", "
+    '"items": [EXACTLY 5 tools in COUNTDOWN order, rank 5 first then 4, 3, 2, 1, each '
+    '{"rank": 5..1, "name": "Tool Name", "reason": "one concrete display line, 10 words or '
+    'fewer, why it earns this spot", "tag": "a 1-3 word chip, e.g. Free plan, Paid, '
+    'Free trial"}], '
+    '"cta": "one line inviting a comment disagreement, 10 words or fewer"}.\n'
+    "- narration: an array of EXACTLY 7 segments (intro + one per tool + outro), each an "
+    'object with "text" and "broll" (a 2-4 word stock-footage search query). Segment 1 = '
+    "ONLY the hook, nothing else: one surprising concrete claim, max 12 words (plays over "
+    "the intro card, keep it SHORT; never 'in this video' or 'here are the top 5'). Then ONE "
+    "segment per tool in countdown order 5 to 1: name the tool and give the concrete reason "
+    "it earns the spot; 1 or 2 short sentences, max 22 words; build anticipation toward "
+    "number 1. Final segment = crown number 1 in one line, then the cta question inviting a "
+    "comment; max 22 words total; no follow/subscribe nudge. Spoken order MUST match the "
+    "items order and spoken claims MUST match each item's reason. WRITE LIKE AN EXCITED "
+    "COUNTDOWN HOST: high energy, short punchy sentences, real reactions. It must sound "
+    "spoken, never like an article being read aloud.\n"
+)
+
+
+def generate_ranking_brief(topic, hook_style):
+    user = (
+        f'Write the script and metadata for a 45-60 second faceless YouTube countdown Short on: "{topic}".\n\n'
+        "Return a single JSON object with these keys:\n"
+        "- slug: kebab-case, 3-6 words, no dates\n"
+        "- title: a clear, clickable YouTube title, <=70 chars, list-style (e.g. 'Top 5 ...'), no clickbait lies\n"
+        "- hook: the spoken opening line (<=12 words). It must be a scroll-stopping "
+        f"pattern-interrupt of this exact style: {HOOK_STYLES[hook_style]}. "
+        "It MUST contain one concrete specific (a number, a price, or a named surprising "
+        "result), never a generic line that fits any video.\n"
+        + RANKING_BULLETS +
+        "- description: a YouTube description, 2 or 3 sentences. Do NOT list links here.\n"
+        "- links: an array of the tools you rank, each an object "
+        '{"name": "Tool Name", "url": "https://official-homepage"} using the real official website. '
+        "Exactly the 5 ranked tools.\n"
+        "- tags: an array of 8-12 lowercase search tags (do not include any year)\n"
+        "- thumbnail_text: 3-5 punchy words\n"
+        "Keep claims general and accurate: never invent prices or benchmarks. No em dashes anywhere."
+    )
+    b = _clean_common(chat_json(user))
+    ranking = _clean_ranking(b.get("ranking"), b["narration"])
+    if not ranking:
+        print("ranking block missing/invalid; retrying with a stern reminder", file=sys.stderr)
+        b = _clean_common(chat_json(
+            user + "\n\nYOUR PREVIOUS ATTEMPT FAILED validation: the ranking object was "
+            "missing/invalid (needs EXACTLY 5 items in countdown order, ranks 5,4,3,2,1) "
+            "or the narration was not exactly 7 segments. Count both before answering."))
+        ranking = _clean_ranking(b.get("ranking"), b["narration"])
+    if not ranking:
+        sys.exit("ranking brief failed validation twice")
+    b["ranking"] = ranking
+    return b
+
+
+def replenish_rankings(topics, want=12):
+    try:
+        used = topics.get("ranking_published", []) + topics.get("ranking_queue", [])
+        user = (
+            f"Suggest {want} distinct, specific YouTube countdown Short ideas for a faceless "
+            "channel whose format is 'Top 5 AI tools' rankings. Proven angles in this niche: "
+            "free tools that beat paid ones, free alternatives to a famous paid tool, best "
+            "tools for one concrete job (e.g. 'for small business', 'for students', 'for "
+            "YouTube creators'), tier-list style 'ranked worst to best'. Every idea must "
+            "name a concrete theme, not a vague 'best AI tools'. Prefer themes where some of "
+            "these tools fit naturally: Writesonic, Jasper, Pictory, Synthesia, ElevenLabs, "
+            "Speechify, HeyGen, InVideo, Descript, Murf, Copy.ai, Rytr, Gamma, Canva, CapCut. "
+            + _trend_lines()
+            + "Avoid overlapping these existing ideas:\n- " + "\n- ".join(used or ["(none)"])
+            + '\nReturn a single JSON object: {"topics": ["idea 1", ...]}. No em dashes.'
+        )
+        data = chat_json(user, max_tokens=1200)
+        existing = {t.lower() for t in used}
+        for t in data.get("topics", []):
+            t = strip_em(str(t)).strip()
+            if t and t.lower() not in existing:
+                topics.setdefault("ranking_queue", []).append(t)
+                existing.add(t.lower())
+    except SystemExit:
+        raise
+    except Exception as e:
+        print(f"ranking replenish failed: {e}", file=sys.stderr)
+
+
 def _trend_lines(limit=12):
     """Recent high-performing niche videos from trend_research.py, if present."""
     f = DATA / "trends.json"
@@ -592,6 +707,19 @@ def main():
         today_d = dt.datetime.now(dt.timezone.utc).date()
         brief["news"]["dateLabel"] = f"{today_d.day} {today_d.strftime('%B %Y')}"
         brief["slug"] = f"ai-news-{today_d.strftime('%Y%m%d')}"
+    elif FORMAT == "ranking":
+        topics = load(TOPICS_JSON)
+        if not topics.get("ranking_queue"):
+            replenish_rankings(topics, want=12)
+            if not topics.get("ranking_queue"):
+                sys.exit("no ranking topics available and replenish failed")
+        topic = topics["ranking_queue"].pop(0)
+        print(f"Generating ranking brief for: {topic}")
+        brief = generate_ranking_brief(topic, hook_style)
+        topics.setdefault("ranking_published", []).append(topic)
+        if len(topics["ranking_queue"]) < 5:
+            replenish_rankings(topics)
+        save(TOPICS_JSON, topics)
     elif FORMAT == "comic" and UNIVERSE_JSON.exists():
         uni = load(UNIVERSE_JSON)
         used = set(uni.get("published_threats", []))

@@ -417,3 +417,19 @@ commit, so the other sessions know who did what.
   aim at the same metric so the 07-16 IG-skip read stays clean. Rule-8 note:
   EYEBALL the first new-style render (short intro + claim card + 2 rounds)
   frame-by-frame after the 10:59 run.
+- 2026-07-10 ~22:30 — laptop Claude Code session (direct commit to main):
+  RANKING FORMAT SHIPPED (owner pasted the niche SERP; market read: "X vs Y"
+  Shorts cluster at <100-80k views even from established channels, while
+  Top-5/tier-list/free-vs-paid ranking Shorts repeatedly hit 0.9M-2.5M, and
+  they're MORE affiliate-aligned). New RankingShort composition
+  (remotion/src/ranking/, reuses battle fx + sceneFrames contract),
+  FORMAT=ranking in generate_brief.py (_clean_ranking: exactly 5 items in
+  5..1 countdown order, 7 narration segments, hook-only seg 1; own topic
+  queue ranking_queue/ranking_published in topics.json with proven-angle
+  replenish), render_ranking() via the shared _render_scenes, playlist "AI
+  Tool Rankings", publish.yml slot map: <15 UTC battle else ranking (=10:59
+  battle control, 15:59+19:59 ranking; battle-only FORMAT_ONLY removed;
+  news/comic reachable only by explicit format= override), heartbeat SLOTS
+  mirror the split (OWNER MUST REDEPLOY the Worker again). 31/31 tests.
+  07-16 checkpoint now reads battle-vs-ranking head-to-head on IG skip.
+  Rule 8: first ranking render reviewed frame-by-frame before approval.

@@ -647,6 +647,14 @@ def render_battle(brief):
                    f"Battle render: {battle['toolA']} vs {battle['toolB']}")
 
 
+def render_ranking(brief):
+    """Top-5 countdown: one presenter voice, RankingShort composition."""
+    ranking = brief["ranking"]
+    props = {"theme": ranking["theme"], "items": ranking["items"], "cta": ranking["cta"]}
+    _render_scenes(brief, "RankingShort", props,
+                   f"Ranking render: {ranking['theme']}")
+
+
 # Short on purpose: long style prompts raise the odds Gemini TTS reads the
 # instruction aloud (happened on the first news render; _style_leaked gates it).
 NEWS_ANCHOR_STYLE = "Say the following like an urgent, confident news anchor:\n\n"
@@ -893,6 +901,8 @@ def main():
             scene_render = render_news
         elif brief.get("comic"):
             scene_render = render_comic
+        elif brief.get("ranking"):
+            scene_render = render_ranking
         elif brief.get("battle"):
             scene_render = render_battle
     if scene_render:

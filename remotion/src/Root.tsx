@@ -4,6 +4,7 @@ import { BattleVideo } from "./battle/BattleVideo";
 import { BattleProps, FPS, battleDuration, totalFrames } from "./battle/types";
 import { ComicProps, ComicVideo, totalComicFrames } from "./comic/ComicVideo";
 import { NewsProps, NewsVideo, totalNewsFrames } from "./news/NewsVideo";
+import { RankingProps, RankingVideo, totalRankingFrames } from "./ranking/RankingVideo";
 
 const sampleBattle: BattleProps = {
   toolA: "ElevenLabs",
@@ -97,6 +98,22 @@ const newsMetadata: CalculateMetadataFunction<NewsProps> = ({ props }) => ({
   durationInFrames: totalNewsFrames(props),
 });
 
+const sampleRanking: RankingProps = {
+  theme: "Free AI tools that beat the paid ones",
+  items: [
+    { rank: 5, name: "Rytr", reason: "Solid short copy on a generous free plan", tag: "Free plan" },
+    { rank: 4, name: "Canva AI", reason: "Design plus AI images in one free editor", tag: "Free plan" },
+    { rank: 3, name: "CapCut", reason: "Full video editor with AI captions, free", tag: "Free" },
+    { rank: 2, name: "Gemini", reason: "Frontier-level answers without a subscription", tag: "Free" },
+    { rank: 1, name: "ChatGPT", reason: "Still the most capable free all-rounder", tag: "Free tier" },
+  ],
+  cta: "Disagree with number one? Comment your pick.",
+};
+
+const rankingMetadata: CalculateMetadataFunction<RankingProps> = ({ props }) => ({
+  durationInFrames: totalRankingFrames(props),
+});
+
 export const RemotionRoot: React.FC = () => {
   return (
     <>
@@ -129,6 +146,16 @@ export const RemotionRoot: React.FC = () => {
         height={1920}
         defaultProps={sampleNews}
         calculateMetadata={newsMetadata}
+      />
+      <Composition
+        id="RankingShort"
+        component={RankingVideo}
+        durationInFrames={totalRankingFrames(sampleRanking)}
+        fps={FPS}
+        width={1080}
+        height={1920}
+        defaultProps={sampleRanking}
+        calculateMetadata={rankingMetadata}
       />
       <Composition
         id="ComicShort"

@@ -31,13 +31,14 @@ PLAYLISTS_JSON = ROOT / "automation" / "playlists.json"
 # playlists.json (committed by the workflow's record step).
 PLAYLIST_TITLES = {
     "battle": "AI Tool Battles",
+    "ranking": "AI Tool Rankings",
     "comic": "The AI Toolverse",
     "news": "Daily AI News",
 }
 
 
 def brief_format(brief):
-    for f in ("news", "comic", "battle"):
+    for f in ("news", "comic", "ranking", "battle"):
         if brief.get(f):
             return f
     return "battle"

@@ -39,12 +39,11 @@ const OWNER = "muhammad-jahanzaib007";
 const SLOTS = [
   { repo: "muhammad-jahanzaib007.github.io", wf: "auto-blog.yml", h: 8,  m: 0 },
   { repo: "muhammad-jahanzaib007.github.io", wf: "auto-blog.yml", h: 20, m: 0 },
-  // All three slots are battle while publish.yml FORMAT_ONLY="battle" is set
-  // (it overrides any dispatched format). If 3-format is restored (FORMAT_ONLY=""),
-  // put back: 15:59 -> "news", 19:59 -> "comic".
+  // Formats must mirror publish.yml's "Pick format by slot" map
+  // (2026-07-10 split: battle morning, ranking afternoon + evening).
   { repo: "ai-tools-yt", wf: "publish.yml", h: 10, m: 59, format: "battle" },
-  { repo: "ai-tools-yt", wf: "publish.yml", h: 15, m: 59, format: "battle" },
-  { repo: "ai-tools-yt", wf: "publish.yml", h: 19, m: 59, format: "battle" },
+  { repo: "ai-tools-yt", wf: "publish.yml", h: 15, m: 59, format: "ranking" },
+  { repo: "ai-tools-yt", wf: "publish.yml", h: 19, m: 59, format: "ranking" },
 ];
 
 // Wait GRACE_MIN after a slot before stepping in (give GitHub's scheduler and

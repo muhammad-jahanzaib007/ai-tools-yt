@@ -73,6 +73,42 @@ def test_clean_battle_too_few_rounds_dropped():
     assert gb._clean_battle(_battle(rounds=1), _narration(3)) is None
 
 
+# --- ranking block validation ----------------------------------------------------
+
+def _ranking(n=5, ranks=None):
+    ranks = ranks if ranks is not None else list(range(n, 0, -1))
+    return {
+        "theme": "Free AI tools that beat paid ones",
+        "cta": "Disagree with number one? Comment.",
+        "items": [{"rank": r, "name": f"Tool{r}", "reason": "does the job free",
+                   "tag": "Free"} for r in ranks],
+    }
+
+
+def test_clean_ranking_valid():
+    out = gb._clean_ranking(_ranking(), _narration(7))
+    assert out and len(out["items"]) == 5 and out["items"][0]["rank"] == 5
+    assert out["items"][-1]["rank"] == 1
+
+
+def test_clean_ranking_wrong_count_dropped():
+    assert gb._clean_ranking(_ranking(n=4), _narration(6)) is None
+
+
+def test_clean_ranking_wrong_order_dropped():
+    assert gb._clean_ranking(_ranking(ranks=[1, 2, 3, 4, 5]), _narration(7)) is None
+
+
+def test_clean_ranking_wrong_narration_count_dropped():
+    assert gb._clean_ranking(_ranking(), _narration(6)) is None
+
+
+def test_clean_ranking_empty_field_dropped():
+    rk = _ranking()
+    rk["items"][2]["reason"] = ""
+    assert gb._clean_ranking(rk, _narration(7)) is None
+
+
 # --- news block validation (hard grounding gate) --------------------------------
 
 def _news(n_stories=3, category="chips"):
