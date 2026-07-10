@@ -1,1 +1,1 @@
-crosspost token retest2 (clean secret) 2026-07-10T16:41:25Z format=battle
+ranking format live test 2026-07-10T22:48:25Z format=ranking
