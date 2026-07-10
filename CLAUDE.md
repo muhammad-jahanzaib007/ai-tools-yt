@@ -318,6 +318,23 @@ commit, so the other sessions know who did what.
   Read and write, both repos → update GH_TOKEN secret in the Worker.
   Until then sessions must keep covering missed slots. Cloudflare-primary
   cutover (checkpoint 2026-07-12) is blocked on this.
+- 2026-07-10 ~01:15 — claude.ai/code web session (branch
+  claude/memory-file-github-voe2u3): heartbeat 403 debug round 2 — owner
+  reports the PAT ALREADY shows Actions: Read and write, so the simple
+  read-only-token theory doesn't hold. Worker code itself is correct
+  (Bearer + User-Agent + api-version; Actions:write is the right scope for
+  POST /dispatches). Remaining suspects: Worker holds a stale/different
+  token value (regenerated PAT never pasted into the GH_TOKEN secret), or
+  the PAT's "Repository access" list doesn't include both repos (reads
+  still work on public repos even without repo access — which would also
+  explain my false "LIVE" verification). Shipped debug tooling in
+  worker.js: dispatch failures now print the GitHub error body (the 403
+  message names the exact cause), and `<worker-url>/?probe` fires
+  workflow_dispatch on tests.yml in BOTH repos (unit tests only — zero
+  side effects) so the WRITE path is testable on demand instead of only
+  during a real missed slot. Owner: paste the new worker.js into the
+  Cloudflare dashboard editor, deploy, open /?probe — 204 = fixed;
+  otherwise the printed message says what's wrong.
 - 2026-07-10 session close — OPEN STATE for next session: (1) BLOCKER —
   heartbeat dispatch returns 403; owner must set the PAT to Actions:Read+write
   (both repos) and update the Worker GH_TOKEN. Until fixed, cover missed slots

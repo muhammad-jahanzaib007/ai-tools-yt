@@ -79,7 +79,24 @@ async function checkSlot(env, slot, now) {
   const d = await gh(env,
     `/repos/${OWNER}/${slot.repo}/actions/workflows/${slot.wf}/dispatches`,
     { method: "POST", body: JSON.stringify(body) });
-  return `${label} — MISSED, dispatched${slot.format ? ` (${slot.format})` : ""} -> ${d.status}`;
+  const err = d.status === 204 ? "" : ` [${(await d.text()).slice(0, 200)}]`;
+  return `${label} — MISSED, dispatched${slot.format ? ` (${slot.format})` : ""} -> ${d.status}${err}`;
+}
+
+// On-demand write-path test: dispatches tests.yml in each repo (runs unit
+// tests only — no video, no blog post). Proves the token can actually fire
+// workflow_dispatch, which the normal slot check only exercises on a real
+// missed slot. Hit <worker-url>/?probe to run it.
+async function probeDispatch(env) {
+  const repos = [...new Set(SLOTS.map((s) => s.repo))];
+  const out = [];
+  for (const repo of repos) {
+    const d = await gh(env, `/repos/${OWNER}/${repo}/actions/workflows/tests.yml/dispatches`,
+      { method: "POST", body: JSON.stringify({ ref: "main" }) });
+    const detail = d.status === 204 ? "ok" : (await d.text()).slice(0, 300);
+    out.push(`${repo} dispatch tests.yml -> ${d.status} ${detail}`);
+  }
+  return out;
 }
 
 async function runAll(env) {
@@ -101,8 +118,11 @@ export default {
     ctx.waitUntil(runAll(env).then((r) => console.log(r.join("\n"))));
   },
   // Hit the Worker URL in a browser to run the same check on demand (debug).
+  // Add ?probe to test the WRITE path (dispatches tests.yml in both repos).
   async fetch(request, env) {
-    const results = await runAll(env);
+    const results = new URL(request.url).searchParams.has("probe")
+      ? await probeDispatch(env)
+      : await runAll(env);
     return new Response(results.join("\n") + "\n", {
       headers: { "content-type": "text/plain" },
     });
