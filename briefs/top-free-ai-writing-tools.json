@@ -1,0 +1,112 @@
+{
+  "slug": "top-free-ai-writing-tools",
+  "title": "Top 5 Free AI Writing Tools for Bloggers",
+  "hook": "Five free AI tools. Only one can be king.",
+  "ranking": {
+    "theme": "Free AI writing tools that transform your blog",
+    "items": [
+      {
+        "rank": 5,
+        "name": "Copy.ai",
+        "reason": "Generates diverse content, from blogs to social media. Try the free plan.",
+        "tag": "Free plan"
+      },
+      {
+        "rank": 4,
+        "name": "Simplified",
+        "reason": "Offers AI writing alongside design tools. A powerful all-in-one.",
+        "tag": "Free forever"
+      },
+      {
+        "rank": 3,
+        "name": "Rytr",
+        "reason": "Quick, high-quality content generation for various niches. Fast and simple.",
+        "tag": "Free plan"
+      },
+      {
+        "rank": 2,
+        "name": "Writesonic",
+        "reason": "Creates SEO-optimised articles and marketing copy. Great for ranking.",
+        "tag": "Free trial"
+      },
+      {
+        "rank": 1,
+        "name": "ChatGPT",
+        "reason": "Unrivalled versatility for brainstorming and drafting. The ultimate free AI.",
+        "tag": "Completely free"
+      }
+    ],
+    "cta": "Did we miss your favourite? Tell us below."
+  },
+  "narration": [
+    {
+      "text": "Five free AI tools. Only one can be king.",
+      "broll": "Abstract digital lines"
+    },
+    {
+      "text": "At number 5, Copy.ai. It generates diverse content, from blogs to social media. The free plan is fantastic.",
+      "broll": "Typing on keyboard"
+    },
+    {
+      "text": "Number 4 is Simplified. It offers AI writing alongside design tools. A powerful all-in-one platform.",
+      "broll": "Creative design software"
+    },
+    {
+      "text": "Coming in at number 3, we have Rytr. Quick, high-quality content generation for various niches. It is fast and simple.",
+      "broll": "Fast typing close-up"
+    },
+    {
+      "text": "Our runner-up at number 2 is Writesonic. It creates SEO-optimised articles and marketing copy. Great for ranking in search.",
+      "broll": "SEO graph animated"
+    },
+    {
+      "text": "And the top spot, number 1, goes to ChatGPT. Its unrivalled versatility for brainstorming and drafting makes it the ultimate free AI.",
+      "broll": "ChatGPT interface"
+    },
+    {
+      "text": "ChatGPT is the undisputed champion. Did we miss your favourite? Tell us below.",
+      "broll": "Question mark animation"
+    }
+  ],
+  "description": "Boost your blogging with these incredible free AI writing tools. We count down the top 5 that can help you create amazing content without spending a penny. Discover which AI can transform your writing process today.",
+  "links": [
+    {
+      "name": "Copy.ai",
+      "url": "https://www.copy.ai"
+    },
+    {
+      "name": "Simplified",
+      "url": "https://simplified.com"
+    },
+    {
+      "name": "Rytr",
+      "url": "https://rytr.me"
+    },
+    {
+      "name": "Writesonic",
+      "url": "https://writesonic.com"
+    },
+    {
+      "name": "ChatGPT",
+      "url": "https://chat.openai.com"
+    }
+  ],
+  "tags": [
+    "ai writing tools",
+    "free ai tools",
+    "ai for bloggers",
+    "content creation",
+    "ai writer",
+    "blogging tools",
+    "chatgpt",
+    "writesonic",
+    "rytr",
+    "copy ai",
+    "simplified",
+    "ai content generator"
+  ],
+  "thumbnail_text": "Free AI Writing Tools",
+  "topic": "Top 5 Free AI Writing Tools for Bloggers",
+  "date": "2026-07-10",
+  "hook_type": "conflict_tease"
+}
