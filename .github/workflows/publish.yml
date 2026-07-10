@@ -1,14 +1,16 @@
 name: Publish (full pipeline)
 
 # Fully automated: generate a brief, render the video, upload to YouTube.
-# 3x/day at UK times: 12:13 battle, 17:13 AI news, 21:13 Toolverse comic.
+# 3x/day at UK times: 11:59 battle, 16:59 AI news, 20:59 Toolverse comic.
 # Crons are UTC, set for BST (UK = UTC+1); after the October clock change
 # these fire an hour early UK-side unless shifted back.
+# Fire at :59 (owner pref 2026-07-10) — the heartbeat SLOTS in
+# heartbeat/worker.js MUST stay in sync with these times.
 on:
   schedule:
-    - cron: "13 11 * * *"
-    - cron: "13 16 * * *"
-    - cron: "13 20 * * *"
+    - cron: "59 10 * * *"
+    - cron: "59 15 * * *"
+    - cron: "59 19 * * *"
   workflow_dispatch:
     inputs:
       format:

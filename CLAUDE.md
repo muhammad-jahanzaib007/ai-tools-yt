@@ -377,3 +377,16 @@ commit, so the other sessions know who did what.
   never-expiring Page token (verified live, ig=ok/fb=ok on two runs). Both
   blockers that had forced manual slot-covering are now closed; the heartbeat
   should auto-cover missed slots unattended from here.
+- 2026-07-10 ~20:50 — laptop Claude Code session (direct commit to main):
+  20:13 comic slot missed by GitHub's cron (routine skip). Heartbeat was NOT
+  broken — the slot was only 33min old (< GRACE_MIN=35), so its "outside
+  window" line was the grace hold, not abandonment; it would have auto-covered
+  at the 21:00 tick. I hand-fired it early at 20:47 anyway (battle, per
+  FORMAT_ONLY) — preempted the heartbeat's first real unattended test; no dupe
+  (heartbeat sees the 20:47 run as "already covered"). Per owner request, shifted
+  the publish crons from :13 to :59 of the prior hour (11:13→10:59, 16:13→15:59,
+  20:13→19:59 UTC) and synced heartbeat/worker.js SLOTS to match. I flagged that
+  the minute won't fix GitHub's flakiness (the heartbeat does) and :59 sits just
+  before GitHub's :00 peak; owner chose :59. ACTION PENDING (human-domain): the
+  Worker must be REDEPLOYED for the new SLOT times to take effect — until then
+  the Worker still watches the old :13 slots and would over-fire/miss.

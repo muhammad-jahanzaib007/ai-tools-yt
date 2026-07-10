@@ -39,9 +39,9 @@ const OWNER = "muhammad-jahanzaib007";
 const SLOTS = [
   { repo: "muhammad-jahanzaib007.github.io", wf: "auto-blog.yml", h: 8,  m: 0 },
   { repo: "muhammad-jahanzaib007.github.io", wf: "auto-blog.yml", h: 20, m: 0 },
-  { repo: "ai-tools-yt", wf: "publish.yml", h: 11, m: 13, format: "battle" },
-  { repo: "ai-tools-yt", wf: "publish.yml", h: 16, m: 13, format: "news" },
-  { repo: "ai-tools-yt", wf: "publish.yml", h: 20, m: 13, format: "comic" },
+  { repo: "ai-tools-yt", wf: "publish.yml", h: 10, m: 59, format: "battle" },
+  { repo: "ai-tools-yt", wf: "publish.yml", h: 15, m: 59, format: "news" },
+  { repo: "ai-tools-yt", wf: "publish.yml", h: 19, m: 59, format: "comic" },
 ];
 
 // Wait GRACE_MIN after a slot before stepping in (give GitHub's scheduler and
