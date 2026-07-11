@@ -52,12 +52,12 @@ const SLOTS = [
 // Wait GRACE_MIN after a slot before stepping in (give GitHub's scheduler and
 // the in-repo backstops a chance first). Ignore a slot once it is older than
 // CUTOFF_MIN — by then a late fire would just be a stale dupe.
-// GRACE must exceed publish.yml precheck's 90-min replay-skip threshold:
-// 2026-07-11 a cron replay 50 min late collided with a 41-min heartbeat
-// cover (the 35..90-min window where both can fire) and shipped a
-// duplicate. At 100 min: a <=90-min-late cron always runs alone, and any
-// later replay of a heartbeat-covered slot is skipped by precheck.
-const GRACE_MIN = 100;
+// publish.yml's precheck now skips any scheduled run whose slot another
+// run already covers (deterministic, no timing window), so the grace only
+// needs to give GitHub's cron a fair head start — not dodge duplicates.
+// 20 min + the */20 tick = a missed slot is covered 20-40 min after its
+// time (owner: an hour-late video is too late).
+const GRACE_MIN = 20;
 const CUTOFF_MIN = 165;
 
 // Harmless, idempotent workflow used to prove the token's write path.

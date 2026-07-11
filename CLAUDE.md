@@ -520,3 +520,15 @@ commit, so the other sessions know who did what.
   WINDOW OPEN tonight if the cron replays 35-90 min late; watch for a
   second 19:59 video. Owner also still to delete the morning duplicate
   (youtu.be/83iKr8i-oRQ).
+- 2026-07-11 ~21:15 — laptop Claude Code session (same): DEDUPE REDESIGN
+  after owner asked why the 19:59 cover took ~an hour (35-min grace + 20-min
+  tick + 10-min render, by design — and my pending GRACE=100 would have made
+  it ~2h). publish.yml precheck now skips a scheduled run whenever ANY other
+  publish run was created at/after its slot time (runs-API check, id != self;
+  deterministic, no timing window) — replaces the ">90 min late AND video
+  published" heuristic. Worker GRACE_MIN 100 -> 20: missed slots covered
+  20-40 min after slot time, duplicates structurally impossible. ALSO / is
+  now READ-ONLY (a status curl at 20:39 had beaten the 20:40 cron tick to
+  the dispatch — monitoring must not mutate; only the scheduled tick
+  covers). Worker redeploy STILL PENDING (owner) and now carries: no format
+  pins + read-only / + GRACE 20.
