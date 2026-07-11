@@ -504,3 +504,19 @@ commit, so the other sessions know who did what.
   scene types incl fallback. NOTE: the 13:0x render-trigger re-rendered
   the battle brief (latest.txt) — ignore; first real v3 = 15:59 slot,
   frame-review it (rule 8).
+- 2026-07-11 ~20:50 — laptop Claude Code session (same): VOICE ROOT CAUSE
+  finally measured (owner: 15:59 video still not the DaVinci sound).
+  DaVinci = 181 words / 5 segments = 36 w/seg at ~2.8wps: FAST but
+  FLOWING. Today's ranking = 114 words / 7 segments = 16 w/seg at 2.11:
+  slow AND choppy. Segment length IS the voice: 7 tiny TTS calls = 7
+  disconnected reads each restarting energy; no style prompt fixes that.
+  Shipped: Puck style restored to the EXACT DaVinci prompt ("excited
+  sports commentator, fast and punchy"), ranking item segments 22 -> 26-34
+  words (2-3 flowing sentences), battle rounds 30 -> 28-36 words. Expect
+  ~60-70s videos again; pace target ~2.6-2.9wps. ALSO: 19:59 cron missed
+  by GitHub AGAIN; my 20:39 curl of the Worker / endpoint triggered its
+  cover dispatch (ranking, correct). Deployed Worker = STALE (format pins
+  visible, GRACE 35): owner has NOT done the final redeploy — DUPLICATE
+  WINDOW OPEN tonight if the cron replays 35-90 min late; watch for a
+  second 19:59 video. Owner also still to delete the morning duplicate
+  (youtu.be/83iKr8i-oRQ).
