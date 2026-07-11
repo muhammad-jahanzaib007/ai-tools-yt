@@ -102,7 +102,7 @@ async function dispatch(env, repo, wf, inputs) {
   return r.status;
 }
 
-async function checkSlot(env, slot, now) {
+async function checkSlot(env, slot, now, act) {
   const slotTs = Date.UTC(
     now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), slot.h, slot.m, 0,
   );
@@ -128,6 +128,11 @@ async function checkSlot(env, slot, now) {
   );
   if (covered) return `${label} — already covered`;
 
+  // Read-only callers (the / status page) must never mutate anything: a
+  // human peeking at the dashboard should not be what fires a slot
+  // (2026-07-11: a status curl beat the cron tick to a cover dispatch).
+  if (!act) return `${label} — MISSED (next cron tick will cover it)`;
+
   // Missed slot -> dispatch it, and VERIFY the dispatch succeeded.
   const status = await dispatch(env, slot.repo, slot.wf, slot.format ? { format: slot.format } : null);
   const fmt = slot.format ? ` (${slot.format})` : "";
@@ -140,12 +145,12 @@ async function checkSlot(env, slot, now) {
   return msg;
 }
 
-async function runAll(env) {
+async function runAll(env, act) {
   const now = new Date();
   const results = [];
   for (const slot of SLOTS) {
     try {
-      results.push(await checkSlot(env, slot, now));
+      results.push(await checkSlot(env, slot, now, act));
     } catch (e) {
       const msg = `${slot.repo} ${slot.wf} — error: ${e}`;
       await notify(env, `heartbeat: ${msg}`);
@@ -180,10 +185,11 @@ async function tokenHealth(env) {
 export default {
   // Cloudflare Cron Triggers call this.
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(runAll(env).then((r) => console.log(r.join("\n"))));
+    ctx.waitUntil(runAll(env, true).then((r) => console.log(r.join("\n"))));
   },
   // Hit the Worker URL in a browser:
-  //   /              -> per-slot coverage + read-path token health
+  //   /              -> per-slot coverage + token health (READ-ONLY: never
+  //                     dispatches; only the cron tick covers missed slots)
   //   /?selftest=1   -> actively prove the write path (dispatches token-check)
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -191,7 +197,7 @@ export default {
       const out = await selfTest(env);
       return new Response(out + "\n", { headers: { "content-type": "text/plain" } });
     }
-    const results = await runAll(env);
+    const results = await runAll(env, false);
     const health = await tokenHealth(env);
     return new Response(results.join("\n") + "\n\n" + health + "\n", {
       headers: { "content-type": "text/plain" },
