@@ -1,16 +1,25 @@
 /**
- * Pipeline heartbeat — an EXTERNAL watchdog for the Snackbyte AI (ai-tools-yt)
+ * Pipeline heartbeat — the SINGLE SCHEDULER for the Snackbyte AI (ai-tools-yt)
  * and jahanzaibawan.com (muhammad-jahanzaib007.github.io) GitHub Actions
  * pipelines.
  *
- * Why this exists: GitHub's own cron scheduler has silently skipped scheduled
- * runs for days at a time (2026-07-06..08). Every in-repo backstop
- * (self-heal.yml slot re-dispatch) is ALSO a GitHub cron, so it dies in the
- * exact same outage — GitHub cannot watch itself. This Worker runs on
- * Cloudflare, entirely outside GitHub: on a schedule it checks whether each
- * publish slot actually produced a run, and fires workflow_dispatch if it did
- * not. It is the only backstop that survives a wholesale GitHub scheduler
- * outage.
+ * PROMOTED FROM BACKSTOP TO SOLE FIRING SOURCE (2026-07-11): GitHub's cron
+ * scheduler fires late, replays runs hours later, and skips whole days
+ * (2026-07-06..08). Running GitHub crons AND this Worker meant two firing
+ * sources racing each other — that race double-published 3 slots in 36 h
+ * (2026-07-10/11) even with dedupe patches. Both repos now have NO
+ * `schedule:` crons at all; this Worker is the only thing that fires
+ * publish/blog slots:
+ *   - Cron triggers at the EXACT slot minutes dispatch immediately.
+ *   - :20/:40 sweep ticks retry any slot still uncovered (failed dispatch,
+ *     Cloudflare hiccup) — but only once the slot is MIN_RETRY_MIN old, so a
+ *     just-dispatched run that hasn't appeared in the runs list yet can
+ *     never be double-fired.
+ *   - Coverage is checked against GitHub's runs API before every dispatch,
+ *     so any tick is idempotent: a covered slot is never fired again.
+ * If this Worker dies entirely, nothing publishes — by design (one source).
+ * The alarm for that is watchdog.yml (GitHub cron, checks upload freshness
+ * daily) plus the receipts going stale.
  *
  * TRUST MODEL (2026-07-10 rebuild): the previous version failed SILENTLY for
  * days — its dispatch POST returned 403 (the PAT lacked "Actions: write") and
@@ -34,7 +43,8 @@
 
 const OWNER = "muhammad-jahanzaib007";
 
-// Slot times are UTC and mirror the crons in each repo.
+// Slot times are UTC. These are THE schedule now (the repos have no crons);
+// wrangler.toml's slot-minute cron triggers MUST match these times.
 const SLOTS = [
   { repo: "muhammad-jahanzaib007.github.io", wf: "auto-blog.yml", h: 8,  m: 0 },
   { repo: "muhammad-jahanzaib007.github.io", wf: "auto-blog.yml", h: 20, m: 0 },
@@ -49,15 +59,14 @@ const SLOTS = [
   { repo: "ai-tools-yt", wf: "publish.yml", h: 19, m: 59 },
 ];
 
-// Wait GRACE_MIN after a slot before stepping in (give GitHub's scheduler and
-// the in-repo backstops a chance first). Ignore a slot once it is older than
-// CUTOFF_MIN — by then a late fire would just be a stale dupe.
-// publish.yml's precheck now skips any scheduled run whose slot another
-// run already covers (deterministic, no timing window), so the grace only
-// needs to give GitHub's cron a fair head start — not dodge duplicates.
-// 20 min + the */20 tick = a missed slot is covered 20-40 min after its
-// time (owner: an hour-late video is too late).
-const GRACE_MIN = 20;
+// There is no grace period any more — this Worker IS the scheduler, so the
+// slot-minute tick dispatches at age ~0. Retry sweeps (:20/:40 ticks) only
+// act on a slot at least MIN_RETRY_MIN old: a dispatch's run row can lag a
+// little in GitHub's runs API, and firing again inside that lag would be
+// the one remaining duplicate path. Ignore a slot older than CUTOFF_MIN —
+// by then a fire would just be a stale surprise (and with the 2-format map,
+// no age inside CUTOFF_MIN crosses the 15:00 format boundary).
+const MIN_RETRY_MIN = 10;
 const CUTOFF_MIN = 165;
 
 // Harmless, idempotent workflow used to prove the token's write path.
@@ -111,7 +120,7 @@ async function checkSlot(env, slot, now, act) {
   // (SLOTS out of sync with publish.yml) is visible from the / endpoint.
   const label = `${slot.repo} ${String(slot.h).padStart(2, "0")}:${String(slot.m).padStart(2, "0")}` +
     (slot.format ? ` [${slot.format}]` : "");
-  if (ageMin < GRACE_MIN || ageMin > CUTOFF_MIN) {
+  if (ageMin < 0 || ageMin > CUTOFF_MIN) {
     return `${label} — outside window (${ageMin.toFixed(0)}m)`;
   }
 
@@ -131,9 +140,15 @@ async function checkSlot(env, slot, now, act) {
   // Read-only callers (the / status page) must never mutate anything: a
   // human peeking at the dashboard should not be what fires a slot
   // (2026-07-11: a status curl beat the cron tick to a cover dispatch).
-  if (!act) return `${label} — MISSED (next cron tick will cover it)`;
+  if (!act) return `${label} — UNCOVERED (a cron tick will dispatch it)`;
 
-  // Missed slot -> dispatch it, and VERIFY the dispatch succeeded.
+  // The slot-minute tick dispatches at age ~0; a retry sweep must wait out
+  // the runs-API lag window so it can't double-fire a fresh dispatch.
+  if (ageMin >= 1.5 && ageMin < MIN_RETRY_MIN) {
+    return `${label} — dispatched recently, awaiting run row (${ageMin.toFixed(0)}m)`;
+  }
+
+  // Uncovered slot -> dispatch it, and VERIFY the dispatch succeeded.
   const status = await dispatch(env, slot.repo, slot.wf, slot.format ? { format: slot.format } : null);
   const fmt = slot.format ? ` (${slot.format})` : "";
   if (status === 204) {

@@ -361,6 +361,25 @@ def _pitch_std(path):
 
 FLAT_TAKE = 1.2      # semitone std below this = flat delivery, worth one retry
 MAX_WER = 0.35       # word error rate above this = garbled take, worth one retry
+# Words-per-second above this = the "rushed sprint" the owner flagged
+# (2026-07-11: a published video measured 3.36wps AFTER the DaVinci-conditions
+# prompt fix — the prompt alone doesn't hold the pace; the take gate must).
+# The owner-approved DaVinci render read at ~2.8wps. Only measured on
+# segments of PACE_MIN_WORDS+ (short hooks are legitimately quick).
+PACE_MAX = 3.05
+PACE_MIN_WORDS = 12
+
+
+def _pace(text, words):
+    """Words-per-second of a take: script word count over spoken time from
+    the take's word timings. None when too short to judge or unmeasurable."""
+    n = len(_norm_words(text))
+    if n < PACE_MIN_WORDS or not words:
+        return None
+    end = words[-1][2]
+    if not end or end <= 0:
+        return None
+    return n / end
 
 _WHISPER = None
 
@@ -420,12 +439,14 @@ def _style_leaked(style, text, hyp):
     return hits >= 2
 
 
-def _take_score(ps, wer, leaked=False):
+def _take_score(ps, wer, leaked=False, pace=None):
     """Rank takes: intelligibility dominates, liveliness breaks ties.
-    A take that spoke its style prompt aloud is heavily penalised."""
+    A take that spoke its style prompt aloud is heavily penalised; a rushed
+    take loses up to 3 points so an in-pace take of similar clarity wins."""
     w = (1.0 - min(wer, 1.0)) if wer is not None else 0.6
     p = min((ps or 0) / 3.0, 1.0)
-    return w * 10 + p - (8 if leaked else 0)
+    rush = min((pace - PACE_MAX) * 4.0, 3.0) if pace is not None and pace > PACE_MAX else 0.0
+    return w * 10 + p - (8 if leaked else 0) - rush
 
 
 def tts_take(text, dest, voice=None, style=None):
@@ -435,7 +456,7 @@ def tts_take(text, dest, voice=None, style=None):
     take usually fixes it; the better take wins.
     Returns (words, pitch_std_or_None)."""
     eff_style = style or (_gem_style if VOICE_PROVIDER == "gemini" else None)
-    takes = []                                   # (path, words, ps, wer, leaked)
+    takes = []                                   # (path, words, ps, wer, leaked, pace)
     for attempt in range(2):
         f = dest if attempt == 0 else dest.with_suffix(".take2.mp3")
         try:
@@ -446,16 +467,20 @@ def tts_take(text, dest, voice=None, style=None):
             break
         ps, (wer, hyp) = _pitch_std(f), _wer(text, f)
         leaked = _style_leaked(eff_style, text, hyp)
-        takes.append((f, words, ps, wer, leaked))
+        pace = _pace(text, words)
+        takes.append((f, words, ps, wer, leaked, pace))
         garbled = wer is not None and wer > MAX_WER
         flat = ps is not None and ps < FLAT_TAKE
-        if not garbled and not flat and not leaked:
+        rushed = pace is not None and pace > PACE_MAX
+        if not garbled and not flat and not leaked and not rushed:
             break
         if attempt == 0:
             why = ("style prompt spoken aloud" if leaked
-                   else f"wer={wer:.2f}" if garbled else f"pitch={ps:.2f}st")
+                   else f"wer={wer:.2f}" if garbled
+                   else f"pitch={ps:.2f}st" if flat
+                   else f"pace={pace:.2f}wps")
             print(f"    weak take ({why}); re-taking")
-    best = max(takes, key=lambda t: _take_score(t[2], t[3], t[4]))
+    best = max(takes, key=lambda t: _take_score(t[2], t[3], t[4], t[5]))
     if best[0] != dest:
         shutil.move(str(best[0]), str(dest))
         print(f"    retake wins (wer={best[3]}, pitch={best[2]})")

@@ -2,9 +2,15 @@ name = "pipeline-heartbeat"
 main = "worker.js"
 compatibility_date = "2026-07-08"
 
-# Fire every 20 minutes. The Worker only ACTS inside each slot's grace window
-# (see GRACE_MIN/CUTOFF_MIN in worker.js), so the vast majority of ticks are a
-# cheap clock check with no GitHub calls. Frequent ticks give automatic retries
-# if a dispatch fails or GitHub is briefly unreachable during an outage.
+# SINGLE FIRING SOURCE (2026-07-11): the repos have NO GitHub schedule crons;
+# these triggers are the only schedule either pipeline has.
+#   59 10,15,19 — YT publish slots (dispatch at the exact slot minute)
+#   0 8,20      — blog slots
+#   20,40       — retry sweeps: re-dispatch any slot still uncovered (a failed
+#                 dispatch, a Cloudflare hiccup). Sweep minutes deliberately
+#                 never coincide with slot minutes, and worker.js ignores
+#                 slots younger than MIN_RETRY_MIN, so a sweep can never
+#                 double-fire a fresh dispatch.
+# Cloudflare allows 3 cron triggers per Worker — exactly these three.
 [triggers]
-crons = ["*/20 * * * *"]
+crons = ["59 10,15,19 * * *", "0 8,20 * * *", "20,40 * * * *"]

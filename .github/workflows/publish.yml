@@ -1,16 +1,16 @@
 name: Publish (full pipeline)
 
 # Fully automated: generate a brief, render the video, upload to YouTube.
-# 3x/day at UK times: 11:59 battle, 16:59 AI news, 20:59 Toolverse comic.
-# Crons are UTC, set for BST (UK = UTC+1); after the October clock change
-# these fire an hour early UK-side unless shifted back.
-# Fire at :59 (owner pref 2026-07-10) — the heartbeat SLOTS in
-# heartbeat/worker.js MUST stay in sync with these times.
+# 3x/day at UK times: 11:59, 16:59, 20:59 (UTC 10:59/15:59/19:59).
+#
+# SINGLE FIRING SOURCE (2026-07-11): NO `schedule:` crons here. GitHub's
+# scheduler fires late, replays hours later, and skips days — two firing
+# sources (cron + heartbeat) racing each other double-published 3 slots in
+# 36 hours. The Cloudflare heartbeat Worker (heartbeat/worker.js) is now the
+# ONLY thing that fires this workflow on a schedule; it dispatches at the
+# exact slot minute and retries via :20/:40 sweeps. Do NOT re-add crons —
+# slot times live in heartbeat/wrangler.toml + worker.js SLOTS.
 on:
-  schedule:
-    - cron: "59 10 * * *"
-    - cron: "59 15 * * *"
-    - cron: "59 19 * * *"
   workflow_dispatch:
     inputs:
       format:
@@ -30,13 +30,12 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # A GitHub cron can fire late or be REPLAYED hours late; the heartbeat
-  # Worker may have covered the slot in the meantime. A scheduled run skips
-  # itself whenever ANY other publish run (heartbeat cover, manual dispatch,
-  # trigger push, earlier replay) was created at/after its slot time —
-  # deterministic dedupe with no timing window (the old ">90 min late AND a
-  # video published" heuristic left a 35-90 min gap that shipped a duplicate
-  # on 2026-07-11). Manual dispatches and trigger pushes are never blocked.
+  # SAFETY NET ONLY: with schedule crons removed (single firing source =
+  # heartbeat Worker) this never triggers. It stays so that if anyone ever
+  # re-adds a cron, a late replay still skips itself when ANY other publish
+  # run was created at/after its slot time (this exact race double-published
+  # 3 slots on 2026-07-10/11). Manual dispatches and trigger pushes are
+  # never blocked.
   precheck:
     runs-on: ubuntu-latest
     timeout-minutes: 5

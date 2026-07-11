@@ -33,13 +33,15 @@ owner after.** The honest boundaries that survive:
 
 ## Architecture (one video = one publish run)
 
-`publish.yml` (crons 11:13 / 16:13 / 20:13 UTC = 12:13/17:13/21:13 UK BST):
-1. **Pick format by slot** — normally UTC hour <15 battle, <18 news, else
-   comic (schedule runs derive the hour from the cron slot, not now(), so a
-   late replay keeps its format). **CURRENTLY BATTLE-ONLY** (2026-07-08
-   consolidation): `FORMAT_ONLY="battle"` at the top of the step forces every
-   run to battle; set it to `""` to restore the 3-format rotation. While it's
-   set, the heartbeat's per-slot format inputs are overridden.
+`publish.yml` — **NO GitHub crons (2026-07-11): the Cloudflare heartbeat
+Worker is the SINGLE firing source.** It dispatches at 10:59 / 15:59 / 19:59
+UTC (= 11:59/16:59/20:59 UK BST) and retries via :20/:40 sweeps; slot times
+live in `heartbeat/wrangler.toml` + `worker.js` SLOTS. GitHub's scheduler
+(late fires + hours-late replays racing the Worker) double-published 3 slots
+in 36h — do not re-add `schedule:` crons.
+1. **Pick format by slot** — UTC hour <15 battle, else ranking (news/comic
+   paused; reachable only by explicit `format=` override). Worker dispatches
+   land at the exact slot minute, so clock-derive is always right.
 2. **Generate brief** (`automation/generate_brief.py`) — LLM provider chain
    Gemini free tier → Claude → GitHub Models. Output validated hard
    (`_clean_battle/_clean_comic/_clean_news`); news ABORTS rather than ship
@@ -78,16 +80,18 @@ Committed one-liners in `.github/` (job logs need admin; receipts don't):
 - `watchdog.yml` (13:45 UTC daily) checks upload freshness ≤26h.
 - `tests.yml` runs `tests/` (pure-function tests) on every automation push —
   a red X on a commit means DO NOT let the next cron run it; fix first.
-- **`heartbeat/` (Cloudflare Worker) — the EXTERNAL backstop. LIVE since
-  2026-07-08.** All the above are GitHub crons, so a wholesale GitHub
-  scheduler outage (2026-07-06..08, days long) kills the backstops too. The
-  Worker runs on Cloudflare (cron `*/20 * * * *`), checks every slot 35–165
-  min out, and workflow_dispatches any that GitHub missed (YT slots pinned to
-  their format). Secret `GH_TOKEN` = fine-grained PAT, Actions R/W both repos;
-  deploy/rotate is human-domain (see `heartbeat/README.md`). Hit the Worker
-  URL in a browser for an on-demand self-test (one line per slot). This is
-  what replaced the manual per-slot dispatching during the outage — a session
-  should no longer need to hand-fire slots unless the Worker itself is down.
+- **`heartbeat/` (Cloudflare Worker) — THE SCHEDULER since 2026-07-11** (was
+  a backstop; promoted to sole firing source when cron-vs-Worker races
+  double-published 3 slots). Cron triggers at the exact slot minutes dispatch
+  immediately; `20,40 * * * *` sweeps retry any still-uncovered slot (never
+  younger than MIN_RETRY_MIN=10, so a fresh dispatch can't be double-fired);
+  every dispatch is preceded by a runs-API coverage check (idempotent ticks).
+  No format pins — publish.yml's slot map is the single format source.
+  Secret `GH_TOKEN` = fine-grained PAT, **Actions R/W** both repos;
+  deploy/rotate is human-domain (see `heartbeat/README.md`; prefer `wrangler
+  deploy` — dashboard pastes drifted 3x). `/?selftest=1` proves the write
+  path; `/` is a read-only status page. If the Worker dies NOTHING publishes
+  (by design); watchdog.yml + stale receipts are the alarm.
 
 ## Triggers (push to fire; keep prose free of bare `format=`/`limit=`/`model=`)
 
@@ -121,6 +125,10 @@ Committed one-liners in `.github/` (job logs need admin; receipts don't):
    frame-by-frame — telemetry alone missed the style-leak bug.
 9. Do not push to main while a publish/art run is mid-flight if avoidable.
 10. Secrets go ONLY in GitHub repo secrets — never in chat, code, or files.
+11. **ONE firing source.** Never re-add `schedule:` crons to publish.yml or
+    auto-blog.yml — GitHub crons racing the heartbeat Worker double-published
+    3 slots in 36h (2026-07-10/11). The Worker is the scheduler; GitHub crons
+    survive only in alarms/low-stakes workflows (watchdog, tests, research).
 
 ## Out-of-domain (needs the human)
 
@@ -139,17 +147,16 @@ by 2026-08-18, median Short <~200 views → change format/niche, NOT more
 polish.** Affiliate goal: Synthesia live; Pictory next; Jasper/Speechify
 gated on traffic. Owner is UK-based.
 
-**BATTLE-ONLY as of 2026-07-08** (`FORMAT_ONLY="battle"` in publish.yml):
-3 formats fragmented the algorithm's audience-building on a pre-traction
-channel, so all 3 daily slots now produce tool battles — the format with
-the clearest search demand + affiliate fit. News + comic are PAUSED, not
-deleted (the code paths are intact; flip `FORMAT_ONLY=""` to restore).
-Battle topic supply is ample (13-tool roster, auto-replenished). Plan: prove
-battle earns distribution, THEN clone the winner (first to a high-income
-language — DE/FR/ES — reusing the engine; NOT different niches, which throw
-the engine away). Do not split to more channels/languages before one format
-proves out. Cadence held at 3/day (consistency = the point); revisit only if
-matchup quality thins.
+**FORMAT STATE (2026-07-11): battle (10:59 slot, control) vs ranking
+(15:59 + 19:59), head-to-head on IG skip rate.** News + comic are PAUSED,
+not deleted (code intact; explicit `format=` override reaches them).
+**CHANGE FREEZE from 2026-07-12: no format/visual/voice/engine changes
+until the checkpoint read (~2026-07-19, 7 clean days) — quality-gate and
+dedupe fixes only.** The 07-10/11 burst (hook surgery, length cut, ranking
+v1→v3, voice/pace changes) stacked too many variables to attribute
+anything; the freeze buys a clean read. Plan after a winner: clone it to a
+high-income language (DE/FR/ES) reusing the engine — NOT new niches. Do not
+split channels/languages before one format proves out.
 
 ## Session log (cross-device attribution — KEEP UPDATED)
 
@@ -532,3 +539,34 @@ commit, so the other sessions know who did what.
   the dispatch — monitoring must not mutate; only the scheduled tick
   covers). Worker redeploy STILL PENDING (owner) and now carries: no format
   pins + read-only / + GRACE 20.
+- 2026-07-11 ~23:50 — laptop Claude Code session (direct commit to main):
+  SINGLE-FIRING-SOURCE CUTOVER (owner: "if GitHub cron is not reliable why
+  let it fire the pipeline anyway? why not one source?" — correct). Tonight
+  the 19:59 slot DOUBLE-PUBLISHED again: heartbeat cover 20:39 shipped
+  free-jasper-alternatives-copywriting (youtu.be/jOQx01hG2wg) AND the 20:51
+  late cron replay shipped top-ai-tools-small-business
+  (youtu.be/bRBond0gT8s) — the replay started 21 min before the
+  deterministic precheck landed (21:12). Both crossposted to IG/FB/TikTok.
+  Fix = remove the race, not patch it again: `schedule:` crons DELETED from
+  publish.yml AND auto-blog.yml; the Worker is now THE scheduler — cron
+  triggers at exact slot minutes (59 10,15,19 / 0 8,20) dispatch
+  immediately, a 20,40 sweep retries uncovered slots (MIN_RETRY_MIN=10
+  guards the runs-API lag window; coverage check before every dispatch =
+  idempotent). Prechecks kept as dead-code safety nets. Blog repo also got
+  the precheck ported + its 08:50/20:50 self-heal backstops retired
+  (77f8d4e — it had been double-posting every slot since the Worker's write
+  path came alive). PACE GATE shipped: _pace() from take word timings;
+  takes >3.05wps retake once and lose up to 3 score points (published video
+  tonight measured 3.36wps RUSHED even after the DaVinci-conditions prompt
+  fix — the prompt doesn't hold pace; the gate must). 35/35 tests.
+  TRANSITIONAL STATE until owner redeploys: stale deployed Worker (*/20
+  tick, GRACE 35) still covers all slots ~35-55 min late with correct
+  formats, and with repo crons gone there is NO dupe window — safe, just
+  late. OWNER ACTIONS: (1) `wrangler deploy` from heartbeat/ (or dashboard:
+  paste worker.js + set the THREE crons from wrangler.toml), then
+  /?selftest=1 -> WRITE OK; (2) delete ONE of tonight's pair — recommend
+  deleting free-jasper (jOQx01hG2wg, pre-pacing-fix code) and its IG/FB/TT
+  crossposts — plus the morning duplicate youtu.be/83iKr8i-oRQ still
+  pending; (3) optionally prune the 3 duplicate blog posts' LinkedIn
+  shares. CHANGE FREEZE declared: no format/visual/voice/engine work until
+  the ~07-19 read; gates and dedupe only.

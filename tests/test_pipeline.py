@@ -167,6 +167,28 @@ def test_take_score_intelligibility_dominates_pitch():
     assert rv._take_score(1.0, 0.05) > rv._take_score(6.0, 0.5)
 
 
+def test_take_score_rushed_take_loses_to_in_pace_peer():
+    # Same clarity and liveliness: the in-pace take must win.
+    assert rv._take_score(3.0, 0.1, pace=3.4) < rv._take_score(3.0, 0.1, pace=2.8)
+
+
+def test_take_score_rush_penalty_never_beats_intelligibility():
+    # A rushed-but-clear take still outranks a garbled slow one.
+    assert rv._take_score(3.0, 0.05, pace=3.6) > rv._take_score(3.0, 0.5, pace=2.8)
+
+
+def test_pace_from_word_timings():
+    words = [("w%d" % i, i * 0.25, i * 0.25 + 0.25) for i in range(16)]
+    text = " ".join(w for w, *_ in words)     # 16 words over 4.0s = 4.0 wps
+    assert abs(rv._pace(text, words) - 4.0) < 1e-6
+
+
+def test_pace_short_segment_not_judged():
+    words = [("hi", 0.0, 0.2), ("there", 0.2, 0.4)]
+    assert rv._pace("hi there", words) is None
+    assert rv._pace("some words here", []) is None
+
+
 # --- news source helpers ----------------------------------------------------------
 
 def test_tokens_drop_stopwords_and_short():
