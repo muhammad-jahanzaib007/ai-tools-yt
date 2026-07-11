@@ -487,4 +487,20 @@ commit, so the other sessions know who did what.
   pace=X.XXwps metric (script words / spoken audio seconds; >3.0 RUSHED,
   >2.7 brisk, else natural — ADVISORY only). Verify pace + owner ear-test
   on the 15:59 ranking. If still rushed: next levers are GEMINI_STYLE var
-  iteration or ffmpeg atempo ~0.95 on narration.
+  iteration or ffmpeg atempo ~0.95 on narration. PACING FIX VERIFIED in a
+  render-only test: pace=2.20wps(natural), 48s vs the rushed 40s original.
+- 2026-07-11 ~13:40 — laptop Claude Code session (same): RANKING V3
+  (owner: Pexels backgrounds made videos DULLER; videos not grabbing
+  attention). Redesign shipped (fa2bb36): vivid per-rank gradient worlds
+  (sky/violet/orange/pink/gold; dark navy dropped), white name pill +
+  favicon + tag chip, and the tool's REAL homepage screenshot (WordPress
+  mshots API, free, no key: s0.wp.com/mshots/v1/<urlencoded>?w=720&h=1280,
+  first call warms cache -> poll until >15KB) in a floating tilted
+  phone-frame with slow scroll-pan. Blankness guard _shot_richness():
+  grayscale stddev of downscaled shot < 20 = bot wall (Cloudflare verify:
+  chatgpt 5.7, gemini 10.9) -> dropped; real pages measure 36+; no-shot
+  fallback layout = bigger pill + reason, still vivid. Pexels photo path
+  REMOVED from ranking (pexels_photo deleted). Local stills verified all
+  scene types incl fallback. NOTE: the 13:0x render-trigger re-rendered
+  the battle brief (latest.txt) — ignore; first real v3 = 15:59 slot,
+  frame-review it (rule 8).
