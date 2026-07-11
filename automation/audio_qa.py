@@ -73,6 +73,26 @@ def script_wer():
         return None
 
 
+def speech_pace(voice_files):
+    """Words per second across the narration takes: script word count over
+    total spoken audio time. Advisory: ~2.3-2.7 wps reads energetic-natural;
+    3.0+ is the 'rushed sprint' the owner flagged on 2026-07-11."""
+    try:
+        import json
+        slug = (ROOT / "automation" / "latest.txt").read_text(encoding="utf-8").strip()
+        brief = json.loads((ROOT / "briefs" / f"{slug}.json").read_text(encoding="utf-8"))
+        words = sum(len(s["text"].split()) for s in brief["narration"])
+        total = 0.0
+        for v in voice_files:
+            y = load_audio(v)
+            total += len(y) / SR
+        if not words or total < 3:
+            return None
+        return words / total
+    except Exception:
+        return None
+
+
 def black_spans(path):
     """(start, duration) of near-black video spans >=1s via ffmpeg blackdetect."""
     p = subprocess.run(
@@ -116,6 +136,10 @@ def main():
             parts.append(f"script_wer={wer:.2f}({verdict})")
             if wer > 0.35:
                 failures.append(f"garbled speech (wer={wer:.2f})")
+        wps = speech_pace(voice)
+        if wps is not None:
+            verdict = "RUSHED" if wps > 3.0 else ("brisk" if wps > 2.7 else "natural")
+            parts.append(f"pace={wps:.2f}wps({verdict})")
     outs = sorted((ROOT / "output").glob("*.mp4"), key=lambda p: p.stat().st_mtime)
     if outs:
         try:

@@ -78,8 +78,13 @@ GEMINI_TTS_MODEL = os.environ.get("GEMINI_TTS_MODEL", "gemini-2.5-flash-preview-
 # Voice roster: a different presenter per video (deterministic by slug), mixed
 # genders, each with its own delivery style. GEMINI_VOICE/GEMINI_STYLE repo
 # vars override the rotation with a single fixed voice.
+# Puck's style recalibrated 2026-07-11: with the shorter post-hook-surgery
+# segments, "fast and punchy" made Gemini sprint and shout (owner: "rushed,
+# overacted" vs the older long-segment DaVinci render). Keep the energy,
+# pin the pace. Keep style prompts SHORT (leak risk, rule 8).
 VOICE_ROSTER = [
-    ("Puck",   "Say this like an excited sports commentator calling a match, fast and punchy: "),
+    ("Puck",   "Say this like a lively sports commentator, clear and unhurried, "
+               "pausing briefly after each sentence: "),
     ("Fenrir", "Say this with deep intense hype, like a boxing ring announcer building to a knockout: "),
     ("Orus",   "Say this fast and confident, like a tech reviewer dropping hot takes: "),
     ("Kore",   "Say this with sharp energetic confidence, like a host about to reveal a winner: "),

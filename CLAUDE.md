@@ -477,3 +477,14 @@ commit, so the other sessions know who did what.
   audio "sounded so bad" despite clean QA numbers (Puck, wer 0.03->0.10);
   awaiting specifics (rushed/robotic/choppy/mispronounced) before a TTS
   fix — do not guess-tune voice settings blind.
+- 2026-07-11 ~12:50 — laptop Claude Code session (same): AUDIO DIAGNOSED
+  (owner: "rushed + overacted/shouty"; liked the DaVinci render). Same
+  voice (Puck) + same style prompt on both — the delta is the 07-10 length
+  cut: short punchy segments + a style prompt literally saying "fast and
+  punchy" makes Gemini sprint and shout; long segments gave it room.
+  Fixes: Puck roster style -> "lively sports commentator, clear and
+  unhurried, pausing briefly after each sentence"; audio_qa.py new
+  pace=X.XXwps metric (script words / spoken audio seconds; >3.0 RUSHED,
+  >2.7 brisk, else natural — ADVISORY only). Verify pace + owner ear-test
+  on the 15:59 ranking. If still rushed: next levers are GEMINI_STYLE var
+  iteration or ffmpeg atempo ~0.95 on narration.
