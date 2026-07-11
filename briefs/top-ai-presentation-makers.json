@@ -1,0 +1,111 @@
+{
+  "slug": "top-ai-presentation-makers",
+  "title": "Top 5 AI Presentation Makers Ranked Worst to Best",
+  "hook": "Still wasting hours on slides when AI can do it in minutes?",
+  "ranking": {
+    "theme": "AI tools that make presentations in minutes",
+    "items": [
+      {
+        "rank": 5,
+        "name": "Gamma",
+        "reason": "Good for quick drafts, but limited customisation options.",
+        "tag": "Free plan"
+      },
+      {
+        "rank": 4,
+        "name": "Beautiful.ai",
+        "reason": "Smart templates keep designs consistent and professional.",
+        "tag": "Free trial"
+      },
+      {
+        "rank": 3,
+        "name": "Simplified",
+        "reason": "Generates full presentations from text prompts, very fast.",
+        "tag": "Free plan"
+      },
+      {
+        "rank": 2,
+        "name": "Tome",
+        "reason": "Interactive, visually stunning presentations with ease.",
+        "tag": "Free plan"
+      },
+      {
+        "rank": 1,
+        "name": "Plus AI",
+        "reason": "Directly integrates into Google Slides for seamless creation.",
+        "tag": "Paid"
+      }
+    ],
+    "cta": "Did we miss your favourite AI presentation tool?"
+  },
+  "narration": [
+    {
+      "text": "Still wasting hours on slides when AI can do it in minutes?",
+      "broll": "typing keyboard close-up"
+    },
+    {
+      "text": "At number 5, Gamma. It's great for getting quick drafts done. But if you need to fine-tune every detail, you might find its customisation options a bit limited.",
+      "broll": "abstract slides animation"
+    },
+    {
+      "text": "Coming in at number 4, Beautiful.ai. Its smart templates are a lifesaver, ensuring your designs always look consistent and professional. It really takes the guesswork out of good design.",
+      "broll": "modern office presentation"
+    },
+    {
+      "text": "Number 3 is Simplified. This tool can generate entire presentations from just a text prompt. It's incredibly fast, perfect when you need a presentation ready yesterday.",
+      "broll": "digital data flow"
+    },
+    {
+      "text": "At number 2, we have Tome. It creates interactive, visually stunning presentations with surprising ease. Tome elevates your content, making it truly stand out from the crowd.",
+      "broll": "futuristic UI display"
+    },
+    {
+      "text": "And the top spot, number 1, goes to Plus AI. It directly integrates into Google Slides, giving you seamless creation without ever leaving your workspace. It's an absolute game-changer.",
+      "broll": "person presenting laptop"
+    },
+    {
+      "text": "Plus AI takes the crown for its direct Google Slides integration. Which AI presentation maker do you use?",
+      "broll": "winning trophy animation"
+    }
+  ],
+  "description": "Discover the top 5 AI presentation makers that can transform your workflow. From quick drafts to stunning, interactive slides, these tools save you hours. See our ranking from worst to best.",
+  "links": [
+    {
+      "name": "Gamma",
+      "url": "https://gamma.app"
+    },
+    {
+      "name": "Beautiful.ai",
+      "url": "https://www.beautiful.ai"
+    },
+    {
+      "name": "Simplified",
+      "url": "https://simplified.com"
+    },
+    {
+      "name": "Tome",
+      "url": "https://tome.app"
+    },
+    {
+      "name": "Plus AI",
+      "url": "https://www.plusdocs.com"
+    }
+  ],
+  "tags": [
+    "ai tools",
+    "ai presentation",
+    "presentation maker",
+    "ai powerpoint",
+    "google slides ai",
+    "productivity tools",
+    "artificial intelligence",
+    "tech review",
+    "ai software",
+    "business tools",
+    "ai apps"
+  ],
+  "thumbnail_text": "AI Presentation Makers",
+  "topic": "Top 5 AI Presentation Makers Ranked Worst to Best",
+  "date": "2026-07-11",
+  "hook_type": "pain_point"
+}
