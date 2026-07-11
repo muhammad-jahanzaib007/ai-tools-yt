@@ -22,6 +22,7 @@ import re
 import sys
 import json
 import math
+import time
 import base64
 import random
 import shutil
@@ -496,75 +497,77 @@ def pexels_clip(query, dest):
     return False
 
 
-def pexels_photo(query, dest):
-    """Portrait Pexels PHOTO for a scene background (the ranking format uses
-    stills + a slow Ken Burns zoom in Remotion). Best-effort: False = the
-    composition falls back to its gradient background."""
-    if not PX_KEY:
-        return False
-    for q in (query, "technology dark background"):
-        try:
-            r = requests.get(
-                "https://api.pexels.com/v1/search",
-                params={"query": q, "per_page": 6, "orientation": "portrait"},
-                headers={"Authorization": PX_KEY}, timeout=60,
-            )
-            if r.status_code >= 400:
-                continue
-            photos = r.json().get("photos", [])
-        except requests.RequestException:
-            continue
-        for p in photos:
-            src = p.get("src") or {}
-            link = src.get("large2x") or src.get("large")
-            if not link:
-                continue
-            try:
-                dl = requests.get(link, timeout=120)
-                if dl.status_code < 400 and len(dl.content) > 10000:
-                    dest.write_bytes(dl.content)
-                    return True
-            except requests.RequestException:
-                continue
-    return False
+def _shot_richness(path):
+    """Grayscale stddev of a downscaled screenshot: near-zero = blank page."""
+    try:
+        from PIL import Image
+        im = Image.open(path).convert("L").resize((90, 160))
+        px = list(im.getdata())
+        mean = sum(px) / len(px)
+        return (sum((p - mean) ** 2 for p in px) / len(px)) ** 0.5
+    except Exception:
+        return 999   # unmeasurable -> keep the shot
 
 
 def _stage_ranking_media(brief):
-    """Fetch per-scene Pexels photos + per-tool favicons into
-    remotion/public/ranking/ (gitignored, like toolverse art). All
-    best-effort: a missing file just means that scene keeps the gradient
-    background / text-only card."""
+    """Fetch per-tool homepage screenshots (WordPress mshots, free) + favicons
+    into remotion/public/ranking/ (gitignored). All best-effort: a missing
+    file just means that rank keeps the vivid-gradient card without a
+    screenshot. Pexels photos were dropped 2026-07-11: stock photos under a
+    dark overlay read dull ("videos look more dull with them" - owner);
+    real product screenshots are the attention-grabber."""
+    import urllib.parse
     pub = REMOTION_DIR / "public" / "ranking"
     if pub.exists():
         shutil.rmtree(pub)
     pub.mkdir(parents=True)
-    bgs = []
-    for i, seg in enumerate(brief["narration"]):
-        dest = pub / f"bg{i}.jpg"
-        ok = pexels_photo(seg.get("broll") or "technology abstract", dest)
-        bgs.append(f"bg{i}.jpg" if ok else None)
-    print(f"  ranking backgrounds: {sum(1 for b in bgs if b)}/{len(bgs)} staged")
-    logos = {}
     by_name = {l["name"].lower(): l.get("url", "")
                for l in brief.get("links", [])
                if isinstance(l, dict) and l.get("name")}
+    shots, logos = {}, {}
     for it in brief["ranking"]["items"]:
         url = by_name.get(it["name"].lower(), "")
-        dom = re.sub(r"^https?://(www\.)?", "", url).split("/")[0]
-        if not dom:
+        if not url:
             continue
-        dest = pub / f"logo{it['rank']}.png"
-        try:
-            r = requests.get("https://www.google.com/s2/favicons",
-                             params={"domain": dom, "sz": "128"}, timeout=30)
-            # A tiny payload is Google's generic globe placeholder - skip it.
-            if r.status_code < 400 and len(r.content) > 500:
-                dest.write_bytes(r.content)
-                logos[str(it["rank"])] = dest.name
-        except requests.RequestException:
-            pass
-    print(f"  ranking logos: {len(logos)}/5 staged")
-    return bgs, logos
+        rank = it["rank"]
+        # Screenshot: first request warms the mshots cache (returns a tiny
+        # "generating" placeholder), so poll until a real image arrives.
+        shot_url = ("https://s0.wp.com/mshots/v1/"
+                    + urllib.parse.quote(url, safe="") + "?w=720&h=1280")
+        dest = pub / f"shot{rank}.jpg"
+        for attempt in range(4):
+            try:
+                r = requests.get(shot_url, timeout=60,
+                                 headers={"User-Agent": "Mozilla/5.0"})
+                if r.status_code < 400 and len(r.content) > 15000:
+                    dest.write_bytes(r.content)
+                    # Blankness guard: bot walls (Cloudflare "verify you are
+                    # human") screenshot as near-uniform white. Measured:
+                    # blocked pages std 6-11, real homepages 36+; cut at 20
+                    # and let the no-shot card layout carry the scene.
+                    if _shot_richness(dest) >= 20:
+                        shots[str(rank)] = dest.name
+                    else:
+                        print(f"  shot{rank}: near-blank (bot wall?), dropped")
+                        dest.unlink(missing_ok=True)
+                    break
+            except requests.RequestException:
+                pass
+            time.sleep(8)
+        dom = re.sub(r"^https?://(www\.)?", "", url).split("/")[0]
+        if dom:
+            ldest = pub / f"logo{rank}.png"
+            try:
+                r = requests.get("https://www.google.com/s2/favicons",
+                                 params={"domain": dom, "sz": "128"}, timeout=30)
+                # A tiny payload is Google's generic globe placeholder - skip it.
+                if r.status_code < 400 and len(r.content) > 500:
+                    ldest.write_bytes(r.content)
+                    logos[str(rank)] = ldest.name
+            except requests.RequestException:
+                pass
+    print(f"  ranking screenshots: {len(shots)}/5, logos: {len(logos)}/5 staged")
+    return shots, logos
 
 
 def _ass_header(primary, secondary):
@@ -725,11 +728,12 @@ def render_battle(brief):
 
 def render_ranking(brief):
     """Top-5 countdown: one presenter voice, RankingShort composition.
-    Scenes get Pexels photo backgrounds (Ken Burns) + real tool favicons."""
+    Scenes show the tool's real homepage screenshot + favicon on vivid
+    gradients."""
     ranking = brief["ranking"]
-    bgs, logos = _stage_ranking_media(brief)
+    shots, logos = _stage_ranking_media(brief)
     props = {"theme": ranking["theme"], "items": ranking["items"],
-             "cta": ranking["cta"], "bgs": bgs, "logos": logos}
+             "cta": ranking["cta"], "shots": shots, "logos": logos}
     _render_scenes(brief, "RankingShort", props,
                    f"Ranking render: {ranking['theme']}")
 

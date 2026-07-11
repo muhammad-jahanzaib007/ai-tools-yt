@@ -10,8 +10,8 @@ import {
 } from "remotion";
 import { TransitionSeries, linearTiming } from "@remotion/transitions";
 import { slide } from "@remotion/transitions/slide";
-import { COLORS, FPS, TRANSITION_FRAMES } from "../battle/types";
-import { Confetti, Grain, ShineSweep, Vignette, glass } from "../battle/fx";
+import { FPS, TRANSITION_FRAMES } from "../battle/types";
+import { Confetti, Grain, ShineSweep, Vignette } from "../battle/fx";
 
 export type RankItem = {
   rank: number; // 5..1
@@ -25,9 +25,8 @@ export type RankingProps = {
   items: RankItem[]; // countdown display order: rank 5 first ... rank 1 last
   cta: string; // outro line
   // Staged by render_video.py into public/ranking/ (all optional):
-  // bgs[i] = Pexels photo behind scene i (intro, items..., outro),
-  // logos[rank] = tool favicon shown on that rank's card.
-  bgs?: (string | null)[];
+  // shots[rank] = the tool's real homepage screenshot, logos[rank] = favicon.
+  shots?: Record<string, string>;
   logos?: Record<string, string>;
   sceneFrames?: { intro: number; rounds: number[]; verdict: number };
 };
@@ -63,104 +62,133 @@ export const totalRankingFrames = (p: RankingProps) => {
   );
 };
 
-// Rank accent: gold for #1, silver #2, bronze #3, teal the rest.
-const rankColor = (rank: number) =>
-  rank === 1 ? "#F5C542" : rank === 2 ? "#C9CDD6" : rank === 3 ? "#D08A4E" : COLORS.teal;
+// Vivid per-rank colour worlds (dull dark navy killed 2026-07-11, owner
+// feedback: bright saturated scenes are what stops the swipe).
+const WORLDS: Record<
+  number,
+  { a: string; b: string; accent: string; num: string }
+> = {
+  5: { a: "#0284C7", b: "#22D3EE", accent: "#BAE6FD", num: "#FFFFFF" },
+  4: { a: "#7C3AED", b: "#6366F1", accent: "#DDD6FE", num: "#FFFFFF" },
+  3: { a: "#EA580C", b: "#F43F5E", accent: "#FED7AA", num: "#FFFFFF" },
+  2: { a: "#DB2777", b: "#A855F7", accent: "#FBCFE8", num: "#FFFFFF" },
+  1: { a: "#D97706", b: "#FBBF24", accent: "#FEF3C7", num: "#FFFFFF" },
+};
+const INTRO_WORLD = { a: "#4338CA", b: "#9333EA" };
+const OUTRO_WORLD = { a: "#312E81", b: "#7C3AED" };
 
-const Bg: React.FC<{ hue?: string }> = ({ hue = COLORS.teal }) => {
+const FONT = "DejaVu Sans, sans-serif";
+
+const VividBg: React.FC<{ a: string; b: string }> = ({ a, b }) => {
   const frame = useCurrentFrame();
-  const drift = Math.sin(frame / 55) * 40;
+  const drift = Math.sin(frame / 40) * 60;
   return (
-    <AbsoluteFill style={{ backgroundColor: COLORS.bg, overflow: "hidden" }}>
-      <div
-        style={{
-          position: "absolute",
-          width: 900,
-          height: 900,
-          borderRadius: "50%",
-          left: -280 + drift,
-          top: -220,
-          background: `radial-gradient(circle, ${hue}44 0%, transparent 65%)`,
-        }}
-      />
+    <AbsoluteFill
+      style={{
+        background: `linear-gradient(160deg, ${a} 0%, ${b} 100%)`,
+        overflow: "hidden",
+      }}
+    >
       <div
         style={{
           position: "absolute",
           width: 1000,
           height: 1000,
           borderRadius: "50%",
-          right: -350 - drift,
-          bottom: -300,
-          background: `radial-gradient(circle, ${COLORS.coral}3a 0%, transparent 65%)`,
-        }}
-      />
-    </AbsoluteFill>
-  );
-};
-
-// Photo background with a slow Ken Burns zoom + dark overlay for text
-// legibility. No photo staged -> the gradient Bg carries the scene.
-const SceneBg: React.FC<{ photo?: string | null; hue?: string }> = ({ photo, hue }) => {
-  const frame = useCurrentFrame();
-  if (!photo) {
-    return <Bg hue={hue} />;
-  }
-  return (
-    <AbsoluteFill style={{ backgroundColor: COLORS.bg, overflow: "hidden" }}>
-      <Img
-        src={staticFile(`ranking/${photo}`)}
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          transform: `scale(${1.08 + frame * 0.0006})`,
-        }}
-      />
-      <AbsoluteFill
-        style={{
+          left: -320 + drift,
+          top: -260,
           background:
-            "linear-gradient(180deg, rgba(11,11,20,0.78) 0%, rgba(11,11,20,0.58) 45%, rgba(11,11,20,0.85) 100%)",
+            "radial-gradient(circle, rgba(255,255,255,0.25) 0%, transparent 62%)",
         }}
       />
-      {hue ? (
-        <AbsoluteFill
-          style={{
-            background: `radial-gradient(circle at 50% 32%, ${hue}30 0%, transparent 60%)`,
-          }}
-        />
-      ) : null}
+      <div
+        style={{
+          position: "absolute",
+          width: 1100,
+          height: 1100,
+          borderRadius: "50%",
+          right: -380 - drift,
+          bottom: -320,
+          background:
+            "radial-gradient(circle, rgba(0,0,0,0.22) 0%, transparent 65%)",
+        }}
+      />
     </AbsoluteFill>
   );
 };
 
-const IntroScene: React.FC<{ theme: string; count: number; photo?: string | null }> = ({ theme, count, photo }) => {
+// The tool's real homepage in a floating phone-style frame with a slow
+// scroll-pan: real product on screen = the attention anchor of each scene.
+const ScreenshotCard: React.FC<{ shot: string; accent: string }> = ({
+  shot,
+  accent,
+}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const pop = spring({ frame, fps, config: { damping: 11, stiffness: 160 } });
+  const inSpring = spring({ frame: frame - 4, fps, config: { damping: 13 } });
+  const float = Math.sin(frame / 26) * 7;
+  const pan = interpolate(frame, [10, 190], [0, -140], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  return (
+    <div
+      style={{
+        opacity: inSpring,
+        transform: `translateY(${(1 - inSpring) * 90 + float}px) rotate(-2deg)`,
+        width: 560,
+        height: 780,
+        borderRadius: 34,
+        border: "10px solid rgba(255,255,255,0.95)",
+        boxShadow: `0 40px 90px rgba(0,0,0,0.45), 0 0 0 3px ${accent}66`,
+        overflow: "hidden",
+        backgroundColor: "#FFFFFF",
+        position: "relative",
+      }}
+    >
+      <Img
+        src={staticFile(`ranking/${shot}`)}
+        style={{
+          width: "100%",
+          transform: `translateY(${pan}px)`,
+        }}
+      />
+    </div>
+  );
+};
+
+const IntroScene: React.FC<{ theme: string; count: number }> = ({
+  theme,
+  count,
+}) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const pop = spring({ frame, fps, config: { damping: 10, stiffness: 170 } });
   const up = spring({ frame: frame - 6, fps, config: { damping: 14 } });
   return (
     <AbsoluteFill>
-      <SceneBg photo={photo} hue={COLORS.teal} />
+      <VividBg a={INTRO_WORLD.a} b={INTRO_WORLD.b} />
       <AbsoluteFill
         style={{
           justifyContent: "center",
           alignItems: "center",
-          padding: "0 70px",
+          padding: "0 64px",
           flexDirection: "column",
-          gap: 46,
+          gap: 44,
         }}
       >
         <div
           style={{
-            transform: `scale(${pop})`,
-            ...glass(`${COLORS.coral}30`),
-            padding: "26px 66px",
-            borderRadius: 32,
-            fontFamily: "DejaVu Sans, sans-serif",
+            transform: `scale(${pop}) rotate(-3deg)`,
+            backgroundColor: "#FDE047",
+            color: "#1E1B4B",
+            padding: "24px 62px",
+            borderRadius: 28,
+            fontFamily: FONT,
             fontWeight: 800,
-            fontSize: 92,
-            color: COLORS.white,
-            letterSpacing: 4,
+            fontSize: 96,
+            letterSpacing: 3,
+            boxShadow: "0 24px 60px rgba(0,0,0,0.35)",
           }}
         >
           TOP {count}
@@ -169,147 +197,163 @@ const IntroScene: React.FC<{ theme: string; count: number; photo?: string | null
           style={{
             opacity: up,
             transform: `translateY(${(1 - up) * 60}px)`,
-            fontFamily: "DejaVu Sans, sans-serif",
+            fontFamily: FONT,
             fontWeight: 800,
-            fontSize: 74,
-            lineHeight: 1.15,
+            fontSize: 78,
+            lineHeight: 1.12,
             textAlign: "center",
-            color: COLORS.cream,
-            textShadow: "0 4px 30px rgba(0,0,0,0.55)",
+            color: "#FFFFFF",
+            textShadow: "0 6px 30px rgba(0,0,0,0.5)",
           }}
         >
           {theme}
         </div>
       </AbsoluteFill>
-      <ShineSweep at={20} />
+      <ShineSweep at={18} />
       <Grain />
-      <Vignette />
+      <Vignette strength={0.25} />
     </AbsoluteFill>
   );
 };
 
-const RankScene: React.FC<{ item: RankItem; photo?: string | null; logo?: string }> = ({ item, photo, logo }) => {
+const RankScene: React.FC<{
+  item: RankItem;
+  shot?: string;
+  logo?: string;
+}> = ({ item, shot, logo }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const isWinner = item.rank === 1;
-  const accent = rankColor(item.rank);
-  const numIn = spring({ frame, fps, config: { damping: 10, stiffness: 170 } });
-  const cardIn = spring({ frame: frame - 5, fps, config: { damping: 13 } });
-  const glow = isWinner ? 0.5 + Math.sin(frame / 9) * 0.2 : 0;
+  const w = WORLDS[item.rank] ?? WORLDS[5];
+  const numIn = spring({ frame, fps, config: { damping: 9, stiffness: 180 } });
+  const rowIn = spring({ frame: frame - 8, fps, config: { damping: 13 } });
+  const numFloat = Math.sin(frame / 22) * 5;
   return (
     <AbsoluteFill>
-      <SceneBg photo={photo} hue={accent} />
+      <VividBg a={w.a} b={w.b} />
       {isWinner && (
-        <Confetti colors={["#F5C542", COLORS.coral, COLORS.teal, COLORS.cream]} />
+        <Confetti colors={["#FDE047", "#FFFFFF", "#FB923C", "#A7F3D0"]} count={30} />
       )}
       <AbsoluteFill
         style={{
           justifyContent: "center",
           alignItems: "center",
           flexDirection: "column",
-          gap: 44,
-          padding: "0 64px",
+          gap: 34,
+          padding: "70px 60px 150px",
         }}
       >
         <div
           style={{
-            transform: `scale(${numIn})`,
-            fontFamily: "DejaVu Sans, sans-serif",
+            transform: `scale(${numIn}) translateY(${numFloat}px)`,
+            fontFamily: FONT,
             fontWeight: 800,
-            fontSize: 300,
+            fontSize: isWinner ? 230 : 190,
             lineHeight: 1,
-            color: accent,
-            textShadow: `0 0 ${60 + glow * 80}px ${accent}${isWinner ? "cc" : "55"}`,
+            color: w.num,
+            textShadow: `0 14px 0 rgba(0,0,0,0.22), 0 0 ${isWinner ? 90 : 40}px rgba(255,255,255,0.55)`,
           }}
         >
-          {isWinner ? "#1" : `#${item.rank}`}
+          #{item.rank}
         </div>
+        {shot ? (
+          <ScreenshotCard shot={shot} accent={w.accent} />
+        ) : null}
         <div
           style={{
-            opacity: cardIn,
-            transform: `translateY(${(1 - cardIn) * 70}px)`,
-            ...glass(`${accent}26`),
-            borderRadius: 36,
-            padding: "44px 54px",
-            maxWidth: 900,
+            opacity: rowIn,
+            transform: `translateY(${(1 - rowIn) * 70}px)`,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: 24,
+            gap: 18,
+            maxWidth: 920,
           }}
         >
-          {logo ? (
-            <Img
-              src={staticFile(`ranking/${logo}`)}
-              style={{
-                width: 108,
-                height: 108,
-                borderRadius: 26,
-                boxShadow: "0 10px 34px rgba(0,0,0,0.45)",
-                backgroundColor: "rgba(255,255,255,0.92)",
-                padding: 10,
-              }}
-            />
-          ) : null}
           <div
             style={{
-              fontFamily: "DejaVu Sans, sans-serif",
-              fontWeight: 800,
-              fontSize: 84,
-              color: COLORS.white,
-              textAlign: "center",
-              lineHeight: 1.05,
-            }}
-          >
-            {item.name}
-          </div>
-          <div
-            style={{
-              fontFamily: "DejaVu Sans, sans-serif",
-              fontSize: 44,
-              color: COLORS.cream,
-              textAlign: "center",
-              lineHeight: 1.3,
-            }}
-          >
-            {item.reason}
-          </div>
-          <div
-            style={{
-              ...glass(`${accent}40`, 18),
+              display: "flex",
+              alignItems: "center",
+              gap: 24,
+              backgroundColor: "rgba(255,255,255,0.96)",
               borderRadius: 999,
-              padding: "12px 34px",
-              fontFamily: "DejaVu Sans, sans-serif",
-              fontWeight: 800,
-              fontSize: 36,
-              color: COLORS.white,
-              letterSpacing: 1,
+              padding: "18px 44px",
+              boxShadow: "0 18px 50px rgba(0,0,0,0.35)",
             }}
           >
-            {item.tag}
+            {logo ? (
+              <Img
+                src={staticFile(`ranking/${logo}`)}
+                style={{ width: 76, height: 76, borderRadius: 18 }}
+              />
+            ) : null}
+            <div
+              style={{
+                fontFamily: FONT,
+                fontWeight: 800,
+                fontSize: shot ? 66 : 84,
+                color: "#111827",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {item.name}
+            </div>
+            <div
+              style={{
+                backgroundColor: w.a,
+                color: "#FFFFFF",
+                borderRadius: 999,
+                padding: "10px 26px",
+                fontFamily: FONT,
+                fontWeight: 800,
+                fontSize: 30,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {item.tag}
+            </div>
           </div>
+          {!shot ? (
+            <div
+              style={{
+                fontFamily: FONT,
+                fontWeight: 800,
+                fontSize: 44,
+                color: "#FFFFFF",
+                textAlign: "center",
+                lineHeight: 1.28,
+                textShadow: "0 4px 20px rgba(0,0,0,0.45)",
+              }}
+            >
+              {item.reason}
+            </div>
+          ) : null}
         </div>
       </AbsoluteFill>
-      <ShineSweep at={30} />
+      <ShineSweep at={26} />
       <Grain />
-      <Vignette />
+      <Vignette strength={0.22} />
     </AbsoluteFill>
   );
 };
 
-const OutroScene: React.FC<{ items: RankItem[]; cta: string; photo?: string | null; logos?: Record<string, string> }> = ({ items, cta, photo, logos }) => {
+const OutroScene: React.FC<{
+  items: RankItem[];
+  cta: string;
+  logos?: Record<string, string>;
+}> = ({ items, cta, logos }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const byRank = [...items].sort((a, b) => a.rank - b.rank);
   return (
     <AbsoluteFill>
-      <SceneBg photo={photo} hue={"#F5C542"} />
+      <VividBg a={OUTRO_WORLD.a} b={OUTRO_WORLD.b} />
       <AbsoluteFill
         style={{
           justifyContent: "center",
           alignItems: "center",
           flexDirection: "column",
-          gap: 22,
+          gap: 20,
           padding: "0 80px",
         }}
       >
@@ -319,30 +363,32 @@ const OutroScene: React.FC<{ items: RankItem[]; cta: string; photo?: string | nu
             fps,
             config: { damping: 13 },
           });
-          const accent = rankColor(it.rank);
+          const wld = WORLDS[it.rank] ?? WORLDS[5];
+          const top = it.rank === 1;
           return (
             <div
               key={it.rank}
               style={{
                 opacity: rowIn,
                 transform: `translateX(${(1 - rowIn) * 90}px)`,
-                ...glass(it.rank === 1 ? `${accent}33` : "rgba(255,255,255,0.06)"),
-                borderRadius: 26,
+                backgroundColor: top ? "#FDE047" : "rgba(255,255,255,0.94)",
+                borderRadius: 24,
                 width: "100%",
                 maxWidth: 880,
-                padding: it.rank === 1 ? "26px 40px" : "18px 40px",
+                padding: top ? "26px 38px" : "17px 38px",
                 display: "flex",
                 alignItems: "center",
-                gap: 30,
+                gap: 26,
+                boxShadow: "0 14px 40px rgba(0,0,0,0.3)",
               }}
             >
               <div
                 style={{
-                  fontFamily: "DejaVu Sans, sans-serif",
+                  fontFamily: FONT,
                   fontWeight: 800,
-                  fontSize: it.rank === 1 ? 62 : 46,
-                  color: accent,
-                  width: 96,
+                  fontSize: top ? 58 : 42,
+                  color: wld.a,
+                  width: 92,
                 }}
               >
                 #{it.rank}
@@ -351,20 +397,18 @@ const OutroScene: React.FC<{ items: RankItem[]; cta: string; photo?: string | nu
                 <Img
                   src={staticFile(`ranking/${logos[String(it.rank)]}`)}
                   style={{
-                    width: it.rank === 1 ? 64 : 50,
-                    height: it.rank === 1 ? 64 : 50,
-                    borderRadius: 14,
-                    backgroundColor: "rgba(255,255,255,0.92)",
-                    padding: 5,
+                    width: top ? 62 : 48,
+                    height: top ? 62 : 48,
+                    borderRadius: 12,
                   }}
                 />
               ) : null}
               <div
                 style={{
-                  fontFamily: "DejaVu Sans, sans-serif",
+                  fontFamily: FONT,
                   fontWeight: 800,
-                  fontSize: it.rank === 1 ? 58 : 44,
-                  color: COLORS.white,
+                  fontSize: top ? 56 : 42,
+                  color: "#111827",
                 }}
               >
                 {it.name}
@@ -374,24 +418,25 @@ const OutroScene: React.FC<{ items: RankItem[]; cta: string; photo?: string | nu
         })}
         <div
           style={{
-            marginTop: 26,
+            marginTop: 24,
             opacity: interpolate(frame, [26, 44], [0, 1], {
               extrapolateLeft: "clamp",
               extrapolateRight: "clamp",
             }),
-            fontFamily: "DejaVu Sans, sans-serif",
+            fontFamily: FONT,
             fontWeight: 800,
             fontSize: 46,
-            color: COLORS.cream,
+            color: "#FFFFFF",
             textAlign: "center",
+            textShadow: "0 4px 20px rgba(0,0,0,0.5)",
           }}
         >
           {cta}
         </div>
       </AbsoluteFill>
-      <ShineSweep at={24} />
+      <ShineSweep at={30} />
       <Grain />
-      <Vignette />
+      <Vignette strength={0.22} />
     </AbsoluteFill>
   );
 };
@@ -400,7 +445,7 @@ export const RankingVideo: React.FC<RankingProps> = (props) => {
   const frames = framesOfRanking(props);
   const seq: React.ReactNode[] = [
     <TransitionSeries.Sequence key="intro" durationInFrames={frames.intro}>
-      <IntroScene theme={props.theme} count={props.items.length} photo={props.bgs?.[0]} />
+      <IntroScene theme={props.theme} count={props.items.length} />
     </TransitionSeries.Sequence>,
   ];
   props.items.forEach((it, i) => {
@@ -411,7 +456,11 @@ export const RankingVideo: React.FC<RankingProps> = (props) => {
         timing={linearTiming({ durationInFrames: TRANSITION_FRAMES })}
       />,
       <TransitionSeries.Sequence key={`i${i}`} durationInFrames={frames.rounds[i]}>
-        <RankScene item={it} photo={props.bgs?.[i + 1]} logo={props.logos?.[String(it.rank)]} />
+        <RankScene
+          item={it}
+          shot={props.shots?.[String(it.rank)]}
+          logo={props.logos?.[String(it.rank)]}
+        />
       </TransitionSeries.Sequence>,
     );
   });
@@ -422,12 +471,7 @@ export const RankingVideo: React.FC<RankingProps> = (props) => {
       timing={linearTiming({ durationInFrames: TRANSITION_FRAMES })}
     />,
     <TransitionSeries.Sequence key="outro" durationInFrames={frames.verdict}>
-      <OutroScene
-        items={props.items}
-        cta={props.cta}
-        photo={props.bgs ? props.bgs[props.bgs.length - 1] : undefined}
-        logos={props.logos}
-      />
+      <OutroScene items={props.items} cta={props.cta} logos={props.logos} />
     </TransitionSeries.Sequence>,
   );
   return <TransitionSeries>{seq}</TransitionSeries>;
