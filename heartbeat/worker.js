@@ -34,22 +34,30 @@
 
 const OWNER = "muhammad-jahanzaib007";
 
-// Slot times are UTC and mirror the crons in each repo. `format` (YT only) is
-// forwarded to publish.yml's workflow_dispatch input.
+// Slot times are UTC and mirror the crons in each repo.
 const SLOTS = [
   { repo: "muhammad-jahanzaib007.github.io", wf: "auto-blog.yml", h: 8,  m: 0 },
   { repo: "muhammad-jahanzaib007.github.io", wf: "auto-blog.yml", h: 20, m: 0 },
-  // Formats must mirror publish.yml's "Pick format by slot" map
-  // (2026-07-10 split: battle morning, ranking afternoon + evening).
-  { repo: "ai-tools-yt", wf: "publish.yml", h: 10, m: 59, format: "battle" },
-  { repo: "ai-tools-yt", wf: "publish.yml", h: 15, m: 59, format: "ranking" },
-  { repo: "ai-tools-yt", wf: "publish.yml", h: 19, m: 59, format: "ranking" },
+  // NO format field: publish.yml's "Pick format by slot" derives the format
+  // from the clock for dispatches, and with the 2-format map (hour<15 battle,
+  // else ranking) no cover window inside CUTOFF_MIN crosses a format
+  // boundary. Formats live in ONE place (publish.yml) — a stale dashboard
+  // paste of this file can no longer ship the wrong format (2026-07-11: a
+  // drifted paste dispatched a ranking into the 10:59 battle slot).
+  { repo: "ai-tools-yt", wf: "publish.yml", h: 10, m: 59 },
+  { repo: "ai-tools-yt", wf: "publish.yml", h: 15, m: 59 },
+  { repo: "ai-tools-yt", wf: "publish.yml", h: 19, m: 59 },
 ];
 
 // Wait GRACE_MIN after a slot before stepping in (give GitHub's scheduler and
 // the in-repo backstops a chance first). Ignore a slot once it is older than
 // CUTOFF_MIN — by then a late fire would just be a stale dupe.
-const GRACE_MIN = 35;
+// GRACE must exceed publish.yml precheck's 90-min replay-skip threshold:
+// 2026-07-11 a cron replay 50 min late collided with a 41-min heartbeat
+// cover (the 35..90-min window where both can fire) and shipped a
+// duplicate. At 100 min: a <=90-min-late cron always runs alone, and any
+// later replay of a heartbeat-covered slot is skipped by precheck.
+const GRACE_MIN = 100;
 const CUTOFF_MIN = 165;
 
 // Harmless, idempotent workflow used to prove the token's write path.

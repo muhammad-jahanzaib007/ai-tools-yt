@@ -460,3 +460,20 @@ commit, so the other sessions know who did what.
   staged media (intro wiring initially missed — whitespace-failed replace;
   caught by byte-identical still, fixed). 31/31 tests. Rule 8: review the
   first CI-rendered v2 ranking frames (15:59 slot or render-trigger).
+- 2026-07-11 ~12:30 — laptop Claude Code session (direct commit to main):
+  DUPLICATE at the 10:59 slot: cron replayed 50 min late (11:42, inside
+  precheck's <=90-min allowance) AFTER a heartbeat cover at 11:40 (grace
+  35 min) — the 35..90-min window let both fire. AND the dispatch shipped
+  a RANKING into the battle slot: the deployed Worker's SLOTS format had
+  drifted (third dashboard-paste drift in 24h). Fixes: (1) worker SLOTS no
+  longer carry format at all — publish.yml's slot map is the single source
+  of truth, and with 2 formats (boundary 15:00) no cover window inside
+  CUTOFF_MIN=165 crosses a boundary, so clock-derive is always right;
+  (2) GRACE_MIN 35 -> 100 (past precheck's 90-min threshold: a <=90-min
+  late cron runs alone, a covered slot's later replay gets skipped).
+  Owner asked to delete the wrong-format duplicate
+  (best-ai-voice-generators-podcasters, youtu.be/83iKr8i-oRQ; its IG/FB/
+  TikTok crossposts too). OPEN: owner reports BOTH of today's videos'
+  audio "sounded so bad" despite clean QA numbers (Puck, wer 0.03->0.10);
+  awaiting specifics (rushed/robotic/choppy/mispronounced) before a TTS
+  fix — do not guess-tune voice settings blind.
