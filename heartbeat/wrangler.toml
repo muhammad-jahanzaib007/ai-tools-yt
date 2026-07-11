@@ -1,4 +1,7 @@
-name = "pipeline-heartbeat"
+# MUST match the name of the LIVE Worker (Cloudflare quick-create prefixed
+# it) — a different name would deploy a SECOND Worker with no GH_TOKEN
+# secret while the old one kept ticking stale code.
+name = "wispy-tooth-238cpipeline-heartbeat"
 main = "worker.js"
 compatibility_date = "2026-07-08"
 
