@@ -1,0 +1,110 @@
+{
+  "slug": "ai-tools-improve-grades-students",
+  "title": "Top 5 AI Tools for Students to Improve Grades",
+  "hook": "Number one writes entire essays in minutes, for free.",
+  "ranking": {
+    "theme": "AI tools to boost your grades",
+    "items": [
+      {
+        "rank": 5,
+        "name": "QuillBot",
+        "reason": "Paraphrase text and check grammar quickly.",
+        "tag": "Free plan"
+      },
+      {
+        "rank": 4,
+        "name": "Grammarly",
+        "reason": "Advanced grammar and plagiarism checks.",
+        "tag": "Free plan"
+      },
+      {
+        "rank": 3,
+        "name": "Consensus",
+        "reason": "Summarises academic papers and research.",
+        "tag": "Free plan"
+      },
+      {
+        "rank": 2,
+        "name": "WolframAlpha",
+        "reason": "Solves complex maths and scientific queries.",
+        "tag": "Free plan"
+      },
+      {
+        "rank": 1,
+        "name": "ChatGPT",
+        "reason": "Your ultimate AI study assistant.",
+        "tag": "Free"
+      }
+    ],
+    "cta": "Which AI tool do you use for studying?"
+  },
+  "narration": [
+    {
+      "text": "Number one writes entire essays in minutes, for free.",
+      "broll": "student studying desk"
+    },
+    {
+      "text": "At number five, we have QuillBot. This tool can rephrase your sentences, making your writing sound much better. It also helps check your grammar, perfecting your essays before submission.",
+      "broll": "typing on laptop"
+    },
+    {
+      "text": "Coming in at number four is Grammarly. It offers advanced grammar checks and can even detect plagiarism. This ensures your work is original and error-free every time.",
+      "broll": "writing on screen"
+    },
+    {
+      "text": "Number three is Consensus. This AI tool summarises academic papers and research, saving you hours of reading. It helps you quickly grasp complex topics and find key information.",
+      "broll": "research papers stack"
+    },
+    {
+      "text": "At number two, we have WolframAlpha. It is brilliant for solving complex maths problems and scientific queries. Think of it as a super-smart calculator and knowledge engine combined.",
+      "broll": "math equations screen"
+    },
+    {
+      "text": "And the top spot, number one, goes to ChatGPT. It is your ultimate AI study assistant, capable of explaining concepts, generating ideas, and even drafting outlines for any subject.",
+      "broll": "chatbot interface"
+    },
+    {
+      "text": "ChatGPT is simply essential for students today. What AI tool helps you with your grades the most?",
+      "broll": "student celebrating success"
+    }
+  ],
+  "description": "Boost your academic performance with these top 5 AI tools designed for students. From writing assistance to complex problem-solving, discover how AI can help you achieve better grades. Watch to see which tool takes the top spot for ultimate student support.",
+  "links": [
+    {
+      "name": "QuillBot",
+      "url": "https://quillbot.com/"
+    },
+    {
+      "name": "Grammarly",
+      "url": "https://www.grammarly.com/"
+    },
+    {
+      "name": "Consensus",
+      "url": "https://consensus.app/"
+    },
+    {
+      "name": "WolframAlpha",
+      "url": "https://www.wolframalpha.com/"
+    },
+    {
+      "name": "ChatGPT",
+      "url": "https://chat.openai.com/"
+    }
+  ],
+  "tags": [
+    "ai tools",
+    "student ai",
+    "improve grades",
+    "study tools",
+    "education technology",
+    "ai for students",
+    "academic tools",
+    "productivity ai",
+    "learning ai",
+    "school hacks"
+  ],
+  "thumbnail_text": "AI Tools for Grades",
+  "topic": "Top 5 AI Tools for Students to Improve Grades",
+  "date": "2026-07-12",
+  "hook_type": "result_first"
+}
