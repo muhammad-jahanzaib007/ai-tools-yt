@@ -1,0 +1,110 @@
+{
+  "slug": "ai-text-to-video-tools",
+  "title": "Top 5 AI Tools to Turn Text into Video",
+  "hook": "Still struggling to make video from text for free?",
+  "ranking": {
+    "theme": "Text to video, no editing needed",
+    "items": [
+      {
+        "rank": 5,
+        "name": "Pictory",
+        "reason": "Quick video from articles or scripts, automated",
+        "tag": "Free trial"
+      },
+      {
+        "rank": 4,
+        "name": "Synthesys",
+        "reason": "AI avatars, multiple languages, diverse voices",
+        "tag": "Free trial"
+      },
+      {
+        "rank": 3,
+        "name": "HeyGen",
+        "reason": "Lifelike avatars, custom branding, fast generation",
+        "tag": "Free credits"
+      },
+      {
+        "rank": 2,
+        "name": "InVideo AI",
+        "reason": "Advanced editing, B-roll, music, voiceovers",
+        "tag": "Free plan"
+      },
+      {
+        "rank": 1,
+        "name": "Descript",
+        "reason": "Edit video like text, powerful AI features",
+        "tag": "Free plan"
+      }
+    ],
+    "cta": "Did we miss your favourite tool?"
+  },
+  "narration": [
+    {
+      "text": "Still struggling to make video from text for free?",
+      "broll": "typing keyboard close-up"
+    },
+    {
+      "text": "At number 5, Pictory quickly turns articles or scripts into video, fully automated. You can add captions and brand your content, perfect for social media.",
+      "broll": "AI video generation"
+    },
+    {
+      "text": "Number 4 is Synthesys. This tool offers realistic AI avatars and supports multiple languages. It also provides diverse voice options to make your videos engaging.",
+      "broll": "digital avatar speaking"
+    },
+    {
+      "text": "Coming in at number 3, HeyGen creates lifelike avatars and allows for custom branding. It generates videos incredibly fast, saving you valuable time.",
+      "broll": "fast video creation"
+    },
+    {
+      "text": "Number 2, InVideo AI, provides advanced editing features. It automatically adds B-roll, music, and voiceovers, making professional video creation simple.",
+      "broll": "video editing interface"
+    },
+    {
+      "text": "Our top pick, Descript, lets you edit video like text. Its powerful AI features simplify the entire process, making complex edits feel effortless.",
+      "broll": "text to video edit"
+    },
+    {
+      "text": "Descript's ability to edit video by editing text is truly groundbreaking. Which text to video tool do you think is the best?",
+      "broll": "innovation tech light"
+    }
+  ],
+  "description": "Discover the top 5 AI tools that transform your text into engaging videos. From automated content creation to realistic avatars and advanced editing, these tools make video production easy and accessible. Create stunning videos without complex software.",
+  "links": [
+    {
+      "name": "Pictory",
+      "url": "https://pictory.ai/"
+    },
+    {
+      "name": "Synthesys",
+      "url": "https://www.synthesys.io/"
+    },
+    {
+      "name": "HeyGen",
+      "url": "https://www.heygen.com/"
+    },
+    {
+      "name": "InVideo AI",
+      "url": "https://invideo.io/"
+    },
+    {
+      "name": "Descript",
+      "url": "https://www.descript.com/"
+    }
+  ],
+  "tags": [
+    "ai tools",
+    "text to video",
+    "ai video generator",
+    "video creation",
+    "ai content",
+    "youtube shorts",
+    "ai for youtube",
+    "content creation tools",
+    "ai productivity",
+    "faceless youtube"
+  ],
+  "thumbnail_text": "TEXT TO VIDEO AI",
+  "topic": "Top 5 AI Tools to Turn Text into Video",
+  "date": "2026-07-13",
+  "hook_type": "pain_point"
+}
