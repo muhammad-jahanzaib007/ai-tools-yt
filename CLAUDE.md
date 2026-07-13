@@ -570,3 +570,24 @@ commit, so the other sessions know who did what.
   pending; (3) optionally prune the 3 duplicate blog posts' LinkedIn
   shares. CHANGE FREEZE declared: no format/visual/voice/engine work until
   the ~07-19 read; gates and dedupe only.
+- 2026-07-13 — laptop Claude Code session (direct commit to main): owner
+  OVERRODE the freeze on the 3 open ranking-quality complaints (owner taste
+  rejection is a valid override). All three shipped: (1) SCREENSHOTS no
+  longer cropped — RankingVideo ScreenshotCard was a 560x780 frame with a
+  scroll-pan that cut the top+bottom off every 720x1280 shot; replaced with
+  a 636x1120 (9:16) frame + object-fit:contain, so the WHOLE capture shows,
+  no pan. (2) RANKING TEMPLATE rebuilt — the 5 per-rank rainbow "worlds" of
+  v3 (owner: not eye-catching) are gone; new cohesive dark "tech editorial"
+  look: near-black base + ONE saturated brand accent per video (hashed from
+  theme, varies video-to-video, consistent within one), giant ghost rank
+  numeral as a design element, screenshot as the dominant hero. Stills
+  reviewed frame-by-frame (intro / no-shot / with-shot) — clean. (3) VOICE
+  pitch drift between sections FIXED at the root — single-voice formats
+  (battle/ranking/news) now record the WHOLE script in ONE Gemini TTS call
+  (_voice_single_pass) then slice per scene at word-gap midpoints, so the
+  voice holds one pitch across the video instead of restarting energy on 5-7
+  tiny per-scene calls; also cuts free-tier usage to 1 TTS request/video.
+  Comics keep per-hero voices (per-scene path). Safe fallback to the
+  per-scene loop if single-pass timings fail. 35/35 tests; render_video
+  syntax ok; TSX compiles (remotion still). Rule 8: eyeball the first CI
+  ranking render's audio + screenshot frames after the next 15:59/19:59 slot.

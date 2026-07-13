@@ -754,8 +754,8 @@ def render_battle(brief):
 
 def render_ranking(brief):
     """Top-5 countdown: one presenter voice, RankingShort composition.
-    Scenes show the tool's real homepage screenshot + favicon on vivid
-    gradients."""
+    Scenes show the tool's WHOLE homepage screenshot (contain, uncropped) +
+    favicon on a cohesive dark single-accent stage."""
     ranking = brief["ranking"]
     shots, logos = _stage_ranking_media(brief)
     props = {"theme": ranking["theme"], "items": ranking["items"],
@@ -876,6 +876,56 @@ def render_comic(brief):
                    f"Toolverse episode: {comic['threat']}", voices=voices)
 
 
+def _voice_single_pass(segs, voice, style):
+    """Voice the WHOLE script in ONE TTS call, then slice it per scene at word
+    boundaries. Gemini TTS restarts its pitch/energy on every call, so one call
+    per scene (5-7 tiny reads) made the voice audibly change pitch between
+    sections (owner report 2026-07-13). A single continuous read holds one
+    pitch across the whole video — and it's also 1 free-tier request instead of
+    5-7. Returns (audios, words_per, durs) shaped exactly like the per-scene
+    loop. Raises if word timings are unavailable so the caller can fall back."""
+    combined = " ".join(s["text"].strip() for s in segs)
+    full = WORK / "narration_full.mp3"
+    words, _ps = tts_take(combined, full, voice=voice, style=style)
+    if not words:
+        raise RuntimeError("no word timings for single-pass narration")
+    full_dur = probe_duration(full)
+    # words map 1:1 onto combined.split() (that is what _align_script_to_timings
+    # emits), so scene boundaries fall on cumulative per-scene word counts.
+    counts = [len(s["text"].split()) for s in segs]
+    scene_words, idx = [], 0
+    for c in counts:
+        scene_words.append(words[idx:idx + c]); idx += c
+    if idx < len(words):                     # alignment drift -> last scene keeps the rest
+        scene_words[-1] += words[idx:]
+    audios, words_per, durs = [], [], []
+    n = len(segs)
+    for i, sw in enumerate(scene_words):
+        if i == 0:
+            start = 0.0
+        else:
+            prev = scene_words[i - 1]
+            pe = prev[-1][2] if prev else (sw[0][1] if sw else 0.0)
+            cs = sw[0][1] if sw else pe
+            start = (pe + cs) / 2.0          # cut mid-gap so no word is clipped
+        if i == n - 1:
+            end = full_dur
+        else:
+            nxt = scene_words[i + 1]
+            ce = sw[-1][2] if sw else start
+            ns = nxt[0][1] if nxt else ce
+            end = (ce + ns) / 2.0
+        end = max(end, start + 0.20)
+        clip = WORK / f"a{i}.mp3"
+        run(["ffmpeg", "-y", "-i", str(full.resolve()), "-ss", f"{start:.3f}",
+             "-to", f"{end:.3f}", "-b:a", "128k", str(clip.resolve())])
+        audios.append(clip)
+        durs.append(probe_duration(clip))
+        words_per.append([(w, max(0.0, s - start), max(0.05, e - start))
+                          for (w, s, e) in sw])
+    return audios, words_per, durs
+
+
 def _render_scenes(brief, comp, props, label, voices=None):
     """Shared scene renderer: TTS per scene -> Remotion motion graphics sized
     to the narration audio -> mux delayed narration + captions + music.
@@ -886,24 +936,39 @@ def _render_scenes(brief, comp, props, label, voices=None):
     n = len(segs)
     print(f"{label}  ({n} scenes)")
 
-    # 1. narration audio per scene (+ word timings for karaoke captions)
+    # 1. narration audio per scene (+ word timings for karaoke captions).
+    # Single-voice formats (battle/ranking/news) record the whole script in one
+    # continuous take then slice it, so the voice never changes pitch between
+    # scenes; multi-character comics keep per-scene voices.
     audios, words_per, durs, karaoke = [], [], [], True
-    for i, seg in enumerate(segs):
-        audio = WORK / f"a{i}.mp3"
-        v, style = (voices[i] if voices and i < len(voices) else (None, None))
+    single = voices is None or len(set(voices)) == 1
+    if single:
+        sv, ss = ((None, None) if voices is None else voices[0])
         try:
-            words, ps = tts_take(seg["text"], audio, voice=v, style=style)
-            words_per.append(words)
+            audios, words_per, durs = _voice_single_pass(segs, sv, ss)
+            for i, d in enumerate(durs):
+                print(f"  scene {i+1}/{n} voiced ({d:.1f}s) [single-pass]")
         except Exception as e:
-            print(f"  word timings unavailable ({e}); plain TTS", file=sys.stderr)
-            karaoke = False
-            tts(seg["text"], audio, voice=v, style=style)
-            words_per.append([])
-            ps = None
-        audios.append(audio)
-        durs.append(probe_duration(audio))
-        note = f", pitch {ps:.2f}st" if ps is not None else ""
-        print(f"  scene {i+1}/{n} voiced ({durs[-1]:.1f}s{note})")
+            print(f"  single-pass voice failed ({e}); per-scene", file=sys.stderr)
+            audios, words_per, durs = [], [], []
+
+    if not audios:
+        for i, seg in enumerate(segs):
+            audio = WORK / f"a{i}.mp3"
+            v, style = (voices[i] if voices and i < len(voices) else (None, None))
+            try:
+                words, ps = tts_take(seg["text"], audio, voice=v, style=style)
+                words_per.append(words)
+            except Exception as e:
+                print(f"  word timings unavailable ({e}); plain TTS", file=sys.stderr)
+                karaoke = False
+                tts(seg["text"], audio, voice=v, style=style)
+                words_per.append([])
+                ps = None
+            audios.append(audio)
+            durs.append(probe_duration(audio))
+            note = f", pitch {ps:.2f}st" if ps is not None else ""
+            print(f"  scene {i+1}/{n} voiced ({durs[-1]:.1f}s{note})")
 
     # 2. scene lengths: lead-in (covers the 0.5s transition) + narration + tail
     leads = [0.30 if i == 0 else 0.65 for i in range(n)]
