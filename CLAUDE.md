@@ -627,3 +627,23 @@ commit, so the other sessions know who did what.
   the 15% atempo speed-up as fast/"pitched"; atempo now skipped at 1.0). Used
   the youtube-automation:remotion-best-practices skill (video-layout rule) to
   guide the redesign. 35/35 tests. Rule 8: frame-review the first CI render.
+- 2026-07-14 (later) — laptop Claude Code session: the first typographic
+  redesign read "okayish" to the owner. Rather than guess again (4th taste
+  miss), rendered 3 distinct style DIRECTIONS as stills (Bold / Glass-Neon /
+  Poster) via a throwaway StyleDemo composition and had the owner pick.
+  IMPORTANT UX NOTE: the owner is on the CLI and does NOT see inline images —
+  deliver visual previews by writing the file to D:\Linkedin\ and opening it
+  with PowerShell Invoke-Item (mp4s and a PIL-built compare PNG). Owner liked
+  Bold + Poster → shipped a fusion "BOLD POSTER" (commit 4b4eb79): vivid
+  saturated per-video bg, GIANT hot-yellow black-outlined rank numeral bleeding
+  off the TOP-RIGHT corner (poster graphic — NOT centered; owner explicitly
+  wanted the corner-bleed, rejected the fully-centered contained version),
+  black bottom color-block with tool name + favicon/monogram + red tag chip +
+  reason, #1 flips block to yellow + confetti. Approved after a music preview.
+  Local preview caveat: no TTS keys on the laptop (CI-only), so local previews
+  are music-only — muxed via Remotion's BUNDLED ffmpeg
+  (node_modules/@remotion/compositor-win32-x64-msvc/ffmpeg.exe; it's a stripped
+  build — no afade filter, volume works). Rule 8: frame-review first CI render.
+  FOLLOW-UP (not done): the ranking Thumb card still uses the older dark
+  single-accent look — align it to bold-poster if the owner wants thumbnail
+  consistency.
