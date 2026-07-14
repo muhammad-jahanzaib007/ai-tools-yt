@@ -27,6 +27,24 @@ const pickAccent = (seed: string) => {
   return ACCENTS[Math.abs(h) % ACCENTS.length];
 };
 
+// Bold-poster palette — MUST match remotion/src/ranking/RankingVideo.tsx so the
+// ranking thumbnail and the video read as one design (same bg per theme).
+const INK = "#0B0B0B";
+const YELLOW = "#FFE100";
+const BGS = [
+  "#1B0FD6", "#FF5A1F", "#E60E7B", "#6D28D9",
+  "#E11D2A", "#0EA5A5", "#2563EB", "#DB2777",
+];
+const pickBg = (seed: string) => {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) | 0;
+  return BGS[Math.abs(h) % BGS.length];
+};
+const outlined = (px: number): React.CSSProperties => ({
+  WebkitTextStroke: `${px}px ${INK}`,
+  paintOrder: "stroke fill" as unknown as React.CSSProperties["paintOrder"],
+});
+
 const FONT = "DejaVu Sans, sans-serif";
 
 const Stage: React.FC<{ accent: string; children: React.ReactNode }> = ({
@@ -139,9 +157,109 @@ const LogoStrip: React.FC<{ logos: string[]; dir: string; accent: string }> = ({
   </div>
 );
 
+// Bold-poster ranking thumbnail — matches the ranking video: vivid bg, giant
+// yellow black-outlined "TOP N", theme on a black block, favicon strip.
+const RankingThumb: React.FC<{
+  title: string;
+  badge?: string;
+  logos?: string[];
+  dir: string;
+}> = ({ title, badge, logos, dir }) => {
+  const bg = pickBg(title || "snackbyte");
+  return (
+    <AbsoluteFill style={{ backgroundColor: bg, overflow: "hidden" }}>
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.18) 0%, transparent 55%)",
+        }}
+      />
+      <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 18, backgroundColor: INK }} />
+      <AbsoluteFill
+        style={{
+          justifyContent: "center",
+          flexDirection: "column",
+          gap: 26,
+          padding: "56px 74px",
+        }}
+      >
+        {badge ? (
+          <div
+            style={{
+              alignSelf: "flex-start",
+              fontFamily: FONT,
+              fontWeight: 800,
+              fontSize: 150,
+              lineHeight: 0.9,
+              color: YELLOW,
+              ...outlined(11),
+              textShadow: "0 12px 0 rgba(0,0,0,0.28)",
+            }}
+          >
+            {badge}
+          </div>
+        ) : null}
+        <div
+          style={{
+            alignSelf: "flex-start",
+            backgroundColor: INK,
+            color: "#FFFFFF",
+            fontFamily: FONT,
+            fontWeight: 800,
+            fontSize: title.length > 40 ? 68 : 84,
+            lineHeight: 1.05,
+            padding: "18px 30px",
+            borderRadius: 14,
+            maxWidth: 1150,
+          }}
+        >
+          {title}
+        </div>
+        {logos && logos.length ? (
+          <div style={{ display: "flex", gap: 18 }}>
+            {logos.slice(0, 5).map((f, i) => (
+              <div
+                key={i}
+                style={{
+                  width: 104,
+                  height: 104,
+                  borderRadius: 22,
+                  backgroundColor: "#FFFFFF",
+                  border: `6px solid ${INK}`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Img
+                  src={staticFile(`${dir}/${f}`)}
+                  style={{ width: 68, height: 68, borderRadius: 12 }}
+                />
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </AbsoluteFill>
+    </AbsoluteFill>
+  );
+};
+
 export const Thumb: React.FC<ThumbProps> = (props) => {
   const accent = pickAccent(props.title || props.badge || "snackbyte");
   const dir = props.logoDir || "ranking";
+
+  if (props.kind === "ranking") {
+    return (
+      <RankingThumb
+        title={props.title}
+        badge={props.badge}
+        logos={props.logos}
+        dir={dir}
+      />
+    );
+  }
 
   if (props.kind === "battle") {
     // Size the names to fit each ~470px side column so long tool names
@@ -223,7 +341,7 @@ export const Thumb: React.FC<ThumbProps> = (props) => {
     );
   }
 
-  // ranking / news / comic: chip + big hook, plus a logo strip for rankings.
+  // news / comic: chip + big hook on the dark single-accent stage.
   return (
     <Stage accent={accent}>
       <AbsoluteFill
