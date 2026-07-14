@@ -5,6 +5,7 @@ import { BattleProps, FPS, battleDuration, totalFrames } from "./battle/types";
 import { ComicProps, ComicVideo, totalComicFrames } from "./comic/ComicVideo";
 import { NewsProps, NewsVideo, totalNewsFrames } from "./news/NewsVideo";
 import { RankingProps, RankingVideo, totalRankingFrames } from "./ranking/RankingVideo";
+import { Thumb, ThumbProps } from "./thumb/Thumb";
 
 const sampleBattle: BattleProps = {
   toolA: "ElevenLabs",
@@ -114,6 +115,14 @@ const rankingMetadata: CalculateMetadataFunction<RankingProps> = ({ props }) => 
   durationInFrames: totalRankingFrames(props),
 });
 
+const sampleThumb: ThumbProps = {
+  kind: "ranking",
+  title: "Free AI tools that beat the paid ones",
+  badge: "TOP 5",
+  logos: [],
+  logoDir: "ranking",
+};
+
 export const RemotionRoot: React.FC = () => {
   return (
     <>
@@ -156,6 +165,15 @@ export const RemotionRoot: React.FC = () => {
         height={1920}
         defaultProps={sampleRanking}
         calculateMetadata={rankingMetadata}
+      />
+      <Composition
+        id="Thumb"
+        component={Thumb}
+        durationInFrames={1}
+        fps={FPS}
+        width={1280}
+        height={720}
+        defaultProps={sampleThumb}
       />
       <Composition
         id="ComicShort"

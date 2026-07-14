@@ -591,3 +591,20 @@ commit, so the other sessions know who did what.
   per-scene loop if single-pass timings fail. 35/35 tests; render_video
   syntax ok; TSX compiles (remotion still). Rule 8: eyeball the first CI
   ranking render's audio + screenshot frames after the next 15:59/19:59 slot.
+- 2026-07-14 — laptop Claude Code session (direct commit to main): PROPER
+  16:9 HOOK THUMBNAILS (owner: "why no thumbnails" → confirmed via live
+  maxresdefault that custom thumbs WERE set, but the old step grabbed a 9:16
+  video frame that YouTube letterboxed into 16:9 with blur bars; and the
+  Shorts feed ignores custom thumbnails entirely — platform limit, only the
+  watch page / search / shares use them). New remotion/src/thumb/Thumb.tsx
+  composition (1280x720, registered id "Thumb") renders an edge-to-edge hook
+  card per format: ranking = TOP-N accent chip + big theme + real favicon
+  strip; battle = "A VS B" with name auto-sizing so long names ("Premiere
+  Pro") don't clip + tagline; news = "AI NEWS" chip + headline; comic = "AI
+  TOOLVERSE" + title. Same dark single-accent identity as the new ranking
+  template (accent hashed from title). render_video step 6 now renders the
+  Thumb still via _thumb_props(brief, props) into OUT/<slug>.jpg (what
+  upload_video already uploads), old frame-grab kept as fallback so a run
+  never ships thumbless. All 4 thumb types reviewed frame-by-frame; 35/35
+  tests. Does NOT change the Shorts-feed appearance (YouTube frames those) —
+  upgrades every 16:9 surface.

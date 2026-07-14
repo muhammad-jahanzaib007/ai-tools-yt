@@ -876,6 +876,27 @@ def render_comic(brief):
                    f"Toolverse episode: {comic['threat']}", voices=voices)
 
 
+def _thumb_props(brief, props):
+    """Props for the 16:9 Thumb composition, per format. Rankings pass the
+    staged favicon strip (rank 1..5); battles pass the two tool names."""
+    if brief.get("ranking"):
+        r = brief["ranking"]
+        items = sorted(r["items"], key=lambda x: x["rank"])
+        logos = props.get("logos") or {}
+        strip = [logos[str(it["rank"])] for it in items if str(it["rank"]) in logos]
+        return {"kind": "ranking", "title": r["theme"],
+                "badge": f"TOP {len(items)}", "logos": strip, "logoDir": "ranking"}
+    if brief.get("battle"):
+        b = brief["battle"]
+        return {"kind": "battle", "title": b.get("tagline", ""),
+                "toolA": b["toolA"], "toolB": b["toolB"]}
+    if brief.get("news"):
+        return {"kind": "news", "title": brief["news"]["headline"], "badge": "AI NEWS"}
+    if brief.get("comic"):
+        return {"kind": "comic", "title": brief.get("title", ""), "badge": "AI TOOLVERSE"}
+    return {"kind": "ranking", "title": brief.get("title", ""), "badge": ""}
+
+
 def _voice_single_pass(segs, voice, style):
     """Voice the WHOLE script in ONE TTS call, then slice it per scene at word
     boundaries. Gemini TTS restarts its pitch/energy on every call, so one call
@@ -1039,14 +1060,30 @@ def _render_scenes(brief, comp, props, label, voices=None):
         "-c:a", "aac", "-ar", "44100",
         "-t", f"{total_sec:.3f}", str(final.resolve())], cwd=str(WORK))
 
-    # 6. thumbnail: the VS intro frame (tool names + VS + tagline, no captions)
+    # 6. thumbnail: a dedicated 16:9 hook card (Thumb composition) so the watch
+    # page / search / shares get an edge-to-edge thumbnail with big readable
+    # text — the old 9:16 frame-grab was letterboxed into 16:9 with ugly blur
+    # bars. (Shorts feed ignores custom thumbnails regardless.) Falls back to
+    # the frame-grab if the still render fails, so a run never ships thumbless.
     thumb = OUT / f"{slug}.jpg"
-    p = subprocess.run(
-        ["ffmpeg", "-y", "-i", str(graphics.resolve()), "-vf",
-         f"select=eq(n\\,{min(70, frames[0] - 1)})", "-frames:v", "1",
-         str(thumb.resolve())], capture_output=True, text=True)
-    if p.returncode != 0:
-        print("thumbnail step skipped:", p.stderr[-300:], file=sys.stderr)
+    made = False
+    try:
+        tp = WORK / "thumbprops.json"
+        tp.write_text(json.dumps(_thumb_props(brief, props), ensure_ascii=False),
+                      encoding="utf-8")
+        run([NPX, "remotion", "still", "src/index.ts", "Thumb",
+             str(thumb.resolve()), f"--props={tp.resolve()}", "--frame=0",
+             "--log=error"], cwd=str(REMOTION_DIR))
+        made = thumb.exists()
+    except Exception as e:
+        print(f"thumb card render failed ({e}); frame-grab fallback", file=sys.stderr)
+    if not made:
+        p = subprocess.run(
+            ["ffmpeg", "-y", "-i", str(graphics.resolve()), "-vf",
+             f"select=eq(n\\,{min(70, frames[0] - 1)})", "-frames:v", "1",
+             str(thumb.resolve())], capture_output=True, text=True)
+        if p.returncode != 0:
+            print("thumbnail step skipped:", p.stderr[-300:], file=sys.stderr)
 
     dur = probe_duration(final)
     print(f"DONE (battle): {final.relative_to(ROOT)}  ({dur:.1f}s, {final.stat().st_size//1024} KB)")
