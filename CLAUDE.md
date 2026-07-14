@@ -608,3 +608,22 @@ commit, so the other sessions know who did what.
   never ships thumbless. All 4 thumb types reviewed frame-by-frame; 35/35
   tests. Does NOT change the Shorts-feed appearance (YouTube frames those) —
   upgrades every 16:9 surface.
+- 2026-07-14 — laptop Claude Code session (direct commit to main): RANKING
+  FORMAT REPLANNED, screenshots dropped for good (owner: "don't add app
+  previews, replan"). Diagnosed why app screenshots never worked: mshots
+  ignores h= and returns ~4:3 (720x960) or, at desktop width, 16:10 landscape
+  — a wide desktop homepage can't fill a portrait 9:16 scene without letterbox
+  or side-cropping the hero text (the "landscape in portrait / cropped"
+  complaint). No free service gives a true 9:16. Rather than keep fighting it,
+  removed screenshots entirely (deleted _download_shot/_shot_ok/_shot_richness;
+  _stage_ranking_media now stages only favicons; shots prop gone). New ranking
+  format = pure TYPOGRAPHIC countdown per the remotion video-layout rule (one
+  focal point, big text, reveal over time): giant ghost rank numeral backdrop,
+  #N pill, huge tool NAME as the focal element with a favicon-or-letter-
+  monogram brand cue (never blank), one accent tag chip, reason hook, a top
+  countdown rail (game-show momentum), SparkBurst on reveal + Confetti on #1,
+  cohesive single accent per video. Stills reviewed (rank #5 + winner #1) —
+  clean, kinetic, no clutter. ALSO voice: VOICE_SPEED 1.15 -> 1.0 (owner heard
+  the 15% atempo speed-up as fast/"pitched"; atempo now skipped at 1.0). Used
+  the youtube-automation:remotion-best-practices skill (video-layout rule) to
+  guide the redesign. 35/35 tests. Rule 8: frame-review the first CI render.
