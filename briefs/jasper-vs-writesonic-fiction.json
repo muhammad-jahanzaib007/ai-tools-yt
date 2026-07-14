@@ -1,0 +1,70 @@
+{
+  "slug": "jasper-vs-writesonic-fiction",
+  "title": "Jasper vs Writesonic: Which AI Writes Better Fiction?",
+  "hook": "Writesonic wrote a better romance scene, for just a tenner!",
+  "battle": {
+    "toolA": "Jasper",
+    "toolB": "Writesonic",
+    "tagline": "Writesonic wins fiction writing for £10!",
+    "rounds": [
+      {
+        "title": "Story Quality",
+        "aPoint": "Jasper struggles with nuanced character dialogue and plot.",
+        "bPoint": "Writesonic creates more engaging narrative and emotion.",
+        "winner": "b"
+      },
+      {
+        "title": "Cost",
+        "aPoint": "Jasper's creator plan costs £32 a month.",
+        "bPoint": "Writesonic starts from just £10 monthly.",
+        "winner": "b"
+      }
+    ],
+    "verdict": "Writesonic is the clear winner for fiction authors, offering better story quality at a much lower price. Jasper is still great for factual content."
+  },
+  "narration": [
+    {
+      "text": "Writesonic wrote a better romance scene, for just a tenner!",
+      "broll": "AI writing software"
+    },
+    {
+      "text": "First, story quality! We asked both tools for a romance scene. Jasper's dialogue felt a little stiff and the plot lacked imagination. Writesonic, however, delivered a more engaging narrative with believable emotional depth! No contest here!",
+      "broll": "Creative writing process"
+    },
+    {
+      "text": "Next up, cost! Jasper's creator plan starts at around £32 a month. Writesonic's lowest tier for writers is just £10 monthly. That's a significant difference for authors on a budget! Writesonic takes this round easily!",
+      "broll": "Money savings"
+    },
+    {
+      "text": "So, Writesonic is the clear winner for fiction authors, offering better story quality at a much lower price. Jasper is still great for factual content. Which one would you pick?",
+      "broll": "AI tools comparison"
+    }
+  ],
+  "description": "Looking for an AI writing assistant to help with your fiction? We pit Jasper against Writesonic to see which tool reigns supreme for creative storytelling, comparing story quality and pricing. Find out which one offers the best value and performance for authors.",
+  "links": [
+    {
+      "name": "Jasper",
+      "url": "https://www.jasper.ai/"
+    },
+    {
+      "name": "Writesonic",
+      "url": "https://writesonic.com/"
+    }
+  ],
+  "tags": [
+    "ai writing",
+    "fiction writing",
+    "jasper ai",
+    "writesonic",
+    "ai tools",
+    "author tools",
+    "creative ai",
+    "ai for writers",
+    "writing software",
+    "ai comparison"
+  ],
+  "thumbnail_text": "Writesonic Wins Fiction",
+  "topic": "Jasper vs Writesonic: AI writing for fiction authors",
+  "date": "2026-07-14",
+  "hook_type": "result_first"
+}
