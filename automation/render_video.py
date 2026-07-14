@@ -114,7 +114,10 @@ def select_gemini_voice(slug):
         print(f"gemini voice: {_gem_voice}")
 # Expressive delivery: low stability = more variation between sentences, high
 # style = more emotion. The old 0.4/0.25 sounded like reading from a book.
-VOICE_SPEED = float(os.environ.get("VOICE_SPEED", "1.15"))   # slight speed-up: default read felt slow
+# 1.0 = Gemini's native pace. Was 1.15 (a 15% atempo speed-up), which the
+# owner heard as fast/"pitched" (2026-07-14). Gemini's own pace is already
+# brisk with the single-pass continuous read, so no artificial speed-up.
+VOICE_SPEED = float(os.environ.get("VOICE_SPEED", "1.0"))
 VOICE_SETTINGS = {
     "stability": float(os.environ.get("VOICE_STABILITY", "0.35")),
     "similarity_boost": float(os.environ.get("VOICE_SIMILARITY", "0.75")),
@@ -188,12 +191,14 @@ def tts_gemini(text, dest, voice=None, style=None):
             part = r.json()["candidates"][0]["content"]["parts"][0]["inlineData"]
             raw = dest.with_suffix(".pcm")
             raw.write_bytes(base64.b64decode(part["data"]))
-            # Gemini TTS has no speed control, so speed up here with atempo
-            # (pitch-preserving). Done before Whisper alignment so the karaoke
-            # captions still match the sped-up audio.
+            # Gemini TTS has no speed control; adjust here with atempo
+            # (pitch-preserving) only when asked. At native speed (~1.0) skip
+            # the filter entirely so there is no resample artifact. Done before
+            # Whisper alignment so the karaoke captions still match the audio.
+            af = (["-filter:a", f"atempo={VOICE_SPEED}"]
+                  if abs(VOICE_SPEED - 1.0) > 0.02 else [])
             run(["ffmpeg", "-y", "-f", "s16le", "-ar", "24000", "-ac", "1",
-                 "-i", str(raw), "-filter:a", f"atempo={VOICE_SPEED}",
-                 "-b:a", "128k", str(dest)])
+                 "-i", str(raw)] + af + ["-b:a", "128k", str(dest)])
             raw.unlink(missing_ok=True)
             return
         last = f"{r.status_code}: {r.text[:200]}"
@@ -523,26 +528,13 @@ def pexels_clip(query, dest):
     return False
 
 
-def _shot_richness(path):
-    """Grayscale stddev of a downscaled screenshot: near-zero = blank page."""
-    try:
-        from PIL import Image
-        im = Image.open(path).convert("L").resize((90, 160))
-        px = list(im.getdata())
-        mean = sum(px) / len(px)
-        return (sum((p - mean) ** 2 for p in px) / len(px)) ** 0.5
-    except Exception:
-        return 999   # unmeasurable -> keep the shot
-
-
 def _stage_ranking_media(brief):
-    """Fetch per-tool homepage screenshots (WordPress mshots, free) + favicons
-    into remotion/public/ranking/ (gitignored). All best-effort: a missing
-    file just means that rank keeps the vivid-gradient card without a
-    screenshot. Pexels photos were dropped 2026-07-11: stock photos under a
-    dark overlay read dull ("videos look more dull with them" - owner);
-    real product screenshots are the attention-grabber."""
-    import urllib.parse
+    """Stage per-tool favicons into remotion/public/ranking/ (gitignored).
+    Screenshots were removed 2026-07-14 (owner: "just don't add app previews" —
+    desktop homepage captures never fit a portrait Short cleanly). The ranking
+    format is now pure typographic motion; favicons stay as a small brand cue,
+    best-effort, with a letter-monogram fallback in the composition when a real
+    favicon isn't available."""
     pub = REMOTION_DIR / "public" / "ranking"
     if pub.exists():
         shutil.rmtree(pub)
@@ -550,36 +542,12 @@ def _stage_ranking_media(brief):
     by_name = {l["name"].lower(): l.get("url", "")
                for l in brief.get("links", [])
                if isinstance(l, dict) and l.get("name")}
-    shots, logos = {}, {}
+    logos = {}
     for it in brief["ranking"]["items"]:
         url = by_name.get(it["name"].lower(), "")
         if not url:
             continue
         rank = it["rank"]
-        # Screenshot: first request warms the mshots cache (returns a tiny
-        # "generating" placeholder), so poll until a real image arrives.
-        shot_url = ("https://s0.wp.com/mshots/v1/"
-                    + urllib.parse.quote(url, safe="") + "?w=720&h=1280")
-        dest = pub / f"shot{rank}.jpg"
-        for attempt in range(4):
-            try:
-                r = requests.get(shot_url, timeout=60,
-                                 headers={"User-Agent": "Mozilla/5.0"})
-                if r.status_code < 400 and len(r.content) > 15000:
-                    dest.write_bytes(r.content)
-                    # Blankness guard: bot walls (Cloudflare "verify you are
-                    # human") screenshot as near-uniform white. Measured:
-                    # blocked pages std 6-11, real homepages 36+; cut at 20
-                    # and let the no-shot card layout carry the scene.
-                    if _shot_richness(dest) >= 20:
-                        shots[str(rank)] = dest.name
-                    else:
-                        print(f"  shot{rank}: near-blank (bot wall?), dropped")
-                        dest.unlink(missing_ok=True)
-                    break
-            except requests.RequestException:
-                pass
-            time.sleep(8)
         dom = re.sub(r"^https?://(www\.)?", "", url).split("/")[0]
         if dom:
             ldest = pub / f"logo{rank}.png"
@@ -592,8 +560,8 @@ def _stage_ranking_media(brief):
                     logos[str(rank)] = ldest.name
             except requests.RequestException:
                 pass
-    print(f"  ranking screenshots: {len(shots)}/5, logos: {len(logos)}/5 staged")
-    return shots, logos
+    print(f"  ranking logos: {len(logos)}/5 staged")
+    return logos
 
 
 def _ass_header(primary, secondary):
@@ -754,12 +722,12 @@ def render_battle(brief):
 
 def render_ranking(brief):
     """Top-5 countdown: one presenter voice, RankingShort composition.
-    Scenes show the tool's WHOLE homepage screenshot (contain, uncropped) +
-    favicon on a cohesive dark single-accent stage."""
+    Pure typographic motion on a cohesive dark single-accent stage (no app
+    screenshots — owner 2026-07-14); favicon/monogram as a small brand cue."""
     ranking = brief["ranking"]
-    shots, logos = _stage_ranking_media(brief)
+    logos = _stage_ranking_media(brief)
     props = {"theme": ranking["theme"], "items": ranking["items"],
-             "cta": ranking["cta"], "shots": shots, "logos": logos}
+             "cta": ranking["cta"], "logos": logos}
     _render_scenes(brief, "RankingShort", props,
                    f"Ranking render: {ranking['theme']}")
 
