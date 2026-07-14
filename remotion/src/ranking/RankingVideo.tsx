@@ -11,7 +11,7 @@ import {
 import { TransitionSeries, linearTiming } from "@remotion/transitions";
 import { slide } from "@remotion/transitions/slide";
 import { FPS, TRANSITION_FRAMES } from "../battle/types";
-import { Confetti, Grain, ShineSweep, SparkBurst, Vignette } from "../battle/fx";
+import { Confetti, Grain, SparkBurst, Vignette } from "../battle/fx";
 
 export type RankItem = {
   rank: number; // 5..1
@@ -24,8 +24,7 @@ export type RankingProps = {
   theme: string; // big intro claim (the hook, compressed)
   items: RankItem[]; // countdown display order: rank 5 first ... rank 1 last
   cta: string; // outro line
-  // Staged by render_video.py into public/ranking/ (optional): favicon per rank.
-  logos?: Record<string, string>;
+  logos?: Record<string, string>; // favicon per rank (best-effort)
   sceneFrames?: { intro: number; rounds: number[]; verdict: number };
 };
 
@@ -60,153 +59,80 @@ export const totalRankingFrames = (p: RankingProps) => {
   );
 };
 
-// VISUAL DIRECTION (rebuilt 2026-07-14 — owner: "don't add app previews,
-// replan the ranking format"). A pure TYPOGRAPHIC countdown, no screenshots:
-// each rank scene has one focal point (the tool name), a giant ghost numeral
-// as the backdrop, a favicon-or-monogram brand cue, one tag chip, the reason
-// as the hook, and a top countdown rail for game-show momentum. One cohesive
-// accent per video (hashed from the theme). Follows the video-layout rule:
-// one message per scene, big text, reveal over time — not a dashboard of cards.
-const BASE = "#0A0A12";
-const ACCENTS = [
-  "#22D3EE", "#A855F7", "#FB7185", "#FBBF24",
-  "#34D399", "#60A5FA", "#F472B6", "#F97316",
+// VISUAL DIRECTION "BOLD POSTER" (owner picked a fusion of the Bold and Poster
+// explorations, 2026-07-14): vivid saturated per-video background, a GIANT
+// hot-yellow rank numeral bleeding off the top with a thick black outline, and
+// a black bottom block holding the tool name / tag / reason. Loud, graphic,
+// high-CTR — one focal point per scene per the video-layout rule.
+const INK = "#0B0B0B";
+const YELLOW = "#FFE100";
+const CHIP = "#FF2D55";
+// Vivid, saturated backgrounds — one per video (hashed from the theme).
+const BGS = [
+  "#1B0FD6", // electric blue
+  "#FF5A1F", // orange
+  "#E60E7B", // magenta
+  "#6D28D9", // violet
+  "#E11D2A", // red
+  "#0EA5A5", // teal
+  "#2563EB", // blue
+  "#DB2777", // pink
 ];
-const pickAccent = (seed: string) => {
+const pickBg = (seed: string) => {
   let h = 0;
   for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) | 0;
-  return ACCENTS[Math.abs(h) % ACCENTS.length];
+  return BGS[Math.abs(h) % BGS.length];
 };
 
 const FONT = "DejaVu Sans, sans-serif";
+const outlined = (px: number): React.CSSProperties => ({
+  WebkitTextStroke: `${px}px ${INK}`,
+  paintOrder: "stroke fill" as unknown as React.CSSProperties["paintOrder"],
+});
 
-const StageBg: React.FC<{ accent: string; strong?: boolean }> = ({
-  accent,
-  strong,
-}) => {
-  const frame = useCurrentFrame();
-  const drift = Math.sin(frame / 44) * 70;
-  return (
-    <AbsoluteFill style={{ backgroundColor: BASE, overflow: "hidden" }}>
-      <div
-        style={{
-          position: "absolute",
-          width: 1300,
-          height: 1300,
-          borderRadius: "50%",
-          left: -260 + drift,
-          top: -360,
-          background: `radial-gradient(circle, ${accent}${strong ? "3A" : "26"} 0%, transparent 60%)`,
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          width: 1200,
-          height: 1200,
-          borderRadius: "50%",
-          right: -300 - drift,
-          bottom: -380,
-          background: `radial-gradient(circle, ${accent}20 0%, transparent 62%)`,
-        }}
-      />
-    </AbsoluteFill>
-  );
-};
+const Radial: React.FC = () => (
+  <div
+    style={{
+      position: "absolute",
+      inset: 0,
+      background:
+        "radial-gradient(circle at 50% 34%, rgba(255,255,255,0.20) 0%, transparent 56%)",
+    }}
+  />
+);
 
-// Giant outlined rank numeral behind the content — the scene's backdrop shape,
-// distinct for every rank so the five scenes never read as identical cards.
-const GhostNumber: React.FC<{ rank: number; accent: string }> = ({
-  rank,
-  accent,
-}) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const inn = spring({ frame, fps, config: { damping: 12, stiffness: 120 } });
-  const float = Math.sin(frame / 30) * 10;
-  return (
-    <AbsoluteFill style={{ justifyContent: "center", alignItems: "center" }}>
-      <div
-        style={{
-          fontFamily: FONT,
-          fontWeight: 800,
-          fontSize: 1240,
-          lineHeight: 1,
-          color: "transparent",
-          WebkitTextStroke: `4px ${accent}`,
-          opacity: 0.16 * inn,
-          transform: `translateY(${(1 - inn) * 60 + float}px)`,
-        }}
-      >
-        {rank}
-      </div>
-    </AbsoluteFill>
-  );
-};
-
-// Countdown progress rail at the top: one segment per rank, lit up to the
-// current position — a subtle "we're on 3 of 5" momentum cue.
-const CountdownRail: React.FC<{
-  rank: number;
-  count: number;
-  accent: string;
-}> = ({ rank, count, accent }) => {
-  const done = count - rank; // rank 5 -> 0 lit before it, rank 1 -> 4
-  return (
-    <div
-      style={{
-        position: "absolute",
-        top: 96,
-        left: 0,
-        right: 0,
-        display: "flex",
-        gap: 16,
-        justifyContent: "center",
-      }}
-    >
-      {Array.from({ length: count }).map((_, i) => (
-        <div
-          key={i}
-          style={{
-            width: 116,
-            height: 12,
-            borderRadius: 6,
-            backgroundColor: i <= done ? accent : "rgba(255,255,255,0.16)",
-            boxShadow: i <= done ? `0 0 18px ${accent}77` : "none",
-          }}
-        />
-      ))}
-    </div>
-  );
-};
-
-// Favicon when we have one, otherwise a letter monogram — so every tool always
-// has a brand mark (favicons fail for some domains).
-const ToolIcon: React.FC<{
-  logo?: string;
-  name: string;
-  accent: string;
-  size: number;
-}> = ({ logo, name, accent, size }) =>
+// Favicon or letter monogram — a small brand mark that always exists.
+const ToolIcon: React.FC<{ logo?: string; name: string; size: number }> = ({
+  logo,
+  name,
+  size,
+}) =>
   logo ? (
     <Img
       src={staticFile(`ranking/${logo}`)}
-      style={{ width: size, height: size, borderRadius: size * 0.24, flexShrink: 0 }}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size * 0.22,
+        border: `${Math.round(size * 0.05)}px solid ${INK}`,
+        flexShrink: 0,
+      }}
     />
   ) : (
     <div
       style={{
         width: size,
         height: size,
-        borderRadius: size * 0.24,
-        backgroundColor: accent,
-        color: "#0A0A12",
+        borderRadius: size * 0.22,
+        backgroundColor: YELLOW,
+        border: `${Math.round(size * 0.05)}px solid ${INK}`,
+        color: INK,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         fontFamily: FONT,
         fontWeight: 800,
-        fontSize: size * 0.5,
+        fontSize: size * 0.52,
         flexShrink: 0,
       }}
     >
@@ -214,68 +140,37 @@ const ToolIcon: React.FC<{
     </div>
   );
 
-const RankBadge: React.FC<{ rank: number; accent: string; winner: boolean }> = ({
-  rank,
-  accent,
-  winner,
+const IntroScene: React.FC<{ theme: string; count: number; bg: string }> = ({
+  theme,
+  count,
+  bg,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const pop = spring({ frame, fps, config: { damping: 9, stiffness: 190 } });
+  const pop = spring({ frame, fps, config: { damping: 10, stiffness: 180 } });
+  const up = spring({ frame: frame - 8, fps, config: { damping: 14 } });
   return (
-    <div
-      style={{
-        scale: String(pop),
-        fontFamily: FONT,
-        fontWeight: 800,
-        fontSize: winner ? 88 : 72,
-        lineHeight: 1,
-        color: winner ? "#0A0A12" : "#FFFFFF",
-        backgroundColor: winner ? accent : "transparent",
-        border: winner ? "none" : `4px solid ${accent}`,
-        borderRadius: 20,
-        padding: winner ? "6px 28px" : "4px 24px",
-        textShadow: winner ? "none" : `0 0 30px ${accent}88`,
-      }}
-    >
-      #{rank}
-    </div>
-  );
-};
-
-const IntroScene: React.FC<{
-  theme: string;
-  count: number;
-  accent: string;
-}> = ({ theme, count, accent }) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const pop = spring({ frame, fps, config: { damping: 10, stiffness: 170 } });
-  const up = spring({ frame: frame - 6, fps, config: { damping: 14 } });
-  return (
-    <AbsoluteFill>
-      <StageBg accent={accent} strong />
+    <AbsoluteFill style={{ backgroundColor: bg, overflow: "hidden" }}>
+      <Radial />
       <AbsoluteFill
         style={{
           justifyContent: "center",
           alignItems: "center",
-          padding: "0 70px",
           flexDirection: "column",
-          gap: 48,
+          gap: 44,
+          padding: "0 70px",
         }}
       >
         <div
           style={{
             scale: String(pop),
-            backgroundColor: accent,
-            color: "#0A0A12",
-            padding: "22px 66px",
-            borderRadius: 26,
             fontFamily: FONT,
             fontWeight: 800,
-            fontSize: 104,
-            letterSpacing: 4,
-            boxShadow: `0 24px 60px rgba(0,0,0,0.5), 0 0 70px ${accent}66`,
+            fontSize: 260,
+            lineHeight: 0.9,
+            color: YELLOW,
+            ...outlined(14),
+            textShadow: "0 20px 0 rgba(0,0,0,0.3)",
           }}
         >
           TOP {count}
@@ -286,77 +181,93 @@ const IntroScene: React.FC<{
             translate: `0 ${(1 - up) * 60}px`,
             fontFamily: FONT,
             fontWeight: 800,
-            fontSize: 82,
-            lineHeight: 1.14,
+            fontSize: 78,
+            lineHeight: 1.12,
             textAlign: "center",
             color: "#FFFFFF",
-            textShadow: "0 6px 30px rgba(0,0,0,0.6)",
+            backgroundColor: INK,
+            padding: "22px 40px",
+            borderRadius: 18,
           }}
         >
           {theme}
         </div>
       </AbsoluteFill>
-      <ShineSweep at={18} />
       <Grain />
-      <Vignette strength={0.4} />
+      <Vignette strength={0.3} />
     </AbsoluteFill>
   );
 };
 
-const RankScene: React.FC<{
-  item: RankItem;
-  count: number;
-  accent: string;
-  logo?: string;
-}> = ({ item, count, accent, logo }) => {
+const RankScene: React.FC<{ item: RankItem; bg: string; logo?: string }> = ({
+  item,
+  bg,
+  logo,
+}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const isWinner = item.rank === 1;
-  const nameIn = spring({ frame, fps, config: { damping: 11, stiffness: 150 } });
-  const chipIn = spring({ frame: frame - 8, fps, config: { damping: 14 } });
-  const reasonIn = spring({ frame: frame - 14, fps, config: { damping: 14 } });
-  const nameSize = Math.max(
-    58,
-    Math.min(112, Math.floor(880 / Math.max(6, item.name.length))),
-  );
+  const slam = spring({ frame, fps, config: { damping: 12, stiffness: 150 } });
+  const blockIn = spring({ frame: frame - 4, fps, config: { damping: 15 } });
+  const nameIn = spring({ frame: frame - 10, fps, config: { damping: 12, stiffness: 160 } });
+  const chipIn = spring({ frame: frame - 16, fps, config: { damping: 14 } });
+  const reasonIn = spring({ frame: frame - 22, fps, config: { damping: 14 } });
+  const numY = interpolate(slam, [0, 1], [-460, 0]);
+  const nameSize = Math.max(66, Math.min(150, Math.floor(1120 / Math.max(6, item.name.length))));
+  const blockBg = isWinner ? YELLOW : INK;
+  const blockFg = isWinner ? INK : "#FFFFFF";
   return (
-    <AbsoluteFill>
-      <StageBg accent={accent} strong={isWinner} />
-      <GhostNumber rank={item.rank} accent={accent} />
-      <CountdownRail rank={item.rank} count={count} accent={accent} />
-      {isWinner && (
-        <Confetti colors={[accent, "#FFFFFF", accent, "#FDE047"]} count={30} />
-      )}
-      <SparkBurst at={2} color={accent} size={300} count={12} seed={`r${item.rank}`} />
-      <AbsoluteFill
+    <AbsoluteFill style={{ backgroundColor: bg, overflow: "hidden" }}>
+      <Radial />
+      {/* POSTER-style rank numeral: enormous, bleeding off the top-right corner
+          as an intentional graphic element (not centered). */}
+      <div
         style={{
-          justifyContent: "center",
-          alignItems: "center",
-          flexDirection: "column",
-          gap: 40,
-          padding: "150px 70px 120px",
+          position: "absolute",
+          top: -180,
+          right: -90,
+          translate: `0 ${numY}px`,
+          fontFamily: FONT,
+          fontWeight: 800,
+          fontSize: 1500,
+          lineHeight: 0.8,
+          color: YELLOW,
+          ...outlined(18),
+          textShadow: "0 30px 0 rgba(0,0,0,0.28)",
         }}
       >
-        <RankBadge rank={item.rank} accent={accent} winner={isWinner} />
-        {/* focal row: brand mark + huge tool name */}
-        <div
-          style={{
-            scale: String(nameIn),
-            display: "flex",
-            alignItems: "center",
-            gap: 30,
-            maxWidth: 960,
-          }}
-        >
-          <ToolIcon logo={logo} name={item.name} accent={accent} size={isWinner ? 108 : 92} />
+        {item.rank}
+      </div>
+      {isWinner && (
+        <Confetti colors={[YELLOW, "#FFFFFF", CHIP, bg]} count={34} />
+      )}
+      <SparkBurst at={2} color={YELLOW} size={320} count={12} seed={`r${item.rank}`} />
+      {/* bottom block: name + tag + reason */}
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          minHeight: 760,
+          backgroundColor: blockBg,
+          borderTop: `10px solid ${INK}`,
+          translate: `0 ${(1 - blockIn) * 780}px`,
+          padding: "56px 64px 96px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 26,
+        }}
+      >
+        <div style={{ scale: String(nameIn), display: "flex", alignItems: "center", gap: 26 }}>
+          <ToolIcon logo={logo} name={item.name} size={isWinner ? 116 : 100} />
           <div
             style={{
               fontFamily: FONT,
               fontWeight: 800,
               fontSize: nameSize,
-              lineHeight: 1.02,
-              color: "#FFFFFF",
-              textShadow: `0 6px 34px rgba(0,0,0,0.6), 0 0 50px ${accent}44`,
+              lineHeight: 0.98,
+              color: blockFg,
             }}
           >
             {item.name}
@@ -365,38 +276,36 @@ const RankScene: React.FC<{
         <div
           style={{
             opacity: chipIn,
-            scale: String(chipIn),
-            backgroundColor: accent,
-            color: "#0A0A12",
-            borderRadius: 999,
-            padding: "12px 38px",
+            rotate: `${(1 - chipIn) * -8 - 3}deg`,
+            alignSelf: "flex-start",
+            backgroundColor: CHIP,
+            color: "#FFFFFF",
             fontFamily: FONT,
             fontWeight: 800,
-            fontSize: 40,
+            fontSize: 44,
+            padding: "12px 36px",
+            borderRadius: 14,
+            border: `6px solid ${INK}`,
           }}
         >
-          {item.tag}
+          {item.tag.toUpperCase()}
         </div>
         <div
           style={{
             opacity: reasonIn,
-            translate: `0 ${(1 - reasonIn) * 50}px`,
-            maxWidth: 900,
+            translate: `0 ${(1 - reasonIn) * 40}px`,
             fontFamily: FONT,
             fontWeight: 700,
             fontSize: 52,
-            color: "#FFFFFF",
-            textAlign: "center",
-            lineHeight: 1.28,
-            textShadow: "0 4px 22px rgba(0,0,0,0.6)",
+            lineHeight: 1.2,
+            color: blockFg,
+            maxWidth: 940,
           }}
         >
           {item.reason}
         </div>
-      </AbsoluteFill>
-      <ShineSweep at={24} />
+      </div>
       <Grain />
-      <Vignette strength={0.34} />
     </AbsoluteFill>
   );
 };
@@ -404,56 +313,51 @@ const RankScene: React.FC<{
 const OutroScene: React.FC<{
   items: RankItem[];
   cta: string;
-  accent: string;
+  bg: string;
   logos?: Record<string, string>;
-}> = ({ items, cta, accent, logos }) => {
+}> = ({ items, cta, bg, logos }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const byRank = [...items].sort((a, b) => a.rank - b.rank);
   return (
-    <AbsoluteFill>
-      <StageBg accent={accent} strong />
+    <AbsoluteFill style={{ backgroundColor: bg, overflow: "hidden" }}>
+      <Radial />
       <AbsoluteFill
         style={{
           justifyContent: "center",
           alignItems: "center",
           flexDirection: "column",
-          gap: 18,
-          padding: "0 80px",
+          gap: 16,
+          padding: "0 70px",
         }}
       >
         {byRank.map((it, i) => {
-          const rowIn = spring({
-            frame: frame - i * 5,
-            fps,
-            config: { damping: 13 },
-          });
+          const rowIn = spring({ frame: frame - i * 5, fps, config: { damping: 14 } });
           const top = it.rank === 1;
           return (
             <div
               key={it.rank}
               style={{
                 opacity: rowIn,
-                translate: `${(1 - rowIn) * 90}px 0`,
-                backgroundColor: top ? accent : "rgba(255,255,255,0.08)",
-                border: top ? "none" : "1px solid rgba(255,255,255,0.16)",
-                borderRadius: 22,
+                translate: `${(1 - rowIn) * 80}px 0`,
+                backgroundColor: top ? YELLOW : INK,
+                border: `6px solid ${INK}`,
+                borderRadius: 18,
                 width: "100%",
-                maxWidth: 880,
-                padding: top ? "24px 38px" : "16px 38px",
+                maxWidth: 900,
+                padding: top ? "22px 34px" : "16px 34px",
                 display: "flex",
                 alignItems: "center",
-                gap: 26,
-                boxShadow: top ? `0 16px 44px ${accent}55` : "none",
+                gap: 24,
               }}
             >
               <div
                 style={{
                   fontFamily: FONT,
                   fontWeight: 800,
-                  fontSize: top ? 58 : 42,
-                  color: top ? "#0A0A12" : accent,
-                  width: 92,
+                  fontSize: top ? 58 : 44,
+                  color: top ? INK : YELLOW,
+                  width: 88,
                 }}
               >
                 #{it.rank}
@@ -461,19 +365,15 @@ const OutroScene: React.FC<{
               {logos && logos[String(it.rank)] ? (
                 <Img
                   src={staticFile(`ranking/${logos[String(it.rank)]}`)}
-                  style={{
-                    width: top ? 62 : 48,
-                    height: top ? 62 : 48,
-                    borderRadius: 12,
-                  }}
+                  style={{ width: top ? 60 : 46, height: top ? 60 : 46, borderRadius: 10 }}
                 />
               ) : null}
               <div
                 style={{
                   fontFamily: FONT,
                   fontWeight: 800,
-                  fontSize: top ? 56 : 42,
-                  color: top ? "#0A0A12" : "#FFFFFF",
+                  fontSize: top ? 56 : 44,
+                  color: top ? INK : "#FFFFFF",
                 }}
               >
                 {it.name}
@@ -483,7 +383,7 @@ const OutroScene: React.FC<{
         })}
         <div
           style={{
-            marginTop: 26,
+            marginTop: 24,
             opacity: interpolate(frame, [26, 44], [0, 1], {
               extrapolateLeft: "clamp",
               extrapolateRight: "clamp",
@@ -491,28 +391,29 @@ const OutroScene: React.FC<{
             fontFamily: FONT,
             fontWeight: 800,
             fontSize: 46,
-            color: accent,
+            color: "#FFFFFF",
+            backgroundColor: INK,
+            padding: "16px 32px",
+            borderRadius: 14,
             textAlign: "center",
-            textShadow: "0 4px 20px rgba(0,0,0,0.6)",
           }}
         >
           {cta}
         </div>
       </AbsoluteFill>
-      <ShineSweep at={30} />
       <Grain />
-      <Vignette strength={0.34} />
+      <Vignette strength={0.3} />
     </AbsoluteFill>
   );
 };
 
 export const RankingVideo: React.FC<RankingProps> = (props) => {
   const frames = framesOfRanking(props);
-  const accent = pickAccent(props.theme || "snackbyte");
+  const bg = pickBg(props.theme || "snackbyte");
   const count = props.items.length;
   const seq: React.ReactNode[] = [
     <TransitionSeries.Sequence key="intro" durationInFrames={frames.intro}>
-      <IntroScene theme={props.theme} count={count} accent={accent} />
+      <IntroScene theme={props.theme} count={count} bg={bg} />
     </TransitionSeries.Sequence>,
   ];
   props.items.forEach((it, i) => {
@@ -523,12 +424,7 @@ export const RankingVideo: React.FC<RankingProps> = (props) => {
         timing={linearTiming({ durationInFrames: TRANSITION_FRAMES })}
       />,
       <TransitionSeries.Sequence key={`i${i}`} durationInFrames={frames.rounds[i]}>
-        <RankScene
-          item={it}
-          count={count}
-          accent={accent}
-          logo={props.logos?.[String(it.rank)]}
-        />
+        <RankScene item={it} bg={bg} logo={props.logos?.[String(it.rank)]} />
       </TransitionSeries.Sequence>,
     );
   });
@@ -539,12 +435,7 @@ export const RankingVideo: React.FC<RankingProps> = (props) => {
       timing={linearTiming({ durationInFrames: TRANSITION_FRAMES })}
     />,
     <TransitionSeries.Sequence key="outro" durationInFrames={frames.verdict}>
-      <OutroScene
-        items={props.items}
-        cta={props.cta}
-        accent={accent}
-        logos={props.logos}
-      />
+      <OutroScene items={props.items} cta={props.cta} bg={bg} logos={props.logos} />
     </TransitionSeries.Sequence>,
   );
   return <TransitionSeries>{seq}</TransitionSeries>;
