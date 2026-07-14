@@ -1,0 +1,111 @@
+{
+  "slug": "top-ai-tools-scriptwriting-storyboarding",
+  "title": "5 AI Tools That Write Scripts and Storyboards For You",
+  "hook": "Number one writes a week of blog posts in an hour, free.",
+  "ranking": {
+    "theme": "AI tools that write scripts and storyboards for you",
+    "items": [
+      {
+        "rank": 5,
+        "name": "Story Path",
+        "reason": "Outlines complex plots, generating multiple scenarios from one idea.",
+        "tag": "Paid"
+      },
+      {
+        "rank": 4,
+        "name": "Script Studio AI",
+        "reason": "Crafts dialogue and scenes, keeping character voices consistent.",
+        "tag": "Free trial"
+      },
+      {
+        "rank": 3,
+        "name": "Plot Twist AI",
+        "reason": "Brainstorms unexpected turns, perfect for refreshing stale narratives.",
+        "tag": "Free plan"
+      },
+      {
+        "rank": 2,
+        "name": "Scene Writer Pro",
+        "reason": "Generates storyboards with visual suggestions and shot breakdowns.",
+        "tag": "Paid"
+      },
+      {
+        "rank": 1,
+        "name": "Narrative Forge",
+        "reason": "Writes full scripts from prompts, adapting to any genre or style.",
+        "tag": "Free plan"
+      }
+    ],
+    "cta": "Did we miss your favourite AI script tool?"
+  },
+  "narration": [
+    {
+      "text": "Number one writes a week of blog posts in an hour, free.",
+      "broll": "futuristic intro sequence"
+    },
+    {
+      "text": "At number five, Story Path. It outlines complex plots, generating multiple scenarios from one idea. This tool helps you explore every possibility, ensuring your story has depth and unexpected turns.",
+      "broll": "complex flowchart animation"
+    },
+    {
+      "text": "Coming in at number four, Script Studio AI. It crafts dialogue and scenes, keeping character voices consistent. Imagine your characters speaking naturally, always staying true to their established personalities.",
+      "broll": "typing on keyboard"
+    },
+    {
+      "text": "Our number three pick is Plot Twist AI. This tool brainstorms unexpected turns, perfect for refreshing stale narratives. It injects new life into your stories, surprising even you with its creative suggestions.",
+      "broll": "lightbulb idea animation"
+    },
+    {
+      "text": "At number two, Scene Writer Pro. This gem generates storyboards with visual suggestions and shot breakdowns. It transforms your script into a clear visual plan, making pre-production a breeze.",
+      "broll": "storyboard sketch animation"
+    },
+    {
+      "text": "And the top spot goes to Narrative Forge. It writes full scripts from prompts, adapting to any genre or style. This tool is a complete powerhouse, delivering polished scripts ready for production.",
+      "broll": "robot writing script"
+    },
+    {
+      "text": "Narrative Forge truly redefines scriptwriting efficiency. Did we miss your favourite AI script tool?",
+      "broll": "question mark graphic"
+    }
+  ],
+  "description": "Discover the top 5 AI tools that can revolutionise your scriptwriting and storyboarding process. From outlining complex plots to generating full scripts, these tools offer powerful features for any creator.",
+  "links": [
+    {
+      "name": "Story Path",
+      "url": "https://storypath.ai"
+    },
+    {
+      "name": "Script Studio AI",
+      "url": "https://scriptstudio.ai"
+    },
+    {
+      "name": "Plot Twist AI",
+      "url": "https://plottwist.ai"
+    },
+    {
+      "name": "Scene Writer Pro",
+      "url": "https://scenewriterpro.com"
+    },
+    {
+      "name": "Narrative Forge",
+      "url": "https://narrativeforge.com"
+    }
+  ],
+  "tags": [
+    "ai tools",
+    "scriptwriting",
+    "storyboarding",
+    "ai writer",
+    "content creation",
+    "filmmaking",
+    "screenwriting",
+    "ai assistant",
+    "creative writing",
+    "youtube shorts",
+    "ai for video"
+  ],
+  "thumbnail_text": "AI Writes Your Scripts",
+  "topic": "Top 5 AI Tools for Scriptwriting and Storyboarding",
+  "date": "2026-07-14",
+  "hook_type": "conflict_tease"
+}
