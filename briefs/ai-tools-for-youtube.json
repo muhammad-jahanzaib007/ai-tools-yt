@@ -1,0 +1,110 @@
+{
+  "slug": "ai-tools-for-youtube",
+  "title": "I Ranked 50 AI Tools for YouTube, Only 5 Are Worth It",
+  "hook": "I ranked 50 AI tools for YouTube, and only 5 are worth it.",
+  "ranking": {
+    "theme": "Only 5 AI tools are worth your time.",
+    "items": [
+      {
+        "rank": 5,
+        "name": "Opus Clip",
+        "reason": "Quickly turns long videos into viral shorts.",
+        "tag": "Free trial"
+      },
+      {
+        "rank": 4,
+        "name": "Nvidia Broadcast",
+        "reason": "Removes background noise and improves webcam quality.",
+        "tag": "Free"
+      },
+      {
+        "rank": 3,
+        "name": "ElevenLabs",
+        "reason": "Generates realistic voiceovers in multiple languages.",
+        "tag": "Free plan"
+      },
+      {
+        "rank": 2,
+        "name": "Descript",
+        "reason": "Edits video by editing text, like a document.",
+        "tag": "Free plan"
+      },
+      {
+        "rank": 1,
+        "name": "TubeBuddy",
+        "reason": "Optimises your YouTube channel and video SEO.",
+        "tag": "Free plan"
+      }
+    ],
+    "cta": "Which AI tool do you use most often?"
+  },
+  "narration": [
+    {
+      "text": "I ranked 50 AI tools for YouTube, and only 5 are worth it.",
+      "broll": "AI data stream"
+    },
+    {
+      "text": "Starting with number 5, Opus Clip quickly turns your long videos into viral shorts. It saves hours of editing and finds the best moments automatically, perfect for content creators.",
+      "broll": "video editing software"
+    },
+    {
+      "text": "Number 4 is Nvidia Broadcast. This free tool removes background noise and improves webcam quality. It is like having a professional studio setup for your audio and video.",
+      "broll": "microphone noise cancelling"
+    },
+    {
+      "text": "Coming in at number 3, ElevenLabs generates realistic voiceovers in multiple languages. It brings your scripts to life with natural-sounding speech, making global reach easier than ever.",
+      "broll": "AI voice synthesis"
+    },
+    {
+      "text": "At number 2, Descript edits video by editing text, like a document. This makes video editing incredibly intuitive, cutting out mistakes as easily as deleting words.",
+      "broll": "text video editing"
+    },
+    {
+      "text": "And the number one AI tool for YouTube is TubeBuddy. It optimises your channel and video SEO, making sure your content gets discovered. It is essential for growth.",
+      "broll": "YouTube analytics dashboard"
+    },
+    {
+      "text": "TubeBuddy is genuinely a game-changer for any creator. Which AI tool do you use most often for your YouTube channel?",
+      "broll": "thumbs up computer"
+    }
+  ],
+  "description": "Discover the top 5 AI tools that genuinely help YouTube creators. I tested 50 different tools so you do not have to, focusing on real-world impact and efficiency.",
+  "links": [
+    {
+      "name": "Opus Clip",
+      "url": "https://www.opus.pro/"
+    },
+    {
+      "name": "Nvidia Broadcast",
+      "url": "https://www.nvidia.com/en-gb/geforce/broadcasting/broadcast-app/"
+    },
+    {
+      "name": "ElevenLabs",
+      "url": "https://elevenlabs.io/"
+    },
+    {
+      "name": "Descript",
+      "url": "https://www.descript.com/"
+    },
+    {
+      "name": "TubeBuddy",
+      "url": "https://www.tubebuddy.com/"
+    }
+  ],
+  "tags": [
+    "ai tools",
+    "youtube ai",
+    "youtube tools",
+    "content creation",
+    "video editing ai",
+    "ai for creators",
+    "youtube seo",
+    "ai automation",
+    "best ai tools",
+    "creator tools"
+  ],
+  "thumbnail_text": "5 AI Tools You Need",
+  "topic": "I Ranked 50 AI Tools for YouTube, Only 5 Are Worth It",
+  "date": "2026-07-15",
+  "hook_type": "result_first"
+}
