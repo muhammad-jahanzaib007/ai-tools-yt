@@ -1,0 +1,112 @@
+{
+  "slug": "ai-content-creation-tools",
+  "title": "5 AI Tools That Feel Illegal to Use for Content Creation",
+  "hook": "Which AI helps write a week of blog posts in an hour, free?",
+  "ranking": {
+    "theme": "AI tools that feel illegal to use",
+    "items": [
+      {
+        "rank": 5,
+        "name": "Midjourney",
+        "reason": "Generates stunning images, far beyond basic stock photos.",
+        "tag": "Paid"
+      },
+      {
+        "rank": 4,
+        "name": "Opus Clip",
+        "reason": "Turns long videos into viral shorts, ready to post.",
+        "tag": "Free trial"
+      },
+      {
+        "rank": 3,
+        "name": "ElevenLabs",
+        "reason": "Clones your voice, generates lifelike audio with ease.",
+        "tag": "Free plan"
+      },
+      {
+        "rank": 2,
+        "name": "ChatGPT 4o",
+        "reason": "Excels at brainstorming, drafting, and even coding.",
+        "tag": "Free plan"
+      },
+      {
+        "rank": 1,
+        "name": "Gamma AI",
+        "reason": "Creates presentations from text, instantly.",
+        "tag": "Free plan"
+      }
+    ],
+    "cta": "Did we miss your favourite? Tell us!"
+  },
+  "narration": [
+    {
+      "text": "Which AI helps write a week of blog posts in an hour, free?",
+      "broll": "question mark glitch"
+    },
+    {
+      "text": "Number five, Midjourney. This tool generates images that are truly stunning, moving far beyond anything you would find in a stock photo library. It feels like you have a professional artist on demand.",
+      "broll": "ai art generation"
+    },
+    {
+      "text": "At number four, Opus Clip. You can feed it long video and it will automatically cut, caption, and optimise it into short, viral clips. It's like having an entire video editing team.",
+      "broll": "video editing clips"
+    },
+    {
+      "text": "Number three is ElevenLabs. This AI can clone your voice with incredible accuracy. You can then use it to generate lifelike speech for podcasts, audiobooks, or marketing, all in your own voice.",
+      "broll": "voice cloning audio"
+    },
+    {
+      "text": "Coming in at number two, ChatGPT 4o. This free version of ChatGPT excels at brainstorming content ideas, drafting scripts, and even helping with coding. It is a true all-rounder for any creator.",
+      "broll": "ai chatbot typing"
+    },
+    {
+      "text": "And the number one AI tool is Gamma AI. This incredible tool creates beautiful presentations, documents, and web pages from simple text prompts. It is like magic for visual content.",
+      "broll": "presentation generation software"
+    },
+    {
+      "text": "Gamma AI is a game-changer for instant visual content. Did we miss your favourite? Tell us in the comments below!",
+      "broll": "upbeat closing animation"
+    }
+  ],
+  "description": "Discover five AI tools that feel almost too powerful for content creation. These tools can help you generate stunning visuals, turn long videos into viral shorts, and even clone your voice for various projects, all with surprising ease.",
+  "links": [
+    {
+      "name": "Midjourney",
+      "url": "https://www.midjourney.com"
+    },
+    {
+      "name": "Opus Clip",
+      "url": "https://www.opus.pro"
+    },
+    {
+      "name": "ElevenLabs",
+      "url": "https://elevenlabs.io"
+    },
+    {
+      "name": "ChatGPT 4o",
+      "url": "https://chatgpt.com"
+    },
+    {
+      "name": "Gamma AI",
+      "url": "https://gamma.app"
+    }
+  ],
+  "tags": [
+    "ai tools",
+    "content creation",
+    "ai for creators",
+    "youtube shorts",
+    "ai software",
+    "free ai tools",
+    "ai tips",
+    "midjourney",
+    "opus clip",
+    "elevenlabs",
+    "chatgpt",
+    "gamma ai"
+  ],
+  "thumbnail_text": "AI Content Secrets",
+  "topic": "5 AI Tools That Feel Illegal to Use for Content Creation",
+  "date": "2026-07-15",
+  "hook_type": "question"
+}
