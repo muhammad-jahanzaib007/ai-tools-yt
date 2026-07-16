@@ -233,3 +233,25 @@ def test_align_drops_hallucinations_and_restores_missed_words():
 def test_align_empty_falls_back():
     assert rv._align_script_to_timings("", [("x", 0.0, 0.1)]) == [("x", 0.0, 0.1)]
     assert rv._align_script_to_timings("hi", []) == []
+
+
+def test_margin_at_picks_window():
+    margins = [(5.0, 10.0, 830), (12.0, 20.0, 830)]
+    assert rv._margin_at(0.0, margins) == 0       # intro: style default
+    assert rv._margin_at(5.0, margins) == 830     # window start inclusive
+    assert rv._margin_at(9.9, margins) == 830
+    assert rv._margin_at(10.0, margins) == 0      # window end exclusive
+    assert rv._margin_at(15.0, margins) == 830
+    assert rv._margin_at(25.0, margins) == 0
+    assert rv._margin_at(3.0, None) == 0
+
+
+def test_karaoke_ass_lifts_captions_in_windows(tmp_path):
+    words = [("intro", 0.0, 0.5), ("word", 0.6, 1.0),
+             ("rank", 6.0, 6.4), ("scene", 6.5, 7.0)]
+    out = tmp_path / "subs.ass"
+    rv.build_karaoke_ass(words, out, group=2, margins=[(5.0, 10.0, 830)])
+    lines = [l for l in out.read_text(encoding="utf-8").splitlines()
+             if l.startswith("Dialogue:")]
+    assert ",0,0,0,," in lines[0]      # intro chunk keeps style margin
+    assert ",0,0,830,," in lines[1]    # rank-scene chunk lifted above block

@@ -591,7 +591,17 @@ def _ts(t):
     return f"{h:d}:{m:02d}:{s:02d}.{cs:02d}"
 
 
-def build_karaoke_ass(words, path, group=4, title=None):
+def _margin_at(t, margins):
+    """MarginV override for a caption starting at time t (0 = use style default).
+    margins = [(start_s, end_s, marginV)] windows for scenes whose layout
+    occupies the default caption zone (e.g. ranking's bottom info block)."""
+    for (s, e, m) in margins or []:
+        if s <= t < e:
+            return m
+    return 0
+
+
+def build_karaoke_ass(words, path, group=4, title=None, margins=None):
     """Word-by-word highlight: unsung white, active word pops to yellow, in sync with speech."""
     header = _ass_header("&H0000FFFF", "&H00FFFFFF")     # PrimaryColour=yellow (sung), Secondary=white
     lines = []
@@ -608,7 +618,8 @@ def build_karaoke_ass(words, path, group=4, title=None):
             safe = w.replace("{", "(").replace("}", ")")
             parts.append(f"{{\\k{kcs}}}{safe} ")
         text = r"{\fad(60,40)}" + "".join(parts).strip()
-        lines.append(f"Dialogue: 0,{_ts(start)},{_ts(end)},Cap,,0,0,0,,{text}")
+        mv = _margin_at(start, margins)
+        lines.append(f"Dialogue: 0,{_ts(start)},{_ts(end)},Cap,,0,0,{mv},,{text}")
     path.write_text(header + "\n".join(lines) + "\n", encoding="utf-8")
 
 
@@ -694,7 +705,7 @@ def _reset_work():
     OUT.mkdir(exist_ok=True)
 
 
-def build_ass_at(segs, delays, durs, path):
+def build_ass_at(segs, delays, durs, path, margins=None):
     """Fallback battle captions without word timings: sentences spread over
     each scene's narration window."""
     header = _ass_header("&H00FFFFFF", "&H000000FF")
@@ -707,7 +718,8 @@ def build_ass_at(segs, delays, durs, path):
         for j, p in enumerate(parts):
             en = (t0 + d) if j == len(parts) - 1 else st + d * len(p) / tot
             safe = r"{\fad(80,50)}" + p.replace("{", "(").replace("}", ")")
-            lines.append(f"Dialogue: 0,{_ts(st)},{_ts(en)},Cap,,0,0,0,,{safe}")
+            mv = _margin_at(st, margins)
+            lines.append(f"Dialogue: 0,{_ts(st)},{_ts(en)},Cap,,0,0,{mv},,{safe}")
             st = en
     path.write_text(header + "\n".join(lines) + "\n", encoding="utf-8")
 
@@ -728,8 +740,11 @@ def render_ranking(brief):
     logos = _stage_ranking_media(brief)
     props = {"theme": ranking["theme"], "items": ranking["items"],
              "cta": ranking["cta"], "logos": logos}
+    # rank scenes carry a 760px bottom info block (name/tag/reason) — lift the
+    # burned-in captions above it (block top is 760 from bottom; 830 clears
+    # the border with a gap; intro/outro keep the default 360).
     _render_scenes(brief, "RankingShort", props,
-                   f"Ranking render: {ranking['theme']}")
+                   f"Ranking render: {ranking['theme']}", lift_captions=830)
 
 
 # Short on purpose: long style prompts raise the odds Gemini TTS reads the
@@ -915,10 +930,13 @@ def _voice_single_pass(segs, voice, style):
     return audios, words_per, durs
 
 
-def _render_scenes(brief, comp, props, label, voices=None):
+def _render_scenes(brief, comp, props, label, voices=None, lift_captions=0):
     """Shared scene renderer: TTS per scene -> Remotion motion graphics sized
     to the narration audio -> mux delayed narration + captions + music.
     voices = optional per-scene [(voice, style)] for multi-character episodes.
+    lift_captions = nonzero MarginV applied to MID scenes only (not intro/
+    outro) when the format's scene layout occupies the default caption zone —
+    ranking's 760px bottom info block was overlapping the reason text.
     Any failure raises; the caller falls back to the classic b-roll render."""
     slug = brief["slug"]
     segs = brief["narration"]        # scene count validated at brief time
@@ -993,10 +1011,15 @@ def _render_scenes(brief, comp, props, label, voices=None):
             s2 = max(0.0, min(s, d))
             e2 = max(s2 + 0.05, min(e, d))
             all_words.append((w, delays[i] + s2, delays[i] + e2))
+    margins = None
+    if lift_captions and n > 2:
+        margins = [(starts[i], starts[i] + frames[i] / FPS, lift_captions)
+                   for i in range(1, n - 1)]
     if karaoke and all_words:
-        build_karaoke_ass(all_words, WORK / "subs.ass")     # no hook overlay: VsIntro is the hook
+        build_karaoke_ass(all_words, WORK / "subs.ass",     # no hook overlay: VsIntro is the hook
+                          margins=margins)
     else:
-        build_ass_at(segs, delays, durs, WORK / "subs.ass")
+        build_ass_at(segs, delays, durs, WORK / "subs.ass", margins=margins)
 
     # 5. mux graphics + per-scene delayed narration + music, burn captions
     inputs = ["-i", "battle.mp4"]

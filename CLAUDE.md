@@ -647,3 +647,20 @@ commit, so the other sessions know who did what.
   FOLLOW-UP (not done): the ranking Thumb card still uses the older dark
   single-accent look — align it to bold-poster if the owner wants thumbnail
   consistency.
+- 2026-07-16 — laptop Claude Code session (direct commit to main): health
+  sweep all green (all 5 slots fired on time via the Worker, receipts clean,
+  no open issues, IG/FB/TikTok ok, blog + LinkedIn ok). Executed the pending
+  rule-8 frame review of the first CI bold-poster ranking render
+  (free-ai-synthesia-alternatives, youtu.be/GI4R9U5vO04): layout, corner
+  numeral, chips, confetti, outro all correct — but the burned-in karaoke
+  captions (Cap style MarginV 360 = bottom y1560) land INSIDE the bold-poster
+  bottom info block (top y1160) and overlap the reason text on every rank
+  scene (illegible double-text). Fix: per-Dialogue MarginV override in
+  build_karaoke_ass/build_ass_at (_margin_at windows); _render_scenes gains
+  lift_captions applied to MID scenes only; render_ranking passes 830 so
+  rank-scene captions sit just above the block while intro/outro keep 360
+  (their card layouts need the low position). Legibility-defect fix, same
+  freeze-exception class as the 07-13 crop fix — not a style change. 37/37
+  tests (2 new). Rule 8: spot-check captions on the next 15:59/19:59 ranking
+  render. Audio single-pass verified working in the same video (one
+  continuous read, pace 2.97wps brisk, wer 0.05).
