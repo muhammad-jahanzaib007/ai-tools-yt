@@ -680,3 +680,24 @@ commit, so the other sessions know who did what.
   single-pass never runs locally since TTS keys are CI-only). 41/41 tests
   (4 new on the cut math). Owner-reported defect = freeze exception. Rule 8:
   ear-check scene transitions on the next ranking render (10:59 or 15:59).
+- 2026-07-16 (night) — laptop Claude Code session (direct commit to main):
+  FIRST BREAKOUT ANALYZED. Owner flagged "I Ranked 50 AI Tools for YouTube,
+  Only 5 Are Worth It" (ai-tools-for-youtube, 07-15, hook=result_first) at
+  214 views; channel RSS confirms every sibling video sits at 0-35 (second
+  best 35, most <10) on identical production. The winner is the ONLY video
+  that (a) targets CREATORS — an audience natively on YouTube with a huge
+  recommender interest cluster (all other topics target off-platform
+  audiences: students, e-commerce, sales, freelancers) — and (b) uses
+  first-person effort+survivor title framing ("I Ranked 50..., Only 5 Are
+  Worth It") vs commodity listicle phrasing everywhere else. Topic strategy
+  shipped (topics = demand-side work, explicitly outside the freeze; battle
+  queue untouched as the experiment's control): 6 creator-audience topics in
+  the champion formula front-loaded into ranking_queue (faceless channels,
+  thumbnails, Shorts, TikTok, podcasters, video creators);
+  replenish_rankings prompt now cites the channel's own 214-vs-10 data and
+  asks ~half of new ideas in that pattern; title guidance keeps first-person
+  topics verbatim. topics.json edited via Python (PowerShell ConvertTo-Json
+  writes a BOM that would crash the CI loader — got caught, redone).
+  Dispatched weekly-research.yml for fresh retention/trend data. VERIFY:
+  next ranking slots run the champion-formula topics — watch their views
+  vs the 07-15 baseline; fold into the ~07-19 checkpoint read.
