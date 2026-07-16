@@ -246,6 +246,48 @@ def test_margin_at_picks_window():
     assert rv._margin_at(3.0, None) == 0
 
 
+def test_scene_cuts_exclude_next_word_onset():
+    # Two scenes, 0.6s pause between them. The old midpoint cut put the
+    # front 0.3s of the pause (breath + next-word pre-voicing) in scene 0.
+    scenes = [[("hello", 0.0, 0.5), ("world", 0.6, 1.0)],
+              [("next", 1.6, 2.0), ("scene", 2.1, 2.5)]]
+    pts = _scene_cut_points_helper(scenes, 3.0)
+    (s0, e0), (s1, e1) = pts
+    assert s0 == 0.0
+    assert e0 == 1.0 + 0.12          # short tail only, not (1.0+1.6)/2
+    assert s1 == 1.6 - 0.10          # short lead keeps the word's own onset
+    assert e0 < s1                   # clips never overlap
+    assert e1 == 3.0                 # last scene keeps trailing audio
+
+
+def test_scene_cuts_tiny_gap_no_overlap():
+    # 0.1s gap: tail/lead shrink to 30% of the gap each.
+    scenes = [[("a", 0.0, 1.0)], [("b", 1.1, 2.0)]]
+    (s0, e0), (s1, e1) = _scene_cut_points_helper(scenes, 2.4)
+    assert abs(e0 - 1.03) < 1e-9
+    assert abs(s1 - 1.07) < 1e-9
+    assert e0 <= s1
+
+
+def test_scene_cuts_negative_gap_clamps():
+    # Whisper drift can overlap word timings across the boundary.
+    scenes = [[("a", 0.0, 1.2)], [("b", 1.1, 2.0)]]
+    (s0, e0), (s1, e1) = _scene_cut_points_helper(scenes, 2.4)
+    assert e0 == 1.2                 # no tail into the next word
+    assert s1 == 1.1                 # no lead into the previous word
+    assert e1 == 2.4
+
+
+def test_scene_cuts_min_clip_length():
+    scenes = [[("a", 0.0, 0.05)], [("b", 5.0, 5.5)]]
+    (s0, e0), _ = _scene_cut_points_helper(scenes, 6.0)
+    assert e0 - s0 >= 0.20
+
+
+def _scene_cut_points_helper(scenes, full_dur):
+    return rv._scene_cut_points(scenes, full_dur)
+
+
 def test_karaoke_ass_lifts_captions_in_windows(tmp_path):
     words = [("intro", 0.0, 0.5), ("word", 0.6, 1.0),
              ("rank", 6.0, 6.4), ("scene", 6.5, 7.0)]

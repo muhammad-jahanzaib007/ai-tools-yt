@@ -664,3 +664,19 @@ commit, so the other sessions know who did what.
   tests (2 new). Rule 8: spot-check captions on the next 15:59/19:59 ranking
   render. Audio single-pass verified working in the same video (one
   continuous read, pace 2.97wps brisk, wer 0.05).
+- 2026-07-16 (later) — laptop Claude Code session (direct commit to main):
+  owner reported scene-boundary voice artifact on the single-pass read: "it
+  sounds like it was about to say the word of the next scene... and stops."
+  Root cause in _voice_single_pass: scene clips were cut at the MIDPOINT of
+  the inter-scene word gap, so every clip kept the front half of the pause —
+  breath intake plus the pre-voicing of the next scene's first word (Whisper
+  start timestamps miss the true onset), then the scene's 0.8s visual tail
+  held that cut-off syllable in silence. Fix: new pure helper
+  _scene_cut_points — cuts hug the scene's own words (tail CUT_TAIL_S=0.12s
+  after last word, lead CUT_LEAD_S=0.10s before first word, each capped at
+  30% of the gap so tiny gaps can't overlap; negative-gap drift clamps to
+  the word edge), mid-gap audio dropped; plus 15ms fade-in / 60ms fade-out
+  per clip so the cuts can't click (afade = CI ffmpeg only, same as the mux;
+  single-pass never runs locally since TTS keys are CI-only). 41/41 tests
+  (4 new on the cut math). Owner-reported defect = freeze exception. Rule 8:
+  ear-check scene transitions on the next ranking render (10:59 or 15:59).

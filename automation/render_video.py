@@ -880,6 +880,43 @@ def _thumb_props(brief, props):
     return {"kind": "ranking", "title": brief.get("title", ""), "badge": ""}
 
 
+CUT_TAIL_S = 0.12    # audio kept after a scene's last word
+CUT_LEAD_S = 0.10    # audio kept before a scene's first word
+
+
+def _scene_cut_points(scene_words, full_dur):
+    """Per-scene (start, end) slice times in the single-pass narration.
+    Cuts hug the scene's own words instead of splitting the inter-scene gap
+    down the middle: the midpoint cut kept the front half of every pause in
+    the outgoing clip — breath intake plus the pre-voicing of the NEXT
+    scene's first word (Whisper start timestamps miss the onset), heard as
+    the voice starting a word and stopping (owner 2026-07-16). Keep a short
+    natural tail/lead and drop the middle of the gap entirely; the caps at
+    30% of the gap keep tiny gaps from producing overlapping clips."""
+    n = len(scene_words)
+    pts = []
+    for i, sw in enumerate(scene_words):
+        if i == 0:
+            start = 0.0
+        else:
+            prev = scene_words[i - 1]
+            pe = prev[-1][2] if prev else (sw[0][1] if sw else 0.0)
+            cs = sw[0][1] if sw else pe
+            gap = max(0.0, cs - pe)
+            start = cs - min(CUT_LEAD_S, 0.3 * gap)
+        if i == n - 1:
+            end = full_dur
+        else:
+            nxt = scene_words[i + 1]
+            ce = sw[-1][2] if sw else start
+            ns = nxt[0][1] if nxt else ce
+            gap = max(0.0, ns - ce)
+            end = ce + min(CUT_TAIL_S, 0.3 * gap)
+        end = max(end, start + 0.20)
+        pts.append((start, end))
+    return pts
+
+
 def _voice_single_pass(segs, voice, style):
     """Voice the WHOLE script in ONE TTS call, then slice it per scene at word
     boundaries. Gemini TTS restarts its pitch/energy on every call, so one call
@@ -903,26 +940,15 @@ def _voice_single_pass(segs, voice, style):
     if idx < len(words):                     # alignment drift -> last scene keeps the rest
         scene_words[-1] += words[idx:]
     audios, words_per, durs = [], [], []
-    n = len(segs)
-    for i, sw in enumerate(scene_words):
-        if i == 0:
-            start = 0.0
-        else:
-            prev = scene_words[i - 1]
-            pe = prev[-1][2] if prev else (sw[0][1] if sw else 0.0)
-            cs = sw[0][1] if sw else pe
-            start = (pe + cs) / 2.0          # cut mid-gap so no word is clipped
-        if i == n - 1:
-            end = full_dur
-        else:
-            nxt = scene_words[i + 1]
-            ce = sw[-1][2] if sw else start
-            ns = nxt[0][1] if nxt else ce
-            end = (ce + ns) / 2.0
-        end = max(end, start + 0.20)
+    for i, (sw, (start, end)) in enumerate(
+            zip(scene_words, _scene_cut_points(scene_words, full_dur))):
         clip = WORK / f"a{i}.mp3"
+        # micro-fades soften the boundary cuts (a hard cut mid-breath clicks);
+        # runs in CI whose ffmpeg is a full build (afade exists there).
+        fade = (f"afade=t=in:st=0:d=0.015,"
+                f"afade=t=out:st={max(0.0, end - start - 0.06):.3f}:d=0.06")
         run(["ffmpeg", "-y", "-i", str(full.resolve()), "-ss", f"{start:.3f}",
-             "-to", f"{end:.3f}", "-b:a", "128k", str(clip.resolve())])
+             "-to", f"{end:.3f}", "-af", fade, "-b:a", "128k", str(clip.resolve())])
         audios.append(clip)
         durs.append(probe_duration(clip))
         words_per.append([(w, max(0.0, s - start), max(0.05, e - start))
