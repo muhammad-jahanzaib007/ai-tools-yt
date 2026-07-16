@@ -701,3 +701,21 @@ commit, so the other sessions know who did what.
   Dispatched weekly-research.yml for fresh retention/trend data. VERIFY:
   next ranking slots run the champion-formula topics — watch their views
   vs the 07-15 baseline; fold into the ~07-19 checkpoint read.
+- 2026-07-16 (night, later) — laptop Claude Code session (direct commit to
+  main): CROWN-VS-VERDICT BUG (owner asked how a 2-round battle picks its
+  winner on a 1-1 split — the answer exposed a shipped defect). The spoken
+  verdict is the model's free judgment and may name either tool, but
+  VerdictScene computed the on-screen crown from the round score with
+  `final.a >= final.b` — a 1-1 split ALWAYS crowned toolA. 5 of the 6
+  two-round battles since the length cut split 1-1, and 2 shipped with the
+  crown contradicting the voice: writesonic-vs-copy-ai-sales-emails (07-13,
+  voice says Copy.ai) and synthesia-vs-heygen-training-videos (07-16, voice
+  says HeyGen). Fix: battle block gains REQUIRED-by-prompt "champion":
+  "a"|"b" (the model judges the match); _clean_battle validates it and for
+  old/missing values derives it (majority of rounds; on a split, the tool
+  named FIRST in the verdict — every observed split verdict opens "X wins";
+  toolA last resort); VerdictScene crowns props.champion, score kept only
+  as legacy fallback. 45/45 tests (4 new), tsc clean. Correctness fix =
+  freeze exception. Owner may want to delete/ignore the two contradicting
+  videos (both low-view; probably not worth the churn). Rule 8: eyeball the
+  next battle render's verdict scene (10:59 slot).

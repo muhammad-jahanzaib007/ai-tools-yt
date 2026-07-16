@@ -8,7 +8,7 @@ import { RoundScene } from "./RoundScene";
 import { VerdictScene } from "./VerdictScene";
 
 export const BattleVideo: React.FC<BattleProps> = (props) => {
-  const { toolA, toolB, tagline, rounds, verdict } = props;
+  const { toolA, toolB, tagline, rounds, verdict, champion } = props;
   const frames = framesOf(props);
   const items: React.ReactNode[] = [
     <TransitionSeries.Sequence key="intro" durationInFrames={frames.intro}>
@@ -34,7 +34,13 @@ export const BattleVideo: React.FC<BattleProps> = (props) => {
       timing={linearTiming({ durationInFrames: TRANSITION_FRAMES })}
     />,
     <TransitionSeries.Sequence key="verdict" durationInFrames={frames.verdict}>
-      <VerdictScene toolA={toolA} toolB={toolB} rounds={rounds} verdict={verdict} />
+      <VerdictScene
+        toolA={toolA}
+        toolB={toolB}
+        rounds={rounds}
+        verdict={verdict}
+        champion={champion}
+      />
     </TransitionSeries.Sequence>,
   );
   return <TransitionSeries>{items}</TransitionSeries>;

@@ -73,6 +73,38 @@ def test_clean_battle_too_few_rounds_dropped():
     assert gb._clean_battle(_battle(rounds=1), _narration(3)) is None
 
 
+def test_clean_battle_keeps_declared_champion():
+    bt = _battle(rounds=2)
+    bt["champion"] = "B"                       # case-insensitive
+    out = gb._clean_battle(bt, _narration(4))
+    assert out["champion"] == "b"
+
+
+def test_champion_derived_from_majority():
+    bt = _battle(rounds=3, winner="b")
+    out = gb._clean_battle(bt, _narration(5))
+    assert out["champion"] == "b"
+
+
+def test_champion_split_uses_verdict_first_name():
+    # 1-1 split; the verdict opens with the winner's name (toolA here).
+    bt = _battle(rounds=2)
+    bt["rounds"][1]["winner"] = "b"
+    out = gb._clean_battle(bt, _narration(4))
+    assert out["champion"] == "a"              # "ChatGPT wins overall; ..."
+    bt["verdict"] = "Writesonic wins overall; ChatGPT still better for code."
+    out = gb._clean_battle(bt, _narration(4))
+    assert out["champion"] == "b"
+
+
+def test_champion_split_no_name_defaults_a():
+    bt = _battle(rounds=2)
+    bt["rounds"][1]["winner"] = "b"
+    bt["verdict"] = "Both are great, honestly a coin flip for most people."
+    out = gb._clean_battle(bt, _narration(4))
+    assert out["champion"] == "a"
+
+
 # --- ranking block validation ----------------------------------------------------
 
 def _ranking(n=5, ranks=None):

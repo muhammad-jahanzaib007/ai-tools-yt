@@ -230,7 +230,9 @@ BATTLE_BULLETS = (
     "wins?')\", \"rounds\": [EXACTLY 2 items (pick the 2 most surprising, decision-relevant "
     "angles) of {\"title\": \"1-3 words, e.g. Price\", "
     '"aPoint": "toolA in this round, 9 words or fewer", "bPoint": "same for toolB", '
-    '"winner": "a" or "b"}], "verdict": "28 words or fewer naming the overall winner and '
+    '"winner": "a" or "b"}], "champion": "a" or "b" (the OVERALL winner of the battle; '
+    "rounds may split 1-1, YOU judge the match), "
+    '"verdict": "28 words or fewer naming the champion tool as the overall winner and '
     'what the loser is still better for"}.\n'
     "- narration: an array of EXACTLY rounds+2 segments (3 rounds -> 5 segments; 2 rounds -> 4). "
     'Each segment is an object with "text" and "broll" (a 2-4 word stock-footage search query). '
@@ -250,6 +252,23 @@ BATTLE_BULLETS = (
     "natural, a rhetorical question or two, real reactions ('Ouch.', 'That one hurts.', "
     "'No contest here!'). It must sound spoken, never like an article being read aloud.\n"
 )
+
+
+def _derive_champion(rounds, toolA, toolB, verdict):
+    """Overall winner when the model didn't declare one: majority of round
+    wins; on a split, the tool named FIRST in the verdict (observed split
+    verdicts all open 'X wins ...'); toolA as the last resort."""
+    a = sum(1 for r in rounds if r["winner"] == "a")
+    b = len(rounds) - a
+    if a != b:
+        return "a" if a > b else "b"
+    v = verdict.lower()
+    ia, ib = v.find(toolA.lower()), v.find(toolB.lower())
+    if ia >= 0 and (ib < 0 or ia < ib):
+        return "a"
+    if ib >= 0:
+        return "b"
+    return "a"
 
 
 def _clean_battle(bt, narration):
@@ -277,6 +296,13 @@ def _clean_battle(bt, narration):
                "verdict": strip_em(str(bt["verdict"])).strip()}
         if not all([out["toolA"], out["toolB"], out["tagline"], out["verdict"]]):
             raise ValueError("empty field")
+        # overall winner drives the on-screen crown; the round score can't
+        # (2-round battles usually split 1-1 and the verdict picks freely)
+        champ = str(bt.get("champion", "")).strip().lower()
+        if champ not in ("a", "b"):
+            champ = _derive_champion(rounds, out["toolA"], out["toolB"],
+                                     out["verdict"])
+        out["champion"] = champ
         return out
     except (KeyError, ValueError, TypeError) as e:
         print(f"battle block dropped ({e}); render falls back to b-roll", file=sys.stderr)

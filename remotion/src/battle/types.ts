@@ -17,6 +17,10 @@ export type BattleProps = {
   tagline: string;
   rounds: RoundData[];
   verdict: string;
+  // Overall winner declared by the brief. The round score can split 1-1
+  // (2-round battles usually do) and the spoken verdict is free to name
+  // either tool, so the crown must follow this, not the score.
+  champion?: "a" | "b";
   // Per-scene durations in frames, computed by the render script from the
   // narration audio lengths. Absent = the fixed preview defaults below.
   sceneFrames?: SceneFrames;

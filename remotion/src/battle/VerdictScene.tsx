@@ -19,13 +19,18 @@ export const VerdictScene: React.FC<{
   toolB: string;
   rounds: RoundData[];
   verdict: string;
-}> = ({ toolA, toolB, rounds, verdict }) => {
+  champion?: "a" | "b";
+}> = ({ toolA, toolB, rounds, verdict, champion }) => {
   const frame = useCurrentFrame();
   const { fps, width, height, durationInFrames } = useVideoConfig();
   const vertical = height > width;
 
+  // The crown must match the spoken verdict: `champion` is the brief's
+  // declared overall winner. The score is only a fallback for old briefs —
+  // on a 1-1 round split it tie-breaks to A, which contradicted verdicts
+  // that named B (shipped twice before champion existed).
   const final = scoreAfter(rounds, rounds.length - 1);
-  const aWins = final.a >= final.b;
+  const aWins = champion ? champion === "a" : final.a >= final.b;
   const winner = aWins ? toolA : toolB;
   const winColor = aWins ? COLORS.coral : COLORS.teal;
   const winGradient = aWins
