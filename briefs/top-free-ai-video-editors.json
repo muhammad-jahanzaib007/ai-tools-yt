@@ -1,0 +1,110 @@
+{
+  "slug": "top-free-ai-video-editors",
+  "title": "5 Free AI Video Editors That Are Better Than Paid Ones",
+  "hook": "This free AI editor makes paid tools look like a bad joke.",
+  "ranking": {
+    "theme": "Free AI tools that beat the paid ones",
+    "items": [
+      {
+        "rank": 5,
+        "name": "CapCut",
+        "reason": "Offers an impressive suite of professional editing features.",
+        "tag": "Free plan"
+      },
+      {
+        "rank": 4,
+        "name": "DaVinci Resolve",
+        "reason": "Professional grade editing, colour correction, and audio tools.",
+        "tag": "Free version"
+      },
+      {
+        "rank": 3,
+        "name": "RunwayML",
+        "reason": "Advanced AI features like background removal and object deletion.",
+        "tag": "Free tier"
+      },
+      {
+        "rank": 2,
+        "name": "Descript",
+        "reason": "Edit video by editing text, removing filler words automatically.",
+        "tag": "Free account"
+      },
+      {
+        "rank": 1,
+        "name": "Klavaro",
+        "reason": "Instant video generation from text, no editing required.",
+        "tag": "Completely free"
+      }
+    ],
+    "cta": "Did we miss your go-to free AI editor?"
+  },
+  "narration": [
+    {
+      "text": "This free AI editor makes paid tools look like a bad joke.",
+      "broll": "video editor interface"
+    },
+    {
+      "text": "At number five, CapCut. It offers an impressive suite of professional editing features, making complex tasks simple. You get incredible effects and templates without spending a penny.",
+      "broll": "CapCut mobile interface"
+    },
+    {
+      "text": "Number four is DaVinci Resolve. It is professional grade software for editing, colour correction, and audio. It is astonishing that such a powerful tool has a free version, matching many paid alternatives.",
+      "broll": "DaVinci Resolve UI"
+    },
+    {
+      "text": "Coming in at number three, RunwayML. This tool provides advanced AI features like background removal and object deletion with ease. It is like having a Hollywood studio in your browser, for free.",
+      "broll": "RunwayML green screen"
+    },
+    {
+      "text": "At number two, Descript. This revolutionary editor lets you edit video by editing text, and even removes filler words automatically. It makes editing faster and more intuitive than ever before.",
+      "broll": "Descript text editing"
+    },
+    {
+      "text": "Our number one spot goes to Klavaro. This incredible tool offers instant video generation from text, meaning no editing is required at all. It is truly mind blowing and completely free to use.",
+      "broll": "Klavaro text to video"
+    },
+    {
+      "text": "Klavaro is a game changer for content creation. Did we miss your go-to free AI editor?",
+      "broll": "abstract AI visuals"
+    }
+  ],
+  "description": "Discover five free AI video editing tools that are so powerful, they outperform many paid software options. Transform your video production without spending a penny, using these incredible AI-powered solutions.",
+  "links": [
+    {
+      "name": "CapCut",
+      "url": "https://www.capcut.com/"
+    },
+    {
+      "name": "DaVinci Resolve",
+      "url": "https://www.blackmagicdesign.com/products/davinciresolve/"
+    },
+    {
+      "name": "RunwayML",
+      "url": "https://runwayml.com/"
+    },
+    {
+      "name": "Descript",
+      "url": "https://www.descript.com/"
+    },
+    {
+      "name": "Klavaro",
+      "url": "https://klavaro.ai/"
+    }
+  ],
+  "tags": [
+    "ai video editor",
+    "free ai tools",
+    "video editing",
+    "ai video",
+    "free video editor",
+    "ai software",
+    "content creation",
+    "tech",
+    "artificial intelligence",
+    "video production"
+  ],
+  "thumbnail_text": "Free AI Video Editors",
+  "topic": "Top 5 Free AI Tools Better Than Paid Ones for Video Editing",
+  "date": "2026-07-16",
+  "hook_type": "conflict_tease"
+}
