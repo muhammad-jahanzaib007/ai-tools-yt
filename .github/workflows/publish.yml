@@ -166,14 +166,23 @@ jobs:
           git add briefs automation/topics.json automation/latest.txt automation/universe.json
           if ! git diff --cached --quiet; then
             git commit -m "brief: $(date -u +%Y-%m-%d)"
-            # Rebase + retry: a concurrent push to main must not fail the whole pipeline.
+            # Rebase + retry: a concurrent publish run must not fail the pipeline.
+            # `-X theirs` auto-resolves conflicts in the pointer/ledger files
+            # (latest.txt, topics.json, universe.json) in favour of THIS run's
+            # brief, so two runs racing to write latest.txt no longer deadlock
+            # the loop (the old `git pull --rebase` left a stuck rebase whose
+            # "unmerged files" state failed every subsequent retry). Unique
+            # brief filenames never conflict. Abort any half-finished rebase
+            # before retrying so the loop always starts clean.
             ok=""
-            for i in 1 2 3; do
-              if git pull --rebase --quiet && git push; then ok=1; break; fi
-              echo "push attempt $i rejected, retrying"
+            for i in 1 2 3 4 5; do
+              if git pull --rebase -X theirs --quiet && git push --quiet; then ok=1; break; fi
+              echo "push attempt $i rejected; cleaning up + retrying"
+              git rebase --abort 2>/dev/null || true
+              git merge  --abort 2>/dev/null || true
               sleep 5
             done
-            [ -n "$ok" ] || { echo "brief push failed after 3 attempts"; exit 1; }
+            [ -n "$ok" ] || { echo "brief push failed after 5 attempts"; exit 1; }
           fi
 
       - name: Render video
@@ -245,13 +254,15 @@ jobs:
           # the watchdog then misreads the stale receipt as a dead slot.
           if git commit -m "audio qa" --quiet; then
             ok=""
-            for i in 1 2 3; do
+            for i in 1 2 3 4 5; do
               if git push --quiet; then ok=1; break; fi
               echo "push attempt $i rejected; rebasing"
-              git pull --rebase --quiet || true
+              # -X theirs + abort-on-fail: same conflict-recovery fix as Save
+              # brief (a stuck rebase used to fail every later retry here too).
+              git pull --rebase -X theirs --quiet || { git rebase --abort 2>/dev/null || true; }
               sleep 5
             done
-            [ -n "$ok" ] || { echo "receipt push failed after 3 attempts"; exit 1; }
+            [ -n "$ok" ] || { echo "receipt push failed after 5 attempts"; exit 1; }
           else
             echo "nothing to record"
           fi
