@@ -1,0 +1,111 @@
+{
+  "slug": "ranked-ai-tools-faceless-youtube",
+  "title": "I Ranked 30 AI Tools for Faceless YouTube Channels, Only 5 Are Worth It",
+  "hook": "Only 5 AI tools are worth your time for YouTube.",
+  "ranking": {
+    "theme": "Top 5 AI tools for faceless YouTube",
+    "items": [
+      {
+        "rank": 5,
+        "name": "Pictory",
+        "reason": "Quick video from text, good for basic content.",
+        "tag": "Paid"
+      },
+      {
+        "rank": 4,
+        "name": "Murf AI",
+        "reason": "Realistic voiceovers, many languages available.",
+        "tag": "Free trial"
+      },
+      {
+        "rank": 3,
+        "name": "Opus Clip",
+        "reason": "Turns long videos into viral Shorts automatically.",
+        "tag": "Free trial"
+      },
+      {
+        "rank": 2,
+        "name": "ChatGPT",
+        "reason": "Brainstorms ideas, writes scripts, saves hours.",
+        "tag": "Free plan"
+      },
+      {
+        "rank": 1,
+        "name": "Midjourney",
+        "reason": "Stunning visuals for any topic, truly unique.",
+        "tag": "Paid"
+      }
+    ],
+    "cta": "Did I miss any essential AI tools?"
+  },
+  "narration": [
+    {
+      "text": "Only 5 AI tools are worth your time for YouTube.",
+      "broll": "AI data stream"
+    },
+    {
+      "text": "Coming in at number five, Pictory. This tool quickly turns text into basic video, perfect for news updates or simple listicles. It is a solid choice to get started creating content fast.",
+      "broll": "video creation software"
+    },
+    {
+      "text": "Number four is Murf AI. If you need realistic voiceovers without hiring anyone, Murf delivers. Its range of voices and languages makes your channel sound truly professional.",
+      "broll": "realistic AI voices"
+    },
+    {
+      "text": "At number three, Opus Clip. This smart tool automatically cuts your long videos into viral Shorts. It is brilliant for repurposing content and reaching new audiences on different platforms.",
+      "broll": "short form video"
+    },
+    {
+      "text": "Runner-up at number two, ChatGPT. The free version alone can brainstorm endless video ideas, write full scripts, and help with research. It is a massive time-saver for any creator.",
+      "broll": "AI writing interface"
+    },
+    {
+      "text": "And the top spot goes to Midjourney. For stunning, unique visuals that grab attention, nothing else compares. It elevates your faceless videos from good to absolutely captivating.",
+      "broll": "AI art gallery"
+    },
+    {
+      "text": "Midjourney is simply the best for a faceless channel. What AI tool do you think should be on this list?",
+      "broll": "futuristic AI tools"
+    }
+  ],
+  "description": "I tested 30 AI tools to see which ones are genuinely useful for running a faceless YouTube channel. Only these five made the cut for saving time and producing high-quality content. Discover the top picks that can transform your video creation workflow.",
+  "links": [
+    {
+      "name": "Pictory",
+      "url": "https://pictory.ai/"
+    },
+    {
+      "name": "Murf AI",
+      "url": "https://murf.ai/"
+    },
+    {
+      "name": "Opus Clip",
+      "url": "https://www.opus.pro/"
+    },
+    {
+      "name": "ChatGPT",
+      "url": "https://chat.openai.com/"
+    },
+    {
+      "name": "Midjourney",
+      "url": "https://www.midjourney.com/"
+    }
+  ],
+  "tags": [
+    "ai tools",
+    "faceless youtube",
+    "youtube automation",
+    "ai video editor",
+    "ai voice generator",
+    "ai art generator",
+    "content creation",
+    "youtube shorts",
+    "chatgpt",
+    "midjourney",
+    "ai productivity"
+  ],
+  "thumbnail_text": "5 BEST AI TOOLS",
+  "topic": "I Ranked 30 AI Tools for Faceless YouTube Channels, Only 5 Are Worth It",
+  "date": "2026-07-17",
+  "hook_type": "question"
+}
