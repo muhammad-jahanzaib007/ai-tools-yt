@@ -1,0 +1,71 @@
+{
+  "slug": "descript-vs-murf-ai-voice",
+  "title": "Descript vs Murf: The Best AI Voice Editing for Podcasters?",
+  "hook": "Descript offers unlimited AI voices, Murf charges per minute!",
+  "battle": {
+    "toolA": "Descript",
+    "toolB": "Murf",
+    "tagline": "Unlimited AI voices vs per-minute costs!",
+    "rounds": [
+      {
+        "title": "AI Voice Pricing",
+        "aPoint": "Unlimited AI voice generation included.",
+        "bPoint": "AI voices charged per minute, often extra.",
+        "winner": "a"
+      },
+      {
+        "title": "Editing Workflow",
+        "aPoint": "Edit audio by editing text, easy.",
+        "bPoint": "Traditional timeline editing for audio.",
+        "winner": "a"
+      }
+    ],
+    "verdict": "Descript is the clear winner for podcasters, offering unlimited AI voices and a revolutionary text-based editing workflow. Murf is still great for high-quality voiceovers.",
+    "champion": "a"
+  },
+  "narration": [
+    {
+      "text": "Descript offers unlimited AI voices, Murf charges per minute!",
+      "broll": "AI voice pricing"
+    },
+    {
+      "text": "First up, AI Voice Pricing! Descript includes unlimited AI voice generation in its creator plans. Murf, however, charges per minute for its premium AI voices, often as an add-on. That one hurts! Descript takes the round!",
+      "broll": "money falling"
+    },
+    {
+      "text": "Next, Editing Workflow! Descript lets you edit audio by editing its transcript. It is like editing a document! Murf uses a more traditional timeline editor, which means more precise audio work but a steeper learning curve. No contest here! Descript wins again!",
+      "broll": "editing software"
+    },
+    {
+      "text": "Descript is the champion for podcasters, with its unlimited AI voices and revolutionary text-based editing. Murf is still fantastic for polished voiceovers! Which tool would you pick?",
+      "broll": "podcast studio"
+    }
+  ],
+  "description": "We compare Descript and Murf to see which AI voice editing tool is best for podcasters. Discover their key differences in pricing, features, and overall workflow. Make an informed decision for your next audio project.",
+  "links": [
+    {
+      "name": "Descript",
+      "url": "https://www.descript.com/"
+    },
+    {
+      "name": "Murf AI",
+      "url": "https://murf.ai/"
+    }
+  ],
+  "tags": [
+    "descript",
+    "murf",
+    "ai voice",
+    "podcast editing",
+    "audio editing",
+    "ai tools",
+    "content creation",
+    "voice editor",
+    "synthetic voice",
+    "ai for podcasters"
+  ],
+  "thumbnail_text": "Descript vs Murf",
+  "topic": "Descript vs Murf: AI voice editing for podcasters",
+  "date": "2026-07-17",
+  "hook_type": "bold_claim"
+}
