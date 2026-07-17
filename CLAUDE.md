@@ -738,3 +738,23 @@ commit, so the other sessions know who did what.
   last-writer-wins instead of deadlocking; a full mutex was judged overkill.
   NOTE my own frequent pushes to main during a session also widen this race
   window — avoid pushing while a publish run is mid-flight (rule 9).
+- 2026-07-17 (later) — laptop Claude Code session (direct commit to main):
+  shipped the CI RENDER SMOKE-TEST (smoke-render.yml) — the improvement that
+  today's outage argued for. tests.yml only runs pure-function unit tests and
+  structurally CANNOT hear garbled audio (the slice regression passed every
+  unit test). smoke-render.yml renders one fixed fixture brief
+  (tests/fixtures/smoke_brief.json — a valid 2-round battle, exercises the
+  single-pass voice + slice + mux path where the bug lived) and runs the same
+  `audio_qa.py --gate`, so a bad audio-path change fails on its own commit
+  instead of in production. Triggers only on render-path changes
+  (render_video.py / audio_qa.py / generate_brief.py / remotion/src/** / the
+  fixture / the workflow) so it doesn't burn Gemini free-tier TTS on every
+  commit; no upload/crosspost/push. Also asserts a real video rendered and it
+  is NOT a b-roll fallback. KEY MEASUREMENT FACT confirmed while building:
+  audio_qa script_wer transcribes the SLICED clips (.render/a*.mp3), not the
+  final mp4 — which is exactly why the slice-path bug showed as a gate garble
+  while tts_take (measuring pre-slice narration_full.mp3) saw it clean. $0
+  (public repo unlimited minutes + existing secrets). Reliability gate = freeze
+  exception. Owner budget: $0 confirmed — improvements #2 token-health dash +
+  #3 free edge-tts fallback are designed + queued for post-07-19 checkpoint;
+  #4 worker uptime alarm dropped by owner.

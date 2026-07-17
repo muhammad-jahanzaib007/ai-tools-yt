@@ -1,0 +1,75 @@
+name: Smoke render (audio gate)
+
+# Catches render/audio regressions BEFORE they reach a real slot. The unit
+# tests (tests.yml) only cover pure functions and CANNOT hear garbled audio:
+# on 2026-07-17 a slice-path change passed every unit test, garbled the sliced
+# clips, and blocked 3 real publish runs. This job renders one fixed fixture
+# brief through the REAL single-pass voice + slice + mux path and runs the same
+# audio_qa gate the pipeline uses, so a bad audio-path change fails HERE (loud,
+# on the commit that caused it) instead of in production.
+#
+# Triggers only on render-path changes (so it doesn't burn Gemini free-tier
+# TTS on every commit) plus manual dispatch. No upload, no crosspost, no push.
+
+on:
+  push:
+    paths:
+      - "automation/render_video.py"
+      - "automation/audio_qa.py"
+      - "automation/generate_brief.py"
+      - "remotion/src/**"
+      - "tests/fixtures/smoke_brief.json"
+      - ".github/workflows/smoke-render.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: smoke-render-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Install Remotion deps (battle graphics)
+        run: npm --prefix remotion ci || npm --prefix remotion install
+
+      - name: Install Python deps
+        run: pip install -r requirements.txt
+
+      - name: Stage the fixture brief
+        run: |
+          cp tests/fixtures/smoke_brief.json briefs/smoke-test-battle.json
+          echo "smoke-test-battle" > automation/latest.txt
+
+      - name: Render the fixture (real voice + slice + mux path)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          VOICE_PROVIDER: ${{ vars.VOICE_PROVIDER }}
+          GEMINI_VOICE: ${{ vars.GEMINI_VOICE }}
+        run: python automation/render_video.py
+
+      - name: Audio QA gate (same gate the pipeline uses)
+        run: python automation/audio_qa.py --gate
+
+      - name: Confirm a real video was produced
+        run: |
+          f=$(ls -1 output/*.mp4 2>/dev/null | head -1)
+          [ -n "$f" ] || { echo "no output video rendered"; exit 1; }
+          # fail on a b-roll fallback: the smoke test must exercise the scene render
+          [ -f "output/smoke-test-battle.fallback" ] && { echo "rendered as b-roll FALLBACK, not the scene path"; exit 1; }
+          echo "smoke render OK: $f"

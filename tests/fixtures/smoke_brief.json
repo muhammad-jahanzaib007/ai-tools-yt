@@ -1,0 +1,27 @@
+{
+  "slug": "smoke-test-battle",
+  "title": "Smoke Test: Alpha vs Beta",
+  "hook": "One of these tools writes a full report in under a minute.",
+  "hook_type": "bold_claim",
+  "battle": {
+    "toolA": "Alpha",
+    "toolB": "Beta",
+    "tagline": "One writes a full report in under a minute.",
+    "rounds": [
+      {"title": "Speed", "aPoint": "Alpha drafts a report in forty seconds flat.", "bPoint": "Beta takes about two minutes to finish.", "winner": "a"},
+      {"title": "Quality", "aPoint": "Alpha writes clear, well structured sections.", "bPoint": "Beta reads a little generic without editing.", "winner": "a"}
+    ],
+    "champion": "a",
+    "verdict": "Alpha wins overall for speed and clarity. Beta is still solid for short simple notes."
+  },
+  "narration": [
+    {"text": "One of these two writing tools finishes a full report in under a minute.", "broll": "laptop typing"},
+    {"text": "Round one is speed. Alpha drafts a complete report in about forty seconds, while Beta needs closer to two minutes to get there.", "broll": "stopwatch timer"},
+    {"text": "Round two is quality. Alpha writes clear and well structured sections, but Beta can read a little generic until you edit it yourself.", "broll": "document editing"},
+    {"text": "So Alpha wins this one for speed and clarity. Beta is still solid for short simple notes. Which would you pick?", "broll": "thumbs up"}
+  ],
+  "description": "A fixed fixture brief used only by the CI render smoke test.",
+  "links": [],
+  "tags": ["smoke", "test"],
+  "thumbnail_text": "Alpha vs Beta"
+}
