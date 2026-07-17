@@ -930,6 +930,18 @@ def _voice_single_pass(segs, voice, style):
     words, _ps = tts_take(combined, full, voice=voice, style=style)
     if not words:
         raise RuntimeError("no word timings for single-pass narration")
+    # tts_take retakes a garbled take once, but across the WHOLE 100+ word
+    # script both takes can still contain a bad patch (one mangled span tanks
+    # the whole-pass WER). Recording the whole thing again is just as likely to
+    # garble somewhere, so instead RAISE here: the caller falls back to the
+    # per-scene loop, where each short segment is voiced + retaken on its own
+    # and a single bad scene can't poison the rest. Without this the garbled
+    # pass sailed through to the Audio QA gate and failed the entire run
+    # (2026-07-17: wer 0.76 blocked a slot; a full rerun is 8min vs a ~30s
+    # per-scene re-voice).
+    wer, _hyp = _wer(combined, full)
+    if wer is not None and wer > MAX_WER:
+        raise RuntimeError(f"single-pass narration garbled (wer={wer:.2f}); per-scene")
     full_dur = probe_duration(full)
     # words map 1:1 onto combined.split() (that is what _align_script_to_timings
     # emits), so scene boundaries fall on cumulative per-scene word counts.
@@ -939,16 +951,33 @@ def _voice_single_pass(segs, voice, style):
         scene_words.append(words[idx:idx + c]); idx += c
     if idx < len(words):                     # alignment drift -> last scene keeps the rest
         scene_words[-1] += words[idx:]
+    # Slice each scene at the MID-GAP between its words and the next scene's
+    # (known-good for weeks). The 2026-07-16 "hug the words + afade" variant
+    # (_scene_cut_points) was reverted 2026-07-17: it correlated with garbled
+    # final audio (gate wer 0.74/0.76 on the first two CI renders that carried
+    # it, while TTS recorded clean — so the corruption was in the slice, not
+    # the voice). Re-attempt boundary polish only with a CI audio check.
     audios, words_per, durs = [], [], []
-    for i, (sw, (start, end)) in enumerate(
-            zip(scene_words, _scene_cut_points(scene_words, full_dur))):
+    n = len(segs)
+    for i, sw in enumerate(scene_words):
+        if i == 0:
+            start = 0.0
+        else:
+            prev = scene_words[i - 1]
+            pe = prev[-1][2] if prev else (sw[0][1] if sw else 0.0)
+            cs = sw[0][1] if sw else pe
+            start = (pe + cs) / 2.0          # cut mid-gap so no word is clipped
+        if i == n - 1:
+            end = full_dur
+        else:
+            nxt = scene_words[i + 1]
+            ce = sw[-1][2] if sw else start
+            ns = nxt[0][1] if nxt else ce
+            end = (ce + ns) / 2.0
+        end = max(end, start + 0.20)
         clip = WORK / f"a{i}.mp3"
-        # micro-fades soften the boundary cuts (a hard cut mid-breath clicks);
-        # runs in CI whose ffmpeg is a full build (afade exists there).
-        fade = (f"afade=t=in:st=0:d=0.015,"
-                f"afade=t=out:st={max(0.0, end - start - 0.06):.3f}:d=0.06")
         run(["ffmpeg", "-y", "-i", str(full.resolve()), "-ss", f"{start:.3f}",
-             "-to", f"{end:.3f}", "-af", fade, "-b:a", "128k", str(clip.resolve())])
+             "-to", f"{end:.3f}", "-b:a", "128k", str(clip.resolve())])
         audios.append(clip)
         durs.append(probe_duration(clip))
         words_per.append([(w, max(0.0, s - start), max(0.05, e - start))

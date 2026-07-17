@@ -719,3 +719,22 @@ commit, so the other sessions know who did what.
   freeze exception. Owner may want to delete/ignore the two contradicting
   videos (both low-view; probably not worth the churn). Rule 8: eyeball the
   next battle render's verdict scene (10:59 slot).
+- 2026-07-17 — laptop Claude Code session (direct commit to main): PUBLISH
+  FAILURE (owner flagged "error with 3 attempts to publish" + "self-heal
+  error"). Root cause: the "Save brief" git step hit a merge conflict in
+  automation/latest.txt (two publish runs raced — both pass the precheck
+  while in-flight since neither has published yet, then collide writing
+  latest.txt), and the retry loop could not recover: `git pull --rebase`
+  left a half-finished rebase whose "unmerged files" state failed all 3
+  retries. Both today's 10:59 attempts (11:06 + an 11:34 self-heal rerun on
+  the pre-fix workflow) died the same way; self-heal correctly escalated =
+  issue #16 (that is self-heal WORKING, not a self-heal bug). Fix: both push
+  loops (Save brief + Record status) now `git pull --rebase -X theirs` (keeps
+  THIS run's pointer/ledger files — latest.txt/topics.json/universe.json —
+  unique brief filenames never conflict) and `git rebase --abort` any stuck
+  rebase before retrying; bumped 3→5 attempts. Ported the identical fix to
+  the blog repo's auto-blog.yml (both loops). Re-dispatched publish on the
+  fixed code to cover today's slot. The -X theirs makes concurrent runs
+  last-writer-wins instead of deadlocking; a full mutex was judged overkill.
+  NOTE my own frequent pushes to main during a session also widen this race
+  window — avoid pushing while a publish run is mid-flight (rule 9).
