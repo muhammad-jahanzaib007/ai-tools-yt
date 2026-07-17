@@ -1,0 +1,71 @@
+{
+  "slug": "descript-vs-murf-ai-voices",
+  "title": "Descript vs Murf: Which AI Voice Editor Wins for Podcasters?",
+  "hook": "Murf costs five times more. Is it worth it?",
+  "battle": {
+    "toolA": "Descript",
+    "toolB": "Murf",
+    "tagline": "Murf costs 5x more. Is it worth it?",
+    "rounds": [
+      {
+        "title": "Transcription",
+        "aPoint": "Edit audio by editing text, 95%+ accurate.",
+        "bPoint": "No direct transcription, only text-to-speech.",
+        "winner": "a"
+      },
+      {
+        "title": "Voice Cloning",
+        "aPoint": "Voice cloning available on Creator plan and above.",
+        "bPoint": "Cloning only on Enterprise, custom pricing.",
+        "winner": "a"
+      }
+    ],
+    "verdict": "Descript is the clear champion for podcasters, offering powerful audio editing and transcription. Murf is still good for text-to-speech without existing audio.",
+    "champion": "a"
+  },
+  "narration": [
+    {
+      "text": "Murf costs five times more. Is it worth it?",
+      "broll": "money question mark"
+    },
+    {
+      "text": "First, transcription! Descript lets you edit audio just by editing text, offering incredible accuracy. Murf, on the other hand, is purely text-to-speech, with no direct transcription feature. No contest here!",
+      "broll": "typing text editor"
+    },
+    {
+      "text": "Next up, voice cloning! Descript offers voice cloning from its Creator plan upwards. Murf reserves this for its Enterprise plan, with custom pricing. Ouch, that one hurts the budget!",
+      "broll": "voice cloning studio"
+    },
+    {
+      "text": "So, Descript is the clear champion for podcasters, offering powerful audio editing and transcription. Murf is still good for text-to-speech without existing audio. Which one would you pick?",
+      "broll": "trophy podium winner"
+    }
+  ],
+  "description": "We compare Descript and Murf, two popular AI voice editing tools, to see which is better for podcasters. Discover their key features for transcription, audio editing, and voice cloning. Find out our overall winner!",
+  "links": [
+    {
+      "name": "Descript",
+      "url": "https://www.descript.com/"
+    },
+    {
+      "name": "Murf AI",
+      "url": "https://murf.ai/"
+    }
+  ],
+  "tags": [
+    "descript",
+    "murf",
+    "ai voice",
+    "podcast editing",
+    "ai tools",
+    "voice cloning",
+    "transcription",
+    "audio editing",
+    "podcasting",
+    "ai for podcasters"
+  ],
+  "thumbnail_text": "Descript vs Murf",
+  "topic": "Descript vs Murf: AI voice editing for podcasters",
+  "date": "2026-07-17",
+  "hook_type": "bold_claim"
+}
