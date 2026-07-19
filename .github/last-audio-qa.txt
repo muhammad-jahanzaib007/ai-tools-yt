@@ -1,1 +1,1 @@
-voice_pitch_std=6.95st(expressive) script_wer=0.08(clear) pace=2.65wps(natural) mix_rms=0.168 peak=0.89 dur=46s black=none
+voice_pitch_std=7.32st(expressive) script_wer=0.03(clear) pace=2.82wps(brisk) mix_rms=0.167 peak=1.42 dur=67s black=none
