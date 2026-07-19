@@ -917,6 +917,30 @@ def _scene_cut_points(scene_words, full_dur):
     return pts
 
 
+def _silences(path, noise_db=-30.0, min_dur=0.04):
+    """Silence intervals [(start, end), ...] in `path` via ffmpeg silencedetect.
+    Lets the scene slicer cut inside a real pause rather than at a Whisper word
+    timestamp (which marks a word's start late, so a timestamp cut let the next
+    scene's first word bleed into this clip's tail). A cut inside detected
+    silence never splits a word and needs no timestamp accuracy."""
+    try:
+        r = subprocess.run(
+            ["ffmpeg", "-hide_banner", "-i", str(path), "-af",
+             f"silencedetect=noise={noise_db}dB:d={min_dur}", "-f", "null", "-"],
+            stderr=subprocess.PIPE, stdout=subprocess.DEVNULL, text=True)
+    except Exception:
+        return []
+    sil, cur = [], None
+    for line in (r.stderr or "").splitlines():
+        m = re.search(r"silence_start:\s*([-\d.]+)", line)
+        if m:
+            cur = float(m.group(1)); continue
+        m = re.search(r"silence_end:\s*([-\d.]+)", line)
+        if m and cur is not None:
+            sil.append((cur, float(m.group(1)))); cur = None
+    return sil
+
+
 def _voice_single_pass(segs, voice, style):
     """Voice the WHOLE script in ONE TTS call, then slice it per scene at word
     boundaries. Gemini TTS restarts its pitch/energy on every call, so one call
@@ -951,39 +975,35 @@ def _voice_single_pass(segs, voice, style):
         scene_words.append(words[idx:idx + c]); idx += c
     if idx < len(words):                     # alignment drift -> last scene keeps the rest
         scene_words[-1] += words[idx:]
-    # ASYMMETRIC scene slice (2026-07-19):
-    #   START = mid-gap BEFORE the scene ((prev_end + first_word_start)/2).
-    #     Loose on purpose: Whisper timestamps a word's start LATE (it marks
-    #     confident recognition, not the acoustic onset), so a tight start would
-    #     clip every scene's first-word attack -> garble. This is exactly what
-    #     the 2026-07-16 "hug the words" variant did (gate wer 0.74). Keep loose.
-    #   END = just AFTER this scene's last word (last_end + small tail), NOT the
-    #     mid-gap. Mid-gap ((last_end + next_start)/2) lands after the next
-    #     word's real onset (same late-timestamp effect), so the next scene's
-    #     first word bled into this clip's tail -> "voice starts the next line,
-    #     stops, then repeats it next scene" (owner report 2026-07-16 + 07-19).
-    #     A tight end excludes that onset. Cutting AFTER last_end can't clip this
-    #     scene's own words, so it doesn't garble. Guarded by smoke-render.yml.
-    audios, words_per, durs = [], [], []
+    # SILENCE-BASED scene boundaries (owner's idea, 2026-07-19): the continuous
+    # read already pauses between scenes (each scene ends a sentence). Detect
+    # those pauses and cut each boundary INSIDE the silence, so a clip ends after
+    # its last word and the next clip starts before its first word - no word is
+    # split and the next scene's onset never bleeds into this clip's tail.
+    # This removes the dependency on Whisper word timestamps (marked late, which
+    # caused the bleed) entirely. Where a boundary has no detectable pause
+    # (scenes ran together), fall back to the asymmetric timestamp cut: a short
+    # tail after the last word, never past ~45% of the gap toward the next word.
+    sils = _silences(full)
     n = len(segs)
-    for i, sw in enumerate(scene_words):
-        if i == 0:
-            start = 0.0
+    bounds = []                                  # cut time between scene i and i+1
+    for i in range(n - 1):
+        cur, nxt = scene_words[i], scene_words[i + 1]
+        ce = cur[-1][2] if cur else 0.0          # this scene's last word end
+        ns = nxt[0][1] if nxt else ce            # next scene's first word start
+        near = [(s, e) for (s, e) in sils if e > ce - 0.20 and s < ns + 0.20]
+        if near:
+            mid = (ce + ns) / 2.0
+            s, e = min(near, key=lambda iv: abs((iv[0] + iv[1]) / 2 - mid))
+            cut = (s + e) / 2.0                  # inside the real pause
         else:
-            prev = scene_words[i - 1]
-            pe = prev[-1][2] if prev else (sw[0][1] if sw else 0.0)
-            cs = sw[0][1] if sw else pe
-            start = (pe + cs) / 2.0          # LOOSE start: keep the first-word onset
-        if i == n - 1:
-            end = full_dur
-        else:
-            nxt = scene_words[i + 1]
-            ce = sw[-1][2] if sw else start
-            ns = nxt[0][1] if nxt else ce
             gap = max(0.0, ns - ce)
-            # a short tail after the last word, always well before the next
-            # word's onset; 0.06-0.12s, and never past 45% into the gap.
-            end = ce + max(0.06, min(0.12, 0.45 * gap))
+            cut = ce + max(0.06, min(0.12, 0.45 * gap))
+        bounds.append(cut)
+    audios, words_per, durs = [], [], []
+    for i, sw in enumerate(scene_words):
+        start = 0.0 if i == 0 else bounds[i - 1]
+        end = full_dur if i == n - 1 else bounds[i]
         end = max(end, start + 0.20)
         clip = WORK / f"a{i}.mp3"
         run(["ffmpeg", "-y", "-i", str(full.resolve()), "-ss", f"{start:.3f}",
