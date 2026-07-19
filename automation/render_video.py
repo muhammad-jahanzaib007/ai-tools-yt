@@ -951,12 +951,19 @@ def _voice_single_pass(segs, voice, style):
         scene_words.append(words[idx:idx + c]); idx += c
     if idx < len(words):                     # alignment drift -> last scene keeps the rest
         scene_words[-1] += words[idx:]
-    # Slice each scene at the MID-GAP between its words and the next scene's
-    # (known-good for weeks). The 2026-07-16 "hug the words + afade" variant
-    # (_scene_cut_points) was reverted 2026-07-17: it correlated with garbled
-    # final audio (gate wer 0.74/0.76 on the first two CI renders that carried
-    # it, while TTS recorded clean — so the corruption was in the slice, not
-    # the voice). Re-attempt boundary polish only with a CI audio check.
+    # ASYMMETRIC scene slice (2026-07-19):
+    #   START = mid-gap BEFORE the scene ((prev_end + first_word_start)/2).
+    #     Loose on purpose: Whisper timestamps a word's start LATE (it marks
+    #     confident recognition, not the acoustic onset), so a tight start would
+    #     clip every scene's first-word attack -> garble. This is exactly what
+    #     the 2026-07-16 "hug the words" variant did (gate wer 0.74). Keep loose.
+    #   END = just AFTER this scene's last word (last_end + small tail), NOT the
+    #     mid-gap. Mid-gap ((last_end + next_start)/2) lands after the next
+    #     word's real onset (same late-timestamp effect), so the next scene's
+    #     first word bled into this clip's tail -> "voice starts the next line,
+    #     stops, then repeats it next scene" (owner report 2026-07-16 + 07-19).
+    #     A tight end excludes that onset. Cutting AFTER last_end can't clip this
+    #     scene's own words, so it doesn't garble. Guarded by smoke-render.yml.
     audios, words_per, durs = [], [], []
     n = len(segs)
     for i, sw in enumerate(scene_words):
@@ -966,14 +973,17 @@ def _voice_single_pass(segs, voice, style):
             prev = scene_words[i - 1]
             pe = prev[-1][2] if prev else (sw[0][1] if sw else 0.0)
             cs = sw[0][1] if sw else pe
-            start = (pe + cs) / 2.0          # cut mid-gap so no word is clipped
+            start = (pe + cs) / 2.0          # LOOSE start: keep the first-word onset
         if i == n - 1:
             end = full_dur
         else:
             nxt = scene_words[i + 1]
             ce = sw[-1][2] if sw else start
             ns = nxt[0][1] if nxt else ce
-            end = (ce + ns) / 2.0
+            gap = max(0.0, ns - ce)
+            # a short tail after the last word, always well before the next
+            # word's onset; 0.06-0.12s, and never past 45% into the gap.
+            end = ce + max(0.06, min(0.12, 0.45 * gap))
         end = max(end, start + 0.20)
         clip = WORK / f"a{i}.mp3"
         run(["ffmpeg", "-y", "-i", str(full.resolve()), "-ss", f"{start:.3f}",
