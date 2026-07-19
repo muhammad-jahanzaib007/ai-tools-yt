@@ -1,0 +1,112 @@
+{
+  "slug": "best-ai-video-generators",
+  "title": "I Tested Dreamina and 20 Other AI Video Tools, Only 5 Are Worth It",
+  "hook": "Only 5 AI video generators out of 21 were worth using.",
+  "ranking": {
+    "theme": "5 AI video tools worth your time",
+    "items": [
+      {
+        "rank": 5,
+        "name": "Pika Labs",
+        "reason": "Free for Discord users, decent quality.",
+        "tag": "Free"
+      },
+      {
+        "rank": 4,
+        "name": "RunwayML Gen-2",
+        "reason": "Good for control, excellent video editing suite.",
+        "tag": "Paid"
+      },
+      {
+        "rank": 3,
+        "name": "Stable Video Diffusion",
+        "reason": "Open source, impressive local control.",
+        "tag": "Free"
+      },
+      {
+        "rank": 2,
+        "name": "Dreamina",
+        "reason": "Easy to use, consistently good results.",
+        "tag": "Free trial"
+      },
+      {
+        "rank": 1,
+        "name": "Sora",
+        "reason": "Unmatched realism and scene understanding.",
+        "tag": "Coming soon"
+      }
+    ],
+    "cta": "Did I miss any great AI video tools?"
+  },
+  "narration": [
+    {
+      "text": "Only 5 AI video generators out of 21 were worth using.",
+      "broll": "AI video tools"
+    },
+    {
+      "text": "Coming in at number five, Pika Labs. It is free for Discord users and offers decent quality for quick generations. The community features are a big plus, great for getting started with AI video.",
+      "broll": "Discord interface"
+    },
+    {
+      "text": "Number four is RunwayML Gen-2. It gives you good control over your video generations and has an excellent video editing suite. You can really fine-tune your creations here.",
+      "broll": "video editing software"
+    },
+    {
+      "text": "At number three, we have Stable Video Diffusion. This open-source tool delivers impressive local control. It is fantastic if you want to run things on your own hardware.",
+      "broll": "computer server racks"
+    },
+    {
+      "text": "Second place goes to Dreamina. This tool is incredibly easy to use and provides consistently good results. The interface is clean, making it accessible for everyone to create.",
+      "broll": "abstract art generation"
+    },
+    {
+      "text": "And the winner, number one, is Sora. Its realism and scene understanding are completely unmatched right now. It is truly a game-changer.",
+      "broll": "futuristic cityscapes"
+    },
+    {
+      "text": "Sora is the clear leader. Which AI video generator do you think is best?",
+      "broll": "futuristic abstract lines"
+    }
+  ],
+  "description": "I tested 21 different AI video generators to find out which ones actually deliver. This countdown reveals the top 5 tools that are worth your time and effort. See which ones made the cut.",
+  "links": [
+    {
+      "name": "Pika Labs",
+      "url": "https://www.pika.art"
+    },
+    {
+      "name": "RunwayML Gen-2",
+      "url": "https://runwayml.com"
+    },
+    {
+      "name": "Stable Video Diffusion",
+      "url": "https://stability.ai/stable-video"
+    },
+    {
+      "name": "Dreamina",
+      "url": "https://dreamina.baidu.com"
+    },
+    {
+      "name": "Sora",
+      "url": "https://openai.com/sora"
+    }
+  ],
+  "tags": [
+    "ai video",
+    "ai video generator",
+    "dreamina",
+    "sora",
+    "pika labs",
+    "runwayml",
+    "stable video diffusion",
+    "ai tools",
+    "video creation",
+    "ai editing",
+    "best ai tools",
+    "tech review"
+  ],
+  "thumbnail_text": "Top 5 AI Video",
+  "topic": "I Tested Dreamina and 20 Other AI Video Tools, Only 5 Are Worth It",
+  "date": "2026-07-19",
+  "hook_type": "result_first"
+}
