@@ -1,0 +1,112 @@
+{
+  "slug": "ai-tools-for-podcasters",
+  "title": "I Ranked 20 AI Tools for Podcasters, Only 5 Are Worth It",
+  "hook": "I tested 20 AI tools for podcasters, and only five are worth your time.",
+  "ranking": {
+    "theme": "Top 5 AI tools for podcasters",
+    "items": [
+      {
+        "rank": 5,
+        "name": "CapCut",
+        "reason": "Free video editing, auto-captions, and basic audio clean-up.",
+        "tag": "Free plan"
+      },
+      {
+        "rank": 4,
+        "name": "Podcastle",
+        "reason": "Remove background noise instantly, improve vocal clarity.",
+        "tag": "Free trial"
+      },
+      {
+        "rank": 3,
+        "name": "Opus Clip",
+        "reason": "Turn long podcasts into engaging short video clips.",
+        "tag": "Paid"
+      },
+      {
+        "rank": 2,
+        "name": "Descript",
+        "reason": "Edit audio by editing text, powerful and intuitive.",
+        "tag": "Free plan"
+      },
+      {
+        "rank": 1,
+        "name": "Riverside.fm",
+        "reason": "Studio quality recordings, remote interviews, AI show notes.",
+        "tag": "Paid"
+      }
+    ],
+    "cta": "Did your favourite make the cut? Tell me!"
+  },
+  "narration": [
+    {
+      "text": "I tested 20 AI tools for podcasters, and only five are worth your time.",
+      "broll": "AI podcast tools"
+    },
+    {
+      "text": "At number five, it's CapCut. This free tool offers brilliant video editing, automatic captions, and even some basic audio clean-up. It is perfect for visualising your podcast.",
+      "broll": "CapCut interface"
+    },
+    {
+      "text": "Coming in at number four, we have Podcastle. It removes background noise instantly and improves vocal clarity. Your listeners will notice the difference in sound quality.",
+      "broll": "Audio waveform clean"
+    },
+    {
+      "text": "Number three is Opus Clip. This tool transforms your long podcast episodes into engaging short video clips, ready for social media. It saves so much editing time.",
+      "broll": "Short video clips"
+    },
+    {
+      "text": "In second place, it's Descript. Imagine editing your audio simply by editing text. Descript is incredibly powerful and intuitive, making complex edits surprisingly simple.",
+      "broll": "Descript text editing"
+    },
+    {
+      "text": "And the top spot goes to Riverside.fm! It offers studio-quality recordings for remote interviews and even generates AI show notes. This tool is a game-changer for serious podcasters.",
+      "broll": "Microphone recording studio"
+    },
+    {
+      "text": "Riverside.fm truly stands out for its comprehensive features. Did your favourite make the cut? Tell me in the comments!",
+      "broll": "Podcast host talking"
+    }
+  ],
+  "description": "Discover the top 5 AI tools that genuinely make a difference for podcasters. We've sifted through 20 popular options to bring you only the most effective ones for editing, production, and promotion. See which tools can truly elevate your podcast.",
+  "links": [
+    {
+      "name": "CapCut",
+      "url": "https://www.capcut.com/"
+    },
+    {
+      "name": "Podcastle",
+      "url": "https://podcastle.ai/"
+    },
+    {
+      "name": "Opus Clip",
+      "url": "https://www.opus.pro/"
+    },
+    {
+      "name": "Descript",
+      "url": "https://www.descript.com/"
+    },
+    {
+      "name": "Riverside.fm",
+      "url": "https://riverside.fm/"
+    }
+  ],
+  "tags": [
+    "ai tools",
+    "podcast",
+    "podcasting",
+    "ai for podcasters",
+    "best ai tools",
+    "audio editing",
+    "video editing",
+    "content creation",
+    "ai software",
+    "podcaster tools",
+    "ai automation",
+    "podcast production"
+  ],
+  "thumbnail_text": "Top 5 AI Podcast Tools",
+  "topic": "I Ranked 20 AI Tools for Podcasters, Only 5 Are Worth It",
+  "date": "2026-07-20",
+  "hook_type": "pain_point"
+}
