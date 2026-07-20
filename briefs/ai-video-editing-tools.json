@@ -1,0 +1,112 @@
+{
+  "slug": "ai-video-editing-tools",
+  "title": "I Tested 30 AI Editing Tools for Video Creators, Only 5 Are Worth It",
+  "hook": "I tested 30 AI video editors, only five are genuinely useful.",
+  "ranking": {
+    "theme": "5 AI Video Editors Worth Your Time",
+    "items": [
+      {
+        "rank": 5,
+        "name": "Pictory",
+        "reason": "Turns text into engaging videos automatically.",
+        "tag": "Paid"
+      },
+      {
+        "rank": 4,
+        "name": "Descript",
+        "reason": "Edit video by simply editing text, like a document.",
+        "tag": "Free trial"
+      },
+      {
+        "rank": 3,
+        "name": "CapCut",
+        "reason": "Smart editing features for quick, polished social videos.",
+        "tag": "Free plan"
+      },
+      {
+        "rank": 2,
+        "name": "RunwayML",
+        "reason": "Magic tools for advanced AI effects and content generation.",
+        "tag": "Free plan"
+      },
+      {
+        "rank": 1,
+        "name": "HeyGen",
+        "reason": "Create realistic AI avatars and voiceovers from text.",
+        "tag": "Free plan"
+      }
+    ],
+    "cta": "Did your favourite make the cut?"
+  },
+  "narration": [
+    {
+      "text": "I tested 30 AI video editors, only five are genuinely useful.",
+      "broll": "AI interface intro"
+    },
+    {
+      "text": "At number five, we have Pictory. This tool is perfect for turning long articles or scripts into engaging videos automatically. It analyses your text, selects relevant visuals, and even adds background music, making content creation super fast.",
+      "broll": "Text to video"
+    },
+    {
+      "text": "Number four is Descript. Imagine editing your video just by editing text, like a document. Descript makes this a reality, letting you remove filler words or rearrange sections with incredible ease. It is a game changer for podcasts and interviews.",
+      "broll": "Video transcription"
+    },
+    {
+      "text": "Coming in at number three is CapCut. It offers smart editing features ideal for quick, polished social videos. Its AI can automatically generate captions, remove backgrounds, and even stabilise shaky footage, all for free.",
+      "broll": "Mobile video editing"
+    },
+    {
+      "text": "Our runner-up at number two is RunwayML. This platform provides advanced AI effects and content generation. You can use its magic tools to remove objects, generate images, or create entirely new video clips, pushing creative boundaries.",
+      "broll": "AI art generation"
+    },
+    {
+      "text": "And the number one AI video editing tool is HeyGen. It lets you create incredibly realistic AI avatars and voiceovers directly from text. It is astounding for explainer videos or presentations, saving huge amounts of time and budget.",
+      "broll": "AI avatar talking"
+    },
+    {
+      "text": "HeyGen truly stands out as the best for professional results. Did your favourite make the cut?",
+      "broll": "Final countdown"
+    }
+  ],
+  "description": "I put 30 AI video editing tools through their paces to find the very best ones for creators. Discover the top 5 tools that will actually save you time and elevate your video content.",
+  "links": [
+    {
+      "name": "Pictory",
+      "url": "https://pictory.ai"
+    },
+    {
+      "name": "Descript",
+      "url": "https://www.descript.com"
+    },
+    {
+      "name": "CapCut",
+      "url": "https://www.capcut.com"
+    },
+    {
+      "name": "RunwayML",
+      "url": "https://runwayml.com"
+    },
+    {
+      "name": "HeyGen",
+      "url": "https://www.heygen.com"
+    }
+  ],
+  "tags": [
+    "ai tools",
+    "video editing",
+    "ai video editor",
+    "content creation",
+    "youtube shorts",
+    "ai for creators",
+    "video marketing",
+    "ai software",
+    "productivity tools",
+    "best ai tools",
+    "ai automation",
+    "filmmaking"
+  ],
+  "thumbnail_text": "5 AI Video Editors",
+  "topic": "I Tested 30 AI Editing Tools for Video Creators, Only 5 Are Worth It",
+  "date": "2026-07-20",
+  "hook_type": "question"
+}
