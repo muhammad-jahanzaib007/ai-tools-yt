@@ -736,6 +736,26 @@ commit, so the other sessions know who did what.
   the blog repo's auto-blog.yml (both loops). Re-dispatched publish on the
   fixed code to cover today's slot. The -X theirs makes concurrent runs
   last-writer-wins instead of deadlocking; a full mutex was judged overkill.
+- 2026-07-21 — laptop Claude Code session (direct commit to main): CROSSPOST
+  RESILIENCE (owner: "yesterday's 17:00 run didn't post to IG/FB/TikTok").
+  Diagnosed from the 15:59 UTC run (ai-tools-for-podcasters) log: ONLY
+  Instagram failed ("IG container error: status ERROR", a transient IG
+  media-processing blip; the SAME mp4 posted fine to FB + TikTok). FB posted;
+  TikTok posted but is SELF_ONLY/private (audit pending) so invisible to the
+  owner, which is why it looked like all three missed. Root gap: crosspost.py
+  posted each platform exactly ONCE, no retry, and the step is
+  continue-on-error so a fail was totally silent (run stays green). Fix: (1)
+  _try() wraps each platform post with 3 attempts + backoff (IG errors
+  pre-publish and FB/TikTok raise at start/upload/finish, so re-calling makes a
+  fresh attempt without double-posting) - this alone would have cleared
+  yesterday's transient IG error; (2) crosspost.py now sys.exit(1) after
+  writing the receipt when a target is still failed, so the step shows red
+  (still continue-on-error so YouTube is unaffected and the run stays green);
+  (3) watchdog.yml now reads last-crosspost.txt and opens its daily issue if
+  any platform shows fail: - a persistent miss is no longer invisible.
+  Deliberately did NOT build an automatic after-the-fact re-post: the staged
+  Release asset is pruned by the next slot and re-posting risks double-posting
+  FB/TikTok, so the in-run retry + watchdog alarm is the safe fix. 45/45 tests.
   NOTE my own frequent pushes to main during a session also widen this race
   window — avoid pushing while a publish run is mid-flight (rule 9).
 - 2026-07-17 (later) — laptop Claude Code session (direct commit to main):

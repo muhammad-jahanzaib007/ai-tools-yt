@@ -274,6 +274,25 @@ def main():
     results = {}
 
     # IG needs a public URL; FB reuses it. TikTok uploads the local file directly.
+    def _try(name, fn, attempts=3, backoff=15):
+        """Post to one platform, retrying transient failures. IG in particular
+        returns a container 'ERROR' status that is usually a transient media-
+        processing blip (2026-07-20: the same mp4 posted fine to FB + TikTok
+        while IG's container errored once). Each platform's post function RAISES
+        before its content is published on the common failure paths (IG errors
+        pre-publish; FB/TikTok raise at start/upload/finish), so re-calling it
+        creates a fresh attempt without double-posting. Returns 'ok:<id>' or
+        'fail:<last error>'."""
+        last = None
+        for i in range(attempts):
+            try:
+                return f"ok:{fn()}"
+            except Exception as e:
+                last = e
+                log(f"{name} attempt {i + 1}/{attempts} failed: {e}")
+                if i + 1 < attempts:
+                    time.sleep(backoff * (i + 1))
+        return f"fail:{last}"
     public_url = None
     if do_ig or do_fb:
         try:
@@ -295,31 +314,27 @@ def main():
         return
 
     if do_ig:
-        try:
-            rid = post_instagram(public_url, caption)
-            log("instagram reel id:", rid)
-            results["ig"] = f"ok:{rid}"
-        except Exception as e:
-            log(f"instagram post failed: {e}")
-            results["ig"] = f"fail:{e}"
+        results["ig"] = _try("instagram", lambda: post_instagram(public_url, caption))
+        log("instagram:", results["ig"])
     if do_fb:
-        try:
-            vid = post_facebook(public_url, caption)
-            log("facebook reel id:", vid)
-            results["fb"] = f"ok:{vid}"
-        except Exception as e:
-            log(f"facebook post failed: {e}")
-            results["fb"] = f"fail:{e}"
+        results["fb"] = _try("facebook", lambda: post_facebook(public_url, caption))
+        log("facebook:", results["fb"])
     if do_tt:
-        try:
-            pid = post_tiktok(video, caption)
-            log("tiktok publish id:", pid)
-            results["tt"] = f"ok:{pid}"
-        except Exception as e:
-            log(f"tiktok post failed: {e}")
-            results["tt"] = f"fail:{e}"
+        results["tt"] = _try("tiktok", lambda: post_tiktok(video, caption))
+        log("tiktok:", results["tt"])
 
     write_telemetry(video, results)
+
+    # Surface a persistent failure: the crosspost step is continue-on-error so
+    # a silent fail used to leave the run green with nobody the wiser
+    # (2026-07-20 IG miss). Exit non-zero when a target we attempted still
+    # failed after retries, so the pipeline's failure alarm (watchdog reads the
+    # receipt; the step stays continue-on-error so YouTube upload is unaffected)
+    # can flag it.
+    failed = [p for p, v in results.items() if str(v).startswith("fail")]
+    if failed:
+        log(f"cross-post incomplete after retries: {failed}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
