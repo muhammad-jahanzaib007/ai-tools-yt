@@ -153,6 +153,20 @@
       "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1784739775.mp4",
       "captured": "2026-07-22T17:03:07Z",
       "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "vintage wedding photo",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1784740085.mp4",
+      "captured": "2026-07-22T17:08:34Z",
+      "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "historic building facade",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1784740114.mp4",
+      "captured": "2026-07-22T17:08:47Z",
+      "used": false
     }
   ]
 }
