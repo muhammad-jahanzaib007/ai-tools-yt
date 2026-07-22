@@ -44,6 +44,6 @@ jobs:
           name: capture-test-output
           path: |
             automation/capture_library.json
-            .render/**/*.debug.png
+            .render/capture_batch/*.debug.png
           if-no-files-found: warn
           retention-days: 3
