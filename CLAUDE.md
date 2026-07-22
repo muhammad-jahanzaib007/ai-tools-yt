@@ -986,3 +986,40 @@ commit, so the other sessions know who did what.
   "watch this get restored" angle - different visual grammar than the
   original "type a prompt" idea); (2) slot a capture clip into a brief
   segment (likely reuses existing per-segment b-roll compositing).
+- 2026-07-22 (2-week buffer built, commits through 3fe7e8f) — laptop Claude
+  Code session (direct commits to main): owner asked to check whether the
+  actual battle-roster tools (Synthesia, HeyGen, Jasper, Pictory) can be
+  captured, and to flag any dead end. Checked all 4 live: every one is
+  signup-gated for its real feature, no anonymous demo exists - a business-
+  model fact (expensive-to-run features get gated for lead-gen), not a bot
+  wall, confirmed by direct screenshot each time ("Get Started Free"/"Sign
+  in" CTAs, no working input). Owner then offered to create accounts on
+  the gated tools; declined to do that myself - scripting a signed-up
+  account against most SaaS ToS (no-automation clauses), "free trial" cards
+  risk, and account-ban risk are real exposure for the owner's business,
+  and CLAUDE.md already treats account creation as human-domain. Offered
+  alternatives instead of just refusing. Owner then asked Claude to decide
+  the actual strategy and execute - decided to pivot the capture-demo
+  format's topic focus toward the free/no-login tool CATEGORY (image gen,
+  voice, upscale/restore) rather than the SaaS-comparison roster, on the
+  merits (better content, not just easier to automate) - existing
+  typographic battle format for SaaS comparisons stays unchanged.
+  Promoted screen-capture to a real capture-library.yml GH Actions workflow
+  (deleted screen-capture-test.yml, its diagnostic job was done) after
+  confirming imgupscaler.ai also works from an ordinary cloud runner - no
+  self-hosted runner needed after all. Found + fixed 2 more real bugs while
+  building the actual 2-week buffer: (1) capture()'s upload path had no
+  settle pause after page-load, so a hydration-heavy SPA's onChange handler
+  sometimes wasn't wired up yet when the file landed - looked like a wall,
+  wasn't (confirmed via a cloud run showing full unused credits, stuck
+  idle); (2) capture_batch.pick_prompts's "pad with repeats" fallback only
+  fired when the fresh pool was fully empty, not merely smaller than the
+  requested count, silently under-filling batches (a real run asking for 5
+  got 1, which looked like site degradation and wasn't). Both fixed, prompt
+  pool expanded 8->20 for variety. Ran 7 batches, landed on 24 staged clips
+  (19/20 themes covered). Stopped there on purpose: failure rate rose on
+  the last batch (4/6 vs 1-2/6 earlier) - plausible early rate-limiting
+  after several bursts from the same cloud ASN in one session; 24 is a
+  reasonable 2-week buffer and the workflow already has a light weekly
+  Monday top-up scheduled instead of bulk-generating again soon. 58/58
+  tests passing throughout.
