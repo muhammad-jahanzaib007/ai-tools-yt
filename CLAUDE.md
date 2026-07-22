@@ -902,3 +902,44 @@ commit, so the other sessions know who did what.
   TASK_LIBRARY tools (NightCafe was the researched pairing candidate for an
   "X vs Y, same prompt" comparison) once the single-tool path is proven in
   a real render.
+- 2026-07-22 (correction + capture_batch, commit 88cac10) — laptop Claude
+  Code session (direct commit to main): owner asked for the self-hosted-
+  runner-vs-cloud question to be answered before wiring anything in, and
+  separately to "really analyse decisions" rather than move fast. Built a
+  throwaway workflow_dispatch diagnostic (.github/workflows/screen-capture-
+  test.yml) instead of guessing: it failed on a real GitHub Actions cloud
+  IP, and the debug screenshot showed an actual Cloudflare Turnstile
+  "Performing security verification" page — not inferred, seen directly.
+  Declined the self-hosted-runner fix (a standing remote-code-execution
+  channel from GitHub onto the owner's PC is a bigger security footprint
+  than warranted) in favor of a decoupled local batch script
+  (capture_batch.py) that the owner runs manually/on Task Scheduler and
+  which stages clips as GitHub Release assets for the cloud pipeline to
+  consume later. BUT re-testing locally to build that script surfaced a
+  second, bigger problem: the SAME Cloudflare wall also appeared from the
+  owner's own residential IP on a cold `chromium.launch()`, and even a run
+  that got past it (headed mode) then hit `image-generation.perchance.org`
+  itself 403ing with X-Frame-Options:sameorigin, so the generated image
+  never loads. The 07-22 POC's "verified live, no CAPTCHA" claim was true
+  only for the interactive Playwright MCP tool's browser (likely a trusted
+  session or different browser config), not for this module's actual
+  production call - corrected screen_capture.py's docs to say so rather
+  than leave a false-confidence claim for the next session to trust. Fixing
+  this by defeating Cloudflare/the site's 403 on purpose was explicitly
+  ruled out (that's the site telling us not to script it, a different and
+  uglier call than "the selector was wrong"). capture_batch.py itself is
+  solid infra (get-or-create an accumulating Release, upload, JSON
+  manifest) - it just has no reliably-working tool to point at yet. 54/54
+  tests. NEXT: try Pixian.ai or PhotoRestore/Imgupscaler (smaller sites,
+  weaker bot defense per the original research) before concluding the
+  whole screen-capture-demo lever is structurally blocked.
+- 2026-07-22 (same session) — TikTok Developer review came back REJECTED,
+  and it's a policy wall not a technical one: "does not support personal or
+  internal company use," naming our exact use case (posting to/managing the
+  team's own account) as unacceptable. No resubmission fixes a category
+  mismatch. Consequence: TikTok posts stay SELF_ONLY forever via the
+  official API - there's no route to public. Flagged to the owner with 3
+  options (accept private/no-audience, post manually, drop TikTok from the
+  crosspost matrix); no code changed yet pending that call - ripping out a
+  working integration is a strategic decision, not an engineering one, even
+  under standing leadership authority.
