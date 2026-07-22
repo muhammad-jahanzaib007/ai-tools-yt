@@ -61,6 +61,18 @@ PROMPT_POOL = [
     "antique car",
     "mountain landscape",
     "street market crowd",
+    "old man portrait wrinkles",
+    "cat close up fur detail",
+    "vintage wedding photo",
+    "grandfather black and white",
+    "old town cobblestone street",
+    "faded polaroid photo",
+    "child playing outdoors",
+    "historic building facade",
+    "old photograph of soldiers",
+    "vintage car interior",
+    "worn family portrait",
+    "antique clock detail",
 ]
 
 
@@ -75,13 +87,21 @@ def save_manifest(m):
 
 
 def pick_prompts(manifest, count):
-    """Prefer search terms not already in the library; once exhausted, allow
-    repeats (a different photo still gets returned) rather than stalling the
-    batch. Pure function of state, easy to test."""
+    """Prefer search terms not already in the library; pad with repeats (a
+    different photo still gets returned each time) once the fresh pool runs
+    lower than `count`, rather than silently under-filling the batch - a
+    fresh pool of exactly `count` used to look "exhausted" at count-1 and
+    return one short (2026-07-22: a real batch asked for 5, fresh had 4, and
+    the old `fresh if fresh else ...` check returned only those 4 instead of
+    padding - `fresh` is truthy at any size >0, so the empty-pool fallback
+    never triggered until fresh literally hit zero). Pure function of
+    state, easy to test."""
     used = {c["prompt"] for c in manifest["clips"]}
     fresh = [p for p in PROMPT_POOL if p not in used]
-    pool = fresh if fresh else list(PROMPT_POOL)
-    random.shuffle(pool)
+    random.shuffle(fresh)
+    pool = list(fresh)
+    while len(pool) < count:
+        pool += random.sample(PROMPT_POOL, len(PROMPT_POOL))
     return pool[:count]
 
 

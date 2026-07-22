@@ -408,6 +408,16 @@ def test_pick_prompts_respects_count():
     assert len(cbatch.pick_prompts({"clips": []}, 3)) == 3
 
 
+def test_pick_prompts_pads_with_repeats_when_fresh_is_short(monkeypatch):
+    # 2026-07-22 regression: fresh pool smaller than count used to return
+    # fewer than requested instead of padding with repeats.
+    monkeypatch.setattr(cbatch, "PROMPT_POOL", ["a", "b", "c"])
+    manifest = {"clips": [{"prompt": "a"}, {"prompt": "b"}]}   # only "c" fresh
+    picked = cbatch.pick_prompts(manifest, 5)
+    assert len(picked) == 5
+    assert picked[0] == "c"                 # fresh prompt still goes first
+
+
 def test_fetch_pexels_photo_no_key_returns_false(monkeypatch, tmp_path):
     monkeypatch.setattr(cbatch, "PX_KEY", None)
     assert cbatch.fetch_pexels_photo("dog", tmp_path / "out.jpg") is False
