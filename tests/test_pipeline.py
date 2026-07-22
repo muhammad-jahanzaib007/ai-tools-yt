@@ -15,6 +15,7 @@ import audio_qa as aq
 import ig_analytics as iga
 import screen_capture as sc
 import capture_batch as cbatch
+import crosspost as cp
 
 
 # --- chat_json extraction (the 2026-07-05 outage class) -----------------------
@@ -405,3 +406,22 @@ def test_pick_prompts_falls_back_to_repeats_when_pool_exhausted():
 
 def test_pick_prompts_respects_count():
     assert len(cbatch.pick_prompts({"clips": []}, 3)) == 3
+
+
+# --- TikTok manual-upload queue (2026-07-22: API rejected, stage-only now) ----
+
+def test_tiktok_queue_round_trip(tmp_path, monkeypatch):
+    monkeypatch.setattr(cp, "TIKTOK_QUEUE", tmp_path / "tiktok_manual_queue.json")
+    q = cp.load_tiktok_queue()
+    assert q == {"pending": []}
+    q["pending"].append({"slug": "demo-vs-thing", "url": "https://example.com/demo.mp4"})
+    cp.save_tiktok_queue(q)
+    reloaded = cp.load_tiktok_queue()
+    assert reloaded["pending"][0]["slug"] == "demo-vs-thing"
+
+
+def test_tiktok_no_longer_auto_posts():
+    # post_tiktok/_tiktok_access_token were removed with the API path (2026-07-22
+    # rejection) - guard against either silently reappearing.
+    assert not hasattr(cp, "post_tiktok")
+    assert not hasattr(cp, "_tiktok_access_token")

@@ -212,17 +212,13 @@ jobs:
         run: python automation/upload_video.py
 
       # Optional cross-post to IG/FB Reels. No-ops (exit 0) until Meta secrets exist.
-      - name: Cross-post to Instagram + Facebook Reels
+      - name: Cross-post to Instagram + Facebook Reels (+ stage for manual TikTok upload)
         continue-on-error: true
         env:
           META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
           FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
-          CROSSPOST_TARGETS: ${{ vars.CROSSPOST_TARGETS || 'ig,fb' }}
-          TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
-          TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
-          TIKTOK_REFRESH_TOKEN: ${{ secrets.TIKTOK_REFRESH_TOKEN }}
-          TIKTOK_PRIVACY: ${{ vars.TIKTOK_PRIVACY || 'SELF_ONLY' }}
+          CROSSPOST_TARGETS: ${{ vars.CROSSPOST_TARGETS || 'ig,fb,tt' }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python automation/crosspost.py
 
@@ -247,7 +243,7 @@ jobs:
           # Add each receipt individually: one missing pathspec in a combined
           # `git add a b c` fails the WHOLE add (nothing staged), which silently
           # dropped all receipts when playlists.json didn't exist (2026-07-05).
-          for f in .github/last-brief.txt .github/last-audio-qa.txt .github/last-upload.txt .github/last-crosspost.txt automation/playlists.json; do
+          for f in .github/last-brief.txt .github/last-audio-qa.txt .github/last-upload.txt .github/last-crosspost.txt automation/playlists.json automation/tiktok_manual_queue.json; do
             [ -f "$f" ] && git add "$f"
           done
           # Retry the push: a lost race here silently drops the receipts, and

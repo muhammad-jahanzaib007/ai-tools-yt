@@ -2,6 +2,7 @@
 """
 Phase 4 (optional): cross-post the freshly rendered Short to Instagram Reels
 and Facebook Reels, reusing the same output/*.mp4 the YouTube upload used.
+Also stages a copy for the owner to upload to TikTok by hand (see below).
 
 Design notes
 ------------
@@ -13,20 +14,26 @@ Design notes
   notice and exits 0, so it can sit in the pipeline before creds exist and never
   break a run. Same reason every network call is wrapped and best-effort.
 
-Required env (repo secrets) to actually post:
+TikTok (2026-07-22): the Developer API review was REJECTED as a matter of
+policy — "does not support personal or internal company use," naming our
+exact setup. Not fixable by resubmitting, so the auto-post path (Content
+Posting API, OAuth, file upload) is gone for good. Instead every rendered
+video (same captioned mp4 IG/FB post) is staged to an ACCUMULATING GitHub
+Release (tag "tiktok-manual-upload", assets never pruned — a growing queue,
+not a one-shot post) and logged in tiktok_manual_queue.json (committed) so
+the owner can grab whatever they haven't uploaded yet and upload by hand.
+Cleanup (deleting queue entries/assets after uploading) is the owner's call —
+not automated, since only the owner knows what's actually been posted.
+
+Required env (repo secrets) to actually post IG/FB:
   META_PAGE_TOKEN   long-lived Page access token          (IG + FB)
   IG_USER_ID        Instagram Business account id (linked to the Page)
   FB_PAGE_ID        Facebook Page id
-  TIKTOK_CLIENT_KEY, TIKTOK_CLIENT_SECRET, TIKTOK_REFRESH_TOKEN   (TikTok)
-Provided automatically by Actions (for staging the public URL):
+Provided automatically by Actions (for staging public URLs):
   GITHUB_TOKEN, GITHUB_REPOSITORY
 Optional:
-  CROSSPOST_TARGETS   comma list, default "ig,fb"  (add "tt" for TikTok)
-  TIKTOK_PRIVACY      "SELF_ONLY" (default, pre-audit) or "PUBLIC_TO_EVERYONE"
+  CROSSPOST_TARGETS   comma list, default "ig,fb"
   DRY_RUN             "1" = build caption + stage, but do not publish
-
-TikTok note: an unaudited app can only post SELF_ONLY (private). Flip
-TIKTOK_PRIVACY to PUBLIC_TO_EVERYONE only after the app passes TikTok audit.
 """
 
 import os
@@ -46,14 +53,12 @@ GRAPH = "https://graph.facebook.com/v21.0"
 TOKEN = os.environ.get("META_PAGE_TOKEN")
 IG_USER_ID = os.environ.get("IG_USER_ID")
 FB_PAGE_ID = os.environ.get("FB_PAGE_ID")
-TT_KEY = os.environ.get("TIKTOK_CLIENT_KEY")
-TT_SECRET = os.environ.get("TIKTOK_CLIENT_SECRET")
-TT_REFRESH = os.environ.get("TIKTOK_REFRESH_TOKEN")
-TT_PRIVACY = os.environ.get("TIKTOK_PRIVACY", "SELF_ONLY")
 GH_TOKEN = os.environ.get("GITHUB_TOKEN")
 GH_REPO = os.environ.get("GITHUB_REPOSITORY")            # "owner/name"
 TARGETS = [t.strip() for t in os.environ.get("CROSSPOST_TARGETS", "ig,fb").split(",") if t.strip()]
 DRY_RUN = os.environ.get("DRY_RUN") == "1"
+TIKTOK_MANUAL_TAG = "tiktok-manual-upload"
+TIKTOK_QUEUE = ROOT / "automation" / "tiktok_manual_queue.json"
 
 
 def log(*a):
@@ -202,62 +207,64 @@ def post_facebook(video_url, caption):
     return vid
 
 
-# --- TikTok (Content Posting API, Direct Post via file upload) ----------------
+# --- TikTok: no auto-post (API rejected 2026-07-22) — stage for manual upload -
 
-def _tiktok_access_token():
-    r = requests.post("https://open.tiktokapis.com/v2/oauth/token/", data={
-        "client_key": TT_KEY, "client_secret": TT_SECRET,
-        "grant_type": "refresh_token", "refresh_token": TT_REFRESH}, timeout=30)
+def _get_or_create_tiktok_release(api, h):
+    r = requests.get(f"{api}/releases/tags/{TIKTOK_MANUAL_TAG}", headers=h, timeout=30)
+    if r.status_code == 404:
+        r = requests.post(f"{api}/releases", headers=h, json={
+            "tag_name": TIKTOK_MANUAL_TAG, "name": "TikTok manual-upload queue",
+            "body": "Captioned videos waiting for the owner to upload to TikTok by "
+                     "hand (auto-post is blocked — see crosspost.py). Delete an "
+                     "asset here (and its tiktok_manual_queue.json entry) once "
+                     "you've posted it.",
+            "prerelease": True}, timeout=30)
     r.raise_for_status()
-    return r.json()["access_token"]
+    return r.json()
 
 
-def post_tiktok(video: Path, caption):
-    """Direct-post the local mp4 to TikTok. FILE_UPLOAD (not PULL_FROM_URL) so we
-    don't need TikTok domain verification. Pre-audit this only lands as SELF_ONLY."""
-    at = _tiktok_access_token()
-    h = {"Authorization": f"Bearer {at}", "Content-Type": "application/json"}
-    size = video.stat().st_size
-    # TikTok requires querying creator posting eligibility before init; it also
-    # surfaces the clearest permission errors, so a 403 here tells us the reason.
-    ci = requests.post("https://open.tiktokapis.com/v2/post/publish/creator_info/query/",
-                       headers=h, timeout=30)
-    if not ci.ok:
-        raise RuntimeError(f"creator_info {ci.status_code}: {ci.text[:300]}")
-    # single-chunk upload (Shorts are small); TikTok caps a chunk at 64MB
-    init = requests.post(
-        "https://open.tiktokapis.com/v2/post/publish/video/init/", headers=h,
-        json={"post_info": {"title": caption[:2200], "privacy_level": TT_PRIVACY,
-                            "disable_comment": False, "disable_duet": False, "disable_stitch": False},
-              "source_info": {"source": "FILE_UPLOAD", "video_size": size,
-                              "chunk_size": size, "total_chunk_count": 1}},
-        timeout=30)
-    if not init.ok:
-        raise RuntimeError(f"init {init.status_code}: {init.text[:300]}")
-    d = init.json()["data"]
-    upload_url, publish_id = d["upload_url"], d["publish_id"]
+def load_tiktok_queue():
+    if TIKTOK_QUEUE.exists():
+        return json.loads(TIKTOK_QUEUE.read_text(encoding="utf-8"))
+    return {"pending": []}
+
+
+def save_tiktok_queue(q):
+    TIKTOK_QUEUE.write_text(json.dumps(q, indent=2, ensure_ascii=False), encoding="utf-8")
+
+
+def stage_for_tiktok(video: Path, caption):
+    """Upload the same captioned mp4 IG/FB post to an accumulating Release
+    (never pruned — a queue, not a one-shot stage) and record it so the owner
+    can browse tiktok_manual_queue.json for what's left to upload by hand."""
+    if not (GH_TOKEN and GH_REPO):
+        raise RuntimeError("GITHUB_TOKEN / GITHUB_REPOSITORY needed to stage for TikTok")
+    api = f"https://api.github.com/repos/{GH_REPO}"
+    h = {"Authorization": f"Bearer {GH_TOKEN}", "Accept": "application/vnd.github+json"}
+    release = _get_or_create_tiktok_release(api, h)
+    up = release["upload_url"].split("{")[0]
     with open(video, "rb") as f:
-        requests.put(upload_url, data=f.read(), headers={
-            "Content-Type": "video/mp4",
-            "Content-Range": f"bytes 0-{size-1}/{size}",
-            "Content-Length": str(size)}, timeout=600).raise_for_status()
-    # poll publish status
-    for _ in range(30):
-        time.sleep(10)
-        s = requests.post("https://open.tiktokapis.com/v2/post/publish/status/fetch/",
-                          headers=h, json={"publish_id": publish_id}, timeout=30).json()
-        st = s.get("data", {}).get("status")
-        if st in ("PUBLISH_COMPLETE", "SEND_TO_USER_INBOX"):
-            return publish_id
-        if st == "FAILED":
-            raise RuntimeError(f"TikTok publish failed: {s}")
-    raise RuntimeError("TikTok publish did not finish in time")
+        r = requests.post(f"{up}?name={video.name}",
+                          headers={**h, "Content-Type": "video/mp4"},
+                          data=f, timeout=600)
+    r.raise_for_status()
+    url = r.json()["browser_download_url"]
+    q = load_tiktok_queue()
+    q["pending"].append({
+        "slug": video.stem, "url": url, "caption": caption,
+        "staged": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    })
+    save_tiktok_queue(q)
+    return url
 
 
 def main():
     do_ig = "ig" in TARGETS and TOKEN and IG_USER_ID
     do_fb = "fb" in TARGETS and TOKEN and FB_PAGE_ID
-    do_tt = "tt" in TARGETS and TT_KEY and TT_SECRET and TT_REFRESH
+    # "tt" now means "stage a copy for manual upload", not auto-post (API
+    # rejected 2026-07-22) — only needs the GitHub token everything else here
+    # already requires, no TikTok creds.
+    do_tt = "tt" in TARGETS and GH_TOKEN and GH_REPO
     if not (do_ig or do_fb or do_tt):
         log("no platform creds present for enabled targets - skipping cross-post.")
         return
@@ -320,8 +327,8 @@ def main():
         results["fb"] = _try("facebook", lambda: post_facebook(public_url, caption))
         log("facebook:", results["fb"])
     if do_tt:
-        results["tt"] = _try("tiktok", lambda: post_tiktok(video, caption))
-        log("tiktok:", results["tt"])
+        results["tt"] = _try("tiktok-stage", lambda: stage_for_tiktok(video, caption))
+        log("tiktok (manual queue):", results["tt"])
 
     write_telemetry(video, results)
 
