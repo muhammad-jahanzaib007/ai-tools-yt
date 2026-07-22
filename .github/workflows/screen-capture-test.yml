@@ -1,13 +1,14 @@
 name: Screen-capture demo test (cloud-IP diagnostic)
 
-# Manual-only diagnostic: does screen_capture.py's target tool
-# (perchance.org/ai-text-to-image-generator) work headless from a GitHub
-# Actions cloud IP, or does it need the owner's residential-IP PC runner
-# instead? We got bot-walled once already on a different tool from a cloud
-# IP (WordPress mshots + Cloudflare, 2026-07-11) - this answers that
-# question for THIS tool before any daily-pipeline wiring, rather than
-# guessing either way. Not wired into publish.yml; delete or keep as a
-# reusable diagnostic once answered.
+# Manual-only diagnostic. perchance.org was blocked from a GitHub Actions
+# cloud IP (Cloudflare Turnstile, 2026-07-22) - never proven the CONFIRMED
+# WORKING tool (imgupscaler.ai) from a cloud IP specifically, only from the
+# owner's residential IP. If this passes, capture_batch.py can just run as
+# an ordinary scheduled/dispatched GH Actions workflow with the repo's
+# existing secrets - no self-hosted runner, no owner's-PC dependency at
+# all. If it's blocked here too, the owner's-PC path is still the fallback.
+# QUOTA CAUTION: imgupscaler's free tier is a shared per-IP credit pool -
+# do not re-dispatch this repeatedly (see screen_capture.py's quota caveat).
 on:
   workflow_dispatch:
 
@@ -28,23 +29,21 @@ jobs:
 
       - name: Install Playwright
         run: |
-          pip install playwright==1.48.0
+          pip install playwright
           python -m playwright install --with-deps chromium
 
-      - name: Run capture
-        run: |
-          python automation/screen_capture.py perchance-image \
-            "a red fox curled up asleep in autumn leaves, golden hour, cinematic" \
-            capture_test.mp4
-          ls -la capture_test.mp4
-          ffprobe -v error -show_entries format=duration,size -of default=nw=1 capture_test.mp4
+      - name: Run capture batch (count 1, cloud-IP test)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+        run: python automation/capture_batch.py --count 1
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: capture-test-output
           path: |
-            capture_test.mp4
-            capture_test.debug.png
+            automation/capture_library.json
+            .render/**/*.debug.png
           if-no-files-found: warn
           retention-days: 3
