@@ -1,0 +1,52 @@
+name: Instagram analytics
+
+# Pulls per-Reel IG insights (reach, views, avg watch time, likes, saves,
+# shares) via the Meta Graph API and commits analytics/instagram.md, so IG
+# performance is readable from the repo without opening the app. Read-only.
+# Independent of the TTS pipeline (no render), so a Gemini quota-out day does
+# not affect it.
+on:
+  schedule:
+    - cron: "30 8 * * 0"    # Sundays 08:30 UTC, alongside the weekly research
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ig-analytics
+  cancel-in-progress: false
+
+jobs:
+  ig-analytics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: pip install requests==2.32.3
+
+      - name: Pull IG insights
+        env:
+          META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+        run: python automation/ig_analytics.py
+
+      - name: Commit the report
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add analytics/instagram.md
+          if git diff --cached --quiet; then
+            echo "no change"; exit 0
+          fi
+          git commit -m "analytics: instagram $(date -u +%Y-%m-%d)"
+          for i in 1 2 3 4 5; do
+            if git push; then exit 0; fi
+            echo "push rejected; rebasing (attempt $i)"
+            git pull --rebase -X theirs || { git rebase --abort 2>/dev/null || true; }
+          done
+          echo "push failed after 5 attempts"; exit 1
