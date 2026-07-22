@@ -943,3 +943,17 @@ commit, so the other sessions know who did what.
   crosspost matrix); no code changed yet pending that call - ripping out a
   working integration is a strategic decision, not an engineering one, even
   under standing leadership authority.
+- 2026-07-22 (owner decision executed, commit 782f19b) — owner chose: drop
+  TikTok auto-post, keep the video pipeline producing captioned output for
+  them to upload by hand. Removed post_tiktok/_tiktok_access_token (dead
+  forever per the policy rejection) from crosspost.py; added
+  stage_for_tiktok() which uploads the same captioned mp4 IG/FB already
+  posts to an accumulating GitHub Release (tag "tiktok-manual-upload", never
+  pruned) and records it in automation/tiktok_manual_queue.json (committed,
+  added to the receipt-staging loop) so the owner has a running list of
+  what's ready to upload. CROSSPOST_TARGETS's "tt" flag keeps meaning
+  "TikTok lane enabled" - it just stages for pickup instead of auto-posting
+  now, so the existing repo variable value ("ig,fb,tt") needed no change.
+  TIKTOK_CLIENT_KEY/SECRET/REFRESH_TOKEN/PRIVACY removed from publish.yml's
+  env (nothing reads them anymore - owner can delete those repo secrets
+  whenever convenient, not urgent). 2 new tests (56/56).
