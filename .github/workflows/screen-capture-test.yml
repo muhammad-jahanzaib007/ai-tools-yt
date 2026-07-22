@@ -1,0 +1,46 @@
+name: Screen-capture demo test (cloud-IP diagnostic)
+
+# Manual-only diagnostic: does screen_capture.py's target tool
+# (perchance.org/ai-text-to-image-generator) work headless from a GitHub
+# Actions cloud IP, or does it need the owner's residential-IP PC runner
+# instead? We got bot-walled once already on a different tool from a cloud
+# IP (WordPress mshots + Cloudflare, 2026-07-11) - this answers that
+# question for THIS tool before any daily-pipeline wiring, rather than
+# guessing either way. Not wired into publish.yml; delete or keep as a
+# reusable diagnostic once answered.
+on:
+  workflow_dispatch:
+
+jobs:
+  test-capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install Playwright
+        run: |
+          pip install playwright==1.48.0
+          python -m playwright install --with-deps chromium
+
+      - name: Run capture
+        run: |
+          python automation/screen_capture.py perchance-image \
+            "a red fox curled up asleep in autumn leaves, golden hour, cinematic" \
+            capture_test.mp4
+          ls -la capture_test.mp4
+          ffprobe -v error -show_entries format=duration,size -of default=nw=1 capture_test.mp4
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: capture-test-output
+          path: capture_test.mp4
+          retention-days: 3
