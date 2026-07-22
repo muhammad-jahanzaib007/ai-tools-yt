@@ -876,3 +876,29 @@ commit, so the other sessions know who did what.
   sharper skip-rate proxy than likes, feeding straight into the open
   screen-capture-demos-vs-new-niche decision in [[performance-turnaround]]-
   class memory (project-side, not this repo).
+- 2026-07-22 (leadership decision + POC, commit 4c44a07) — laptop Claude
+  Code session (direct commit to main): with the 3.2s avg-watch-time number
+  in hand, decided (as project lead, not asking permission per the
+  operating agreement) to try screen-capture demos next rather than a niche
+  pivot — it isolates the diagnosed variable (no visual payoff) instead of
+  changing format AND audience at once. Built automation/screen_capture.py:
+  drives perchance.org/ai-text-to-image-generator (free, no login, no
+  CAPTCHA) via Playwright, recording the real interaction as a portrait-ish
+  clip. Verified live end-to-end via the interactive Playwright MCP tool
+  before writing any selector as fact: the first CSS-selector guess for the
+  output image was WRONG (assumed a simple `<img src="https://image-cache
+  ...">`; the real output lands in dynamically-created nested
+  image-generation.perchance.org/embed iframes as base64 data, one per
+  generated image) — caught by direct DOM inspection, not by trusting the
+  first working demo. Timing confirmed live: ~14-25s from fresh page load
+  to a loaded image. Standalone module, 1 new test (51/51). NOT wired into
+  the daily pipeline yet — next steps, in order: (1) confirm the tool still
+  works headless from a GitHub Actions cloud IP (bot-wall risk is unproven
+  either way; we got burned once already by mshots+Cloudflare) or decide it
+  needs the owner's self-hosted PC runner instead; (2) design how a capture
+  clip slots into a brief (likely: a new "demo" narration-segment field,
+  reusing the existing per-segment b-roll compositing in _render_scenes/
+  make_segment rather than a new Remotion composition); (3) pick 1-2 more
+  TASK_LIBRARY tools (NightCafe was the researched pairing candidate for an
+  "X vs Y, same prompt" comparison) once the single-tool path is proven in
+  a real render.
