@@ -125,6 +125,34 @@
       "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1784739516.mp4",
       "captured": "2026-07-22T16:58:48Z",
       "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "antique clock detail",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1784739739.mp4",
+      "captured": "2026-07-22T17:02:31Z",
+      "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "street market crowd",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1784739751.mp4",
+      "captured": "2026-07-22T17:02:43Z",
+      "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "old man portrait wrinkles",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1784739763.mp4",
+      "captured": "2026-07-22T17:02:54Z",
+      "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "old family photograph",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1784739775.mp4",
+      "captured": "2026-07-22T17:03:07Z",
+      "used": false
     }
   ]
 }
