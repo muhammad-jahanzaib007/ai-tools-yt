@@ -957,3 +957,32 @@ commit, so the other sessions know who did what.
   TIKTOK_CLIENT_KEY/SECRET/REFRESH_TOKEN/PRIVACY removed from publish.yml's
   env (nothing reads them anymore - owner can delete those repo secrets
   whenever convenient, not urgent). 2 new tests (56/56).
+- 2026-07-22 (screen-capture win, commit a90307d) — laptop Claude Code
+  session (direct commit to main): third candidate tool worked. Pixian.ai
+  (tried second) hit a different block than perchance - a disguised
+  "Network Error" where its WebSocket connection to a processing "worker"
+  never completes; confirmed `navigator.webdriver` reads True by default in
+  vanilla Playwright, a common trivial signal many sites soft-block on
+  without ever showing an explicit CAPTCHA. imgupscaler.ai, tried third, hit
+  neither problem: a cold headless launch completed a real upload in ~7s on
+  the first two tries, verified by screenshot at each step (not inferred
+  from "no error thrown"). Generalized screen_capture.py's capture() to
+  support upload-based tasks (mode="upload", set_input_files) alongside the
+  existing prompt-based ones - imgupscaler needs a source photo, not text.
+  Adapted capture_batch.py to match: sources a photo per clip from the
+  Pexels photo API (same key render_video.py already has, different
+  endpoint) instead of picking a text prompt. IMPORTANT OPERATIONAL NOTE:
+  imgupscaler's free tier is a shared per-IP credit pool (~8 seen on-page) -
+  repeated manual testing during this build drained it to 2, and runs after
+  that stalled well past the normal ~7s (quota pressure, confirmed by
+  watching the credit count drop 8->6->4->2 across successive runs, not a
+  new wall). Same mistake class as the 2026-07-17 Gemini-TTS smoke-test
+  quota drain - do NOT hit this live site in a loop; capture_batch.py's
+  default batch size dropped to 2 for the same reason, and any future smoke
+  test for this task must mock/skip the live site. 3 new tests (57/57).
+  STATUS: technically proven end-to-end, NOT yet wired into the daily
+  brief/render pipeline. Next real steps: (1) design the actual on-screen
+  demo concept for an upscaler (before/after split-screen vs a narrated
+  "watch this get restored" angle - different visual grammar than the
+  original "type a prompt" idea); (2) slot a capture clip into a brief
+  segment (likely reuses existing per-segment b-roll compositing).
