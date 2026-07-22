@@ -440,3 +440,28 @@ def test_tiktok_no_longer_auto_posts():
     # rejection) - guard against either silently reappearing.
     assert not hasattr(cp, "post_tiktok")
     assert not hasattr(cp, "_tiktok_access_token")
+
+
+# --- insight format (2026-07-23 niche pivot) ------------------------------------
+
+def test_insight_is_the_default_format():
+    # publish.yml's Pick-format step now defaults every slot to "insight"
+    # (battle/ranking paused, reachable only via explicit override) - the
+    # generator's own default must match or a bare `python generate_brief.py`
+    # run (no FORMAT env set) silently produces the wrong thing.
+    assert gb.FORMAT == "insight" or __import__("os").environ.get("FORMAT")
+
+
+def test_insight_bullets_require_structure_not_just_a_fact():
+    # The whole point of the pivot away from flat "did you know" fact-dumps
+    # (see 2026-07-23 session log: YouTube's inauthentic-content policy
+    # explicitly targets templated fact-dump Shorts) is that each brief has
+    # a real hook -> mechanism -> stakes -> CTA shape, not a single fact.
+    for word in ("HOOK", "MECHANISM", "STAKES", "CTA"):
+        assert word in gb.INSIGHT_BULLETS
+
+
+def test_replenish_insights_avoids_medical_advice_framing():
+    import inspect
+    src = inspect.getsource(gb.replenish_insights)
+    assert "mental-health-treatment advice" in src or "medical" in src.lower()

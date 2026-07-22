@@ -29,7 +29,7 @@ DATA = ROOT / "automation"
 BRIEFS = ROOT / "briefs"
 TOPICS_JSON = DATA / "topics.json"
 UNIVERSE_JSON = DATA / "universe.json"
-FORMAT = os.environ.get("FORMAT", "battle")   # battle | ranking (top-5 countdown) | comic | news
+FORMAT = os.environ.get("FORMAT", "insight")  # insight | battle | ranking (top-5 countdown) | comic | news
 
 MODEL = os.environ.get("BLOG_MODEL", "openai/gpt-4o-mini")
 ENDPOINT = os.environ.get("MODELS_ENDPOINT", "https://models.github.ai/inference/chat/completions")
@@ -685,6 +685,83 @@ def replenish_rankings(topics, want=12):
         print(f"ranking replenish failed: {e}", file=sys.stderr)
 
 
+INSIGHT_BULLETS = (
+    "- narration: an array of 7-10 segments, each an object with \"text\" (ONE spoken sentence, "
+    "max 16 words, natural spoken cadence) and \"broll\" (a 2-4 word stock-footage search query "
+    "matching the text). This is NOT a flat fact-dump - it needs real structure, or it reads as "
+    "templated filler:\n"
+    "  1. HOOK (segment 1 only): one surprising, concrete, specific claim about how the mind "
+    "or body works. State it directly as fact - no 'did you know', no meta-announcement.\n"
+    "  2. MECHANISM (segments 2-4): explain WHY this actually happens - the real underlying "
+    "cause or process. This is what makes it insight instead of trivia: the viewer should "
+    "understand something new about how their own mind/body works, not just collect an "
+    "isolated fact.\n"
+    "  3. STAKES (1-2 segments): why this matters day to day - a concrete way to notice it or "
+    "use it.\n"
+    "  4. CTA (final segment): one short natural question inviting a comment (e.g. 'Have you "
+    "noticed this in yourself?'), max 20 words, no generic subscribe nudge.\n"
+    "Write it like explaining something fascinating to a friend: confident, a little surprised, "
+    "never like a listicle or textbook. Never invent a specific study, statistic, or citation "
+    "you cannot be sure is real - describe the mechanism in accurate general terms instead of a "
+    "fake percentage or fake study name.\n"
+)
+
+
+def generate_insight_brief(topic, hook_style):
+    user = (
+        f'Write the script and metadata for a 40-55 second faceless YouTube Short explaining: "{topic}".\n\n'
+        "Return a single JSON object with these keys:\n"
+        "- slug: kebab-case, 3-6 words, no dates\n"
+        "- title: a clear, honest, curiosity-driven YouTube title, <=70 chars, states the surprising "
+        "claim or the myth being corrected (e.g. 'Why You Can't Remember Being a Baby', "
+        "'The Real Reason Fear Is Contagious'). No clickbait lies, no year.\n"
+        "- hook: the spoken opening line (<=12 words). It must be a scroll-stopping "
+        f"pattern-interrupt of this exact style: {HOOK_STYLES[hook_style]}. "
+        "It MUST contain one concrete specific detail, never a generic line that fits any topic.\n"
+        + INSIGHT_BULLETS +
+        "- description: a YouTube description, 2 or 3 sentences. Do NOT list links here.\n"
+        "- links: leave as an empty array [] unless a real named source (e.g. a university lab, "
+        "a well-known named psychological phenomenon like the Baader-Meinhof effect) makes sense "
+        "to link to its Wikipedia page - do not invent one.\n"
+        "- tags: an array of 8-12 lowercase search tags (do not include any year)\n"
+        "- thumbnail_text: 3-5 punchy words\n"
+        "Keep claims general and accurate: never invent a statistic, percentage, or study you "
+        "are not confident is real - if unsure, describe the mechanism qualitatively instead. "
+        "No em dashes anywhere."
+    )
+    return _clean_common(chat_json(user))
+
+
+def replenish_insights(topics, want=12):
+    try:
+        used = topics.get("insight_published", []) + topics.get("insight_queue", [])
+        user = (
+            f"Suggest {want} distinct, specific video ideas for a faceless YouTube Shorts channel "
+            "that explains genuine psychology/neuroscience/body-mechanism insights - real "
+            "'why does this happen' explanations, not isolated trivia. Cover memory, perception, "
+            "habit formation, emotion, social behaviour, decision-making, sleep, attention, and "
+            "motivation. Each idea must name the SPECIFIC phenomenon or mechanism (e.g. 'why "
+            "you can't tickle yourself', 'why a song gets stuck in your head', 'why we misremember "
+            "arguments in our own favour'), never a vague 'psychology facts' catch-all. Prefer "
+            "phenomena with a real, explainable mechanism over pure trivia. Do NOT suggest medical, "
+            "therapy, or mental-health-treatment advice - stick to how the healthy mind/body works.\n"
+            + _trend_lines()
+            + "Avoid overlapping these existing ideas:\n- " + "\n- ".join(used or ["(none)"])
+            + '\nReturn a single JSON object: {"topics": ["idea 1", ...]}. No em dashes.'
+        )
+        data = chat_json(user, max_tokens=1200)
+        existing = {t.lower() for t in used}
+        for t in data.get("topics", []):
+            t = strip_em(str(t)).strip()
+            if t and t.lower() not in existing:
+                topics.setdefault("insight_queue", []).append(t)
+                existing.add(t.lower())
+    except SystemExit:
+        raise
+    except Exception as e:
+        print(f"insight replenish skipped: {e}", file=sys.stderr)
+
+
 def _trend_lines(limit=12):
     """Recent high-performing niche videos from trend_research.py, if present."""
     f = DATA / "trends.json"
@@ -765,6 +842,19 @@ def main():
         topics.setdefault("ranking_published", []).append(topic)
         if len(topics["ranking_queue"]) < 5:
             replenish_rankings(topics)
+        save(TOPICS_JSON, topics)
+    elif FORMAT == "insight":
+        topics = load(TOPICS_JSON)
+        if not topics.get("insight_queue"):
+            replenish_insights(topics, want=12)
+            if not topics.get("insight_queue"):
+                sys.exit("no insight topics available and replenish failed")
+        topic = topics["insight_queue"].pop(0)
+        print(f"Generating insight brief for: {topic}")
+        brief = generate_insight_brief(topic, hook_style)
+        topics.setdefault("insight_published", []).append(topic)
+        if len(topics["insight_queue"]) < 5:
+            replenish_insights(topics)
         save(TOPICS_JSON, topics)
     elif FORMAT == "comic" and UNIVERSE_JSON.exists():
         uni = load(UNIVERSE_JSON)

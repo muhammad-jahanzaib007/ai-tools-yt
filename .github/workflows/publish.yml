@@ -97,47 +97,39 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      # Slot decides the format: midday = tool battle, late afternoon = AI news,
-      # evening = Toolverse comic. A manually pushed trigger may force one by
-      # putting "format=battle|news|comic" in publish-trigger.txt.
-      # For a SCHEDULE run the format comes from the cron SLOT hour, not the
-      # wall clock: GitHub can replay a cron hours late (2026-07-07 the 16:13
-      # news slot fired at 18:20 and, read off the clock, produced a COMIC —
-      # a second comic that day and no news). Deriving from the slot keeps a
-      # late replay in its intended format (hard-won rule 2, format-flip).
+      # FORMAT PIVOT 2026-07-23: the AI-tools battle/ranking niche checkpoint
+      # (2026-07-22) read median 4 YouTube views / near-zero IG after ~3
+      # weeks, and separately, a same-age competitor channel (MangoCuts,
+      # general curiosity facts, no tool comparisons) hit median 700-1000
+      # views over the same window on a format our engine already produces
+      # (narration + b-roll + captions, no avatars, no tool demos). Broad
+      # market research (2026-07-23) also surfaced YouTube's July 2026
+      # "inauthentic content" monetization crackdown, which explicitly
+      # targets "templated content where only the topic changes" - a risk
+      # that applies MORE to flat SaaS feature-comparison Shorts than to a
+      # format with a real explanatory structure. So: pivot to "insight"
+      # (psychology/neuroscience/body-mechanism explainers with a genuine
+      # hook -> mechanism -> stakes structure, not a fact-dump - see
+      # INSIGHT_BULLETS in generate_brief.py) as the format for every slot.
+      # battle/ranking/comic/news code stays intact, reachable only via an
+      # explicit format= override - not deleted, just paused.
       - name: Pick format by slot
         id: fmt
         run: |
-          # RANKING + BATTLE split (2026-07-10, replaces battle-only 07-08).
-          # Market read of the niche (YouTube SERP): head-to-head "X vs Y"
-          # Shorts cluster at <100-80k views even from established channels,
-          # while Top-5/tier-list/free-vs-paid rankings repeatedly hit
-          # 0.9M-2.5M. Rankings get 2 of 3 daily slots; battles (with the
-          # 07-10 hook surgery) keep 1 slot as the control. Read both at the
-          # 2026-07-16 checkpoint. News + comic stay paused (reachable only
-          # via explicit format= override).
           ov=""
           if [ "$GITHUB_EVENT_NAME" = "push" ]; then
-            ov=$(grep -oiE "format=(battle|ranking|comic|news)" .github/publish-trigger.txt \
+            ov=$(grep -oiE "format=(insight|battle|ranking|comic|news)" .github/publish-trigger.txt \
                  | head -1 | cut -d= -f2 | tr "A-Z" "a-z") || true
           elif [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
             # The heartbeat Worker (and manual dispatch) can pin the format so
             # a late external fire can't flip it off the wall clock.
-            ov=$(echo "${{ inputs.format }}" | tr "A-Z" "a-z" | grep -oE "battle|ranking|comic|news") || true
-          fi
-          if [ "$GITHUB_EVENT_NAME" = "schedule" ]; then
-            # cron is "MIN HOUR * * *" — use the scheduled hour, not now().
-            h=$(echo '${{ github.event.schedule }}' | cut -d' ' -f2)
-          else
-            h=$(date -u +%H)
+            ov=$(echo "${{ inputs.format }}" | tr "A-Z" "a-z" | grep -oE "insight|battle|ranking|comic|news") || true
           fi
           if [ -n "$ov" ]; then
             echo "format=$ov (trigger override)"
             echo "format=$ov" >> "$GITHUB_OUTPUT"
-          elif [ "$h" -lt 15 ]; then
-            echo "format=battle" >> "$GITHUB_OUTPUT"
           else
-            echo "format=ranking" >> "$GITHUB_OUTPUT"
+            echo "format=insight" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Generate brief
