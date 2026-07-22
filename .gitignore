@@ -7,3 +7,4 @@ __pycache__/
 
 # wrangler local cache (holds CF account id + email - never commit)
 heartbeat/.wrangler/
+.venv-capture/

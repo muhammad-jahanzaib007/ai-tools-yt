@@ -12,11 +12,32 @@ as a portrait-ish video via BrowserContext(record_video_dir=...) — no manual
 screen-recording software, and the resulting clip is real footage, not a
 staged screenshot.
 
-Validated live (2026-07-22, via interactive Playwright MCP against the real
-site, not a guess): perchance.org/ai-text-to-image-generator has no login
-wall and no CAPTCHA/Cloudflare challenge, and a real prompt produced a
-striking image in ~22s. That is the first working TASK_LIBRARY entry; more
-get added the same way — verify live before trusting a selector.
+CORRECTED 2026-07-22 (do not trust the first "it worked" without re-testing
+from a cold vanilla Playwright launch): the interactive Playwright MCP tool
+got a real generated image from perchance.org/ai-text-to-image-generator,
+but a plain `playwright.chromium.launch()` — the same call this module
+actually uses in production — does NOT reliably work against it, in EITHER
+headless or headed mode, from EITHER a GitHub Actions cloud IP or the
+owner's residential IP:
+  - Cloudflare's "Performing security verification" Turnstile page appears
+    on a cold launch (confirmed via a debug screenshot, both cloud and
+    residential) — inconsistently; a later headed/residential run got past
+    it to the real page.
+  - Even past that wall, the actual image never rendered: the console
+    showed `image-generation.perchance.org` itself returning 403 with
+    `X-Frame-Options: sameorigin`, so the embed iframe that's supposed to
+    hold the generated <img> never loads at all.
+The MCP tool's earlier success most likely came from something a vanilla
+launch doesn't have — an already-trusted session/cookies from prior manual
+navigation, a stealth-patched or real "chrome" channel browser, or both —
+none of which is something to actively engineer around here: Cloudflare's
+wall + the server's own 403 are the site telling us not to script it, and
+defeating that on purpose is a different, uglier decision than "the
+selector was wrong." TASK_LIBRARY is kept as a real, working example of the
+calling shape, but perchance-image should NOT be trusted as production-ready
+until proven otherwise from a cold session. Next candidate to try is a
+smaller/less-hardened tool (Pixian.ai, PhotoRestore/Imgupscaler were the
+researched options) rather than fighting this one's defenses.
 
 CLI: python screen_capture.py <task_name> "<prompt>" <out.mp4>
 """
@@ -33,13 +54,13 @@ WORK = ROOT / ".render"
 CAPTURE_VIEWPORT = {"width": 720, "height": 1180}
 
 TASK_LIBRARY = {
-    # Verified live 2026-07-22 by direct DOM inspection (not a guess): the
-    # control iframe (#outputIframeEl, a perchance.org subdomain frame) holds
-    # the prompt textbox + generate button, but the actual generated <img>
-    # lands inside separate, dynamically-created image-generation.perchance.
-    # org/embed iframes (one per "how many" slot) as a base64 data: URI — no
-    # login wall, no CAPTCHA. wait_strategy names the polling function below
-    # since this nested-iframe shape is specific to this tool.
+    # NOT confirmed production-ready — see the module docstring's 2026-07-22
+    # correction. The selector shape below (control iframe holds the prompt
+    # box/button; the real <img> lands in separate dynamically-created
+    # image-generation.perchance.org/embed iframes as base64 data) is
+    # correct and DOM-verified, but a cold `chromium.launch()` gets blocked
+    # before ever reaching that <img> often enough that this isn't usable
+    # unattended yet.
     "perchance-image": {
         "url": "https://perchance.org/ai-text-to-image-generator",
         "iframe": "#outputIframeEl",

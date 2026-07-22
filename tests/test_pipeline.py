@@ -14,6 +14,7 @@ import news_sources as ns
 import audio_qa as aq
 import ig_analytics as iga
 import screen_capture as sc
+import capture_batch as cbatch
 
 
 # --- chat_json extraction (the 2026-07-05 outage class) -----------------------
@@ -383,3 +384,24 @@ def test_crop_filter_centers_and_targets_916():
     vf = sc._crop_filter(720, 1180)
     # target width = 1180 * 9/16 = 663.75 -> 663; x offset centers it in 720
     assert vf == "crop=663:1180:28:0,scale=1080:1920"
+
+
+# --- capture-batch prompt selection (local-PC library builder) ----------------
+
+def test_pick_prompts_avoids_used_prompts():
+    manifest = {"clips": [{"prompt": cbatch.PROMPT_POOL[0]},
+                          {"prompt": cbatch.PROMPT_POOL[1]}]}
+    picked = cbatch.pick_prompts(manifest, len(cbatch.PROMPT_POOL) - 2)
+    assert cbatch.PROMPT_POOL[0] not in picked
+    assert cbatch.PROMPT_POOL[1] not in picked
+
+
+def test_pick_prompts_falls_back_to_repeats_when_pool_exhausted():
+    manifest = {"clips": [{"prompt": p} for p in cbatch.PROMPT_POOL]}
+    picked = cbatch.pick_prompts(manifest, 2)
+    assert len(picked) == 2
+    assert all(p in cbatch.PROMPT_POOL for p in picked)
+
+
+def test_pick_prompts_respects_count():
+    assert len(cbatch.pick_prompts({"clips": []}, 3)) == 3
