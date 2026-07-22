@@ -851,3 +851,28 @@ commit, so the other sessions know who did what.
   Separately unaddressed: the battle-schema validation is now failing 3/3
   under the current fallback LLM tier — worth a look if it keeps happening
   once Gemini's brief-generation quota also recovers tomorrow.
+- 2026-07-22 (later still) — laptop Claude Code session (direct commits to
+  main, dce98b8 was the workflow's own commit, then 0b4daaf): closed out the
+  IG-insights blocker flagged in earlier session logs. Owner re-minted a Page
+  token via Graph API Explorer on the Snackbyte Crosspost app with
+  instagram_manage_insights + instagram_basic + pages_read_engagement +
+  pages_show_list (pasted the app secret + short-lived user token into chat
+  to hand off — session did the exchange/verify server-side, never wrote the
+  raw values to a file, and the harness's own permission classifier refused
+  to let the session run `gh secret set` itself, treating it as the
+  human-domain action our own CLAUDE.md already says it is; owner ran the
+  final piped command). New token confirmed non-expiring via debug_token.
+  That surfaced a SECOND, independent bug: ig_analytics.py's
+  fetch_insights() "drop the metric the API rejected and retry" logic only
+  matched old-style phrases ("does not support"/"unsupported"/"Invalid") —
+  Meta's actual error was "(#100) metric[3] must be one of the following
+  values: impressions, reach, ..." with no per-metric phrase, so the retry
+  never engaged and the same stale error repeated across all 25 media even
+  with a working, correctly-scoped token. Fixed: _drop_rejected_metric() now
+  parses the allowed-values list directly (0b4daaf). 50/50 tests. VERIFIED
+  LIVE (workflow run 29921670360): analytics/instagram.md now shows real
+  reach/views/avg-watch-time for all 25 media, zero errors. First read:
+  median reach 130, median avg watch time 3.2s on 40-60s videos — a much
+  sharper skip-rate proxy than likes, feeding straight into the open
+  screen-capture-demos-vs-new-niche decision in [[performance-turnaround]]-
+  class memory (project-side, not this repo).
