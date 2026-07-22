@@ -35,11 +35,30 @@ wall + the server's own 403 are the site telling us not to script it, and
 defeating that on purpose is a different, uglier decision than "the
 selector was wrong." TASK_LIBRARY is kept as a real, working example of the
 calling shape, but perchance-image should NOT be trusted as production-ready
-until proven otherwise from a cold session. Next candidate to try is a
-smaller/less-hardened tool (Pixian.ai, PhotoRestore/Imgupscaler were the
-researched options) rather than fighting this one's defenses.
+until proven otherwise from a cold session.
 
-CLI: python screen_capture.py <task_name> "<prompt>" <out.mp4>
+THIRD CANDIDATE WORKED (2026-07-22): Pixian.ai hit a second, different block
+(a disguised "Network Error" — its WebSocket "worker" connection never
+completes; `navigator.webdriver` reads True by default in vanilla Playwright,
+a common, trivial bot tell many sites soft-block on without ever showing an
+explicit CAPTCHA). imgupscaler.ai, tried third, has none of this: a real
+upload completed in ~7s from a cold headless launch on the first two tries,
+no wall of any kind. Two tools blocked in a row didn't mean the whole
+approach was dead — it meant those two specific tools were bot-hardened.
+Keep testing candidates cold before trusting one, but don't over-generalize
+a block into "this lever is impossible" either.
+
+QUOTA CAVEAT, same session: its free tier is a shared per-IP/device credit
+pool (started at 8, visible on-page) — repeated manual testing during this
+build drained it to 2, and the 3rd/4th attempts then stalled well past the
+normal ~7s (quota pressure, not a new bot-wall — confirmed by watching
+credits count down 8→6→4→2 across successive runs). Same mistake class as
+the 2026-07-17 Gemini-TTS smoke-test quota drain: don't hit a real,
+rate-limited free tool repeatedly from CI/tests. Any smoke test for this
+task must NOT call the live site (mock/skip it), exactly like
+smoke-render.yml switched to VOICE_PROVIDER=edge for that reason.
+
+CLI: python screen_capture.py <task_name> "<prompt-or-file-path>" <out.mp4>
 """
 import sys
 import time
@@ -62,6 +81,7 @@ TASK_LIBRARY = {
     # before ever reaching that <img> often enough that this isn't usable
     # unattended yet.
     "perchance-image": {
+        "mode": "prompt",
         "url": "https://perchance.org/ai-text-to-image-generator",
         "iframe": "#outputIframeEl",
         "prompt_role": ("textbox", None),   # (role, accessible-name substring; None = first match)
@@ -69,6 +89,20 @@ TASK_LIBRARY = {
         "wait_strategy": "perchance_embed_image",
         "timeout_s": 60,
         "settle_s": 1.0,        # let the reveal animation/paint finish before recording ends
+    },
+    # CONFIRMED WORKING 2026-07-22 from a cold headless `chromium.launch()`
+    # (the third candidate tried, after perchance and Pixian.ai both hit bot
+    # walls — see the module docstring). No login, no CAPTCHA, no soft-block:
+    # a real upload completes in ~7s and the site swaps in a second "Original"
+    # tab once done. `input_value` for this task is a local image path to
+    # upload, not a text prompt.
+    "imgupscaler-upscale": {
+        "mode": "upload",
+        "url": "https://imgupscaler.ai",
+        "file_input": "input[type=file]",
+        "wait_strategy": "imgupscaler_original_label",
+        "timeout_s": 40,
+        "settle_s": 1.5,
     },
 }
 
@@ -100,14 +134,26 @@ def _wait_perchance_embed_image(page, timeout_s):
     raise RuntimeError("timed out waiting for a generated image")
 
 
-WAIT_STRATEGIES = {"perchance_embed_image": _wait_perchance_embed_image}
+def _wait_imgupscaler_done(page, timeout_s):
+    """Block until imgupscaler.ai's second ("Original") result tab appears —
+    it's only added to the DOM once processing actually finishes, so it's a
+    clean completion signal without guessing at a spinner disappearing."""
+    page.get_by_text("Original", exact=True).first.wait_for(
+        state="visible", timeout=timeout_s * 1000)
 
 
-def capture(task_name, prompt, out_path, headless=True):
-    """Record one live run of `task_name` with `prompt`, writing an mp4 to
-    `out_path`. Raises on any step failure — callers should treat a failed
-    capture like a failed pexels_clip() call (drop to a fallback, don't
-    block the whole render)."""
+WAIT_STRATEGIES = {
+    "perchance_embed_image": _wait_perchance_embed_image,
+    "imgupscaler_original_label": _wait_imgupscaler_done,
+}
+
+
+def capture(task_name, input_value, out_path, headless=True):
+    """Record one live run of `task_name`, writing an mp4 to `out_path`.
+    `input_value` is a text prompt for mode="prompt" tasks, or a local image
+    file path for mode="upload" tasks. Raises on any step failure — callers
+    should treat a failed capture like a failed pexels_clip() call (drop to
+    a fallback, don't block the whole render)."""
     from playwright.sync_api import sync_playwright
 
     task = TASK_LIBRARY[task_name]
@@ -126,13 +172,14 @@ def capture(task_name, prompt, out_path, headless=True):
         try:
             page.goto(task["url"], wait_until="domcontentloaded", timeout=30_000)
 
-            frame = page.frame_locator(task["iframe"]) if task.get("iframe") else page
-
-            role, name = task["prompt_role"]
-            _resolve_target(frame, role, name).fill(prompt)
-
-            role, name = task["submit_role"]
-            _resolve_target(frame, role, name).click()
+            if task.get("mode") == "upload":
+                page.locator(task["file_input"]).first.set_input_files(str(input_value))
+            else:
+                frame = page.frame_locator(task["iframe"]) if task.get("iframe") else page
+                role, name = task["prompt_role"]
+                _resolve_target(frame, role, name).fill(input_value)
+                role, name = task["submit_role"]
+                _resolve_target(frame, role, name).click()
 
             WAIT_STRATEGIES[task["wait_strategy"]](page, task["timeout_s"])
             page.wait_for_timeout(int(task["settle_s"] * 1000))

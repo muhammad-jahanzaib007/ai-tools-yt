@@ -408,6 +408,11 @@ def test_pick_prompts_respects_count():
     assert len(cbatch.pick_prompts({"clips": []}, 3)) == 3
 
 
+def test_fetch_pexels_photo_no_key_returns_false(monkeypatch, tmp_path):
+    monkeypatch.setattr(cbatch, "PX_KEY", None)
+    assert cbatch.fetch_pexels_photo("dog", tmp_path / "out.jpg") is False
+
+
 # --- TikTok manual-upload queue (2026-07-22: API rejected, stage-only now) ----
 
 def test_tiktok_queue_round_trip(tmp_path, monkeypatch):
