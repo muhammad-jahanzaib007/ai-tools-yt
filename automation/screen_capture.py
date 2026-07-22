@@ -171,6 +171,15 @@ def capture(task_name, input_value, out_path, headless=True):
         page = context.new_page()
         try:
             page.goto(task["url"], wait_until="domcontentloaded", timeout=30_000)
+            # domcontentloaded fires before a hydration-heavy SPA finishes
+            # wiring up its JS event handlers - set_input_files only waits
+            # for the element to be attached, not for the site's own onChange
+            # listener to be live. Without this pause the file lands in the
+            # <input> but nothing happens (confirmed 2026-07-22: manual tests
+            # that had an incidental pause here worked; production capture()
+            # without one silently stalled on a cold page every time, cloud
+            # AND residential, credits unused - not a wall, not quota).
+            page.wait_for_timeout(2000)
 
             if task.get("mode") == "upload":
                 page.locator(task["file_input"]).first.set_input_files(str(input_value))
