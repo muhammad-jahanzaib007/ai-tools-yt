@@ -61,6 +61,10 @@ jobs:
         # end-to-end check. It still exercises the real slice + mux + gate path.
         env:
           VOICE_PROVIDER: edge
+          # Pexels is needed only by the b-roll fallback render; its free quota
+          # is generous and unrelated to the scarce Gemini TTS quota, so passing
+          # it here does not reintroduce the drain.
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
         run: python automation/render_video.py
 
       - name: Audio QA gate (same gate the pipeline uses)

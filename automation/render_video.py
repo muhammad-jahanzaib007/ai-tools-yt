@@ -1204,8 +1204,9 @@ def _render_scenes(brief, comp, props, label, voices=None, lift_captions=0):
 def main():
     if VOICE_PROVIDER == "gemini" and not GEM_KEY:
         sys.exit("VOICE_PROVIDER=gemini needs GEMINI_API_KEY")
-    if VOICE_PROVIDER != "gemini" and not EL_KEY:
-        sys.exit("ELEVENLABS_API_KEY must be set (or set GEMINI_API_KEY for the free voice)")
+    # No voice-key requirement: edge-tts (free, no key) is the guaranteed floor
+    # of the Gemini -> edge-tts -> ElevenLabs chain, so a render is never blocked
+    # on a missing/quota-out paid voice key.
     if not PX_KEY:
         sys.exit("PEXELS_API_KEY must be set")
     print(f"voice provider: {VOICE_PROVIDER}")
