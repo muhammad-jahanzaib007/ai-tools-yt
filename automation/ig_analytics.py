@@ -8,6 +8,7 @@ from the repo (like the YouTube receipts). Read-only; posts nothing.
 Env: META_PAGE_TOKEN, IG_USER_ID (both already GitHub secrets).
 """
 import os
+import re
 import sys
 import statistics
 from datetime import datetime, timezone
@@ -52,11 +53,33 @@ def fetch_media():
     return out
 
 
+def _drop_rejected_metric(metrics, body):
+    """Pick the metric to remove from a Graph API insights 400. Returns the
+    narrowed metric list, or None if the error doesn't name a droppable one.
+    Two error shapes seen in the wild: an old-style 'X does not support Y' /
+    'unsupported'/'Invalid' phrase naming the metric directly, and (2026-07-22)
+    '(#100) metric[N] must be one of the following values: a, b, c' - which
+    names NO individual metric and never matched the old phrase check, so the
+    retry silently never fired and the same stale error repeated for every
+    media in the report. The allowed-values form is authoritative: intersect
+    our list with it directly instead of guessing which index failed."""
+    m = re.search(r"must be one of the following values:\s*([a-z_,\s]+)", body)
+    if m:
+        allowed = {x.strip() for x in m.group(1).split(",") if x.strip()}
+        narrowed = [x for x in metrics if x in allowed]
+        return narrowed if narrowed and narrowed != metrics else None
+    for name in metrics:
+        if name in body and ("does not support" in body or "not available" in body
+                              or "Invalid" in body or "unsupported" in body):
+            return [x for x in metrics if x != name]
+    return None
+
+
 def fetch_insights(media_id):
     """Insight metrics for one media, dropping any the API rejects."""
     metrics = list(PREF_METRICS)
     url = f"{GRAPH}/{media_id}/insights"
-    for _ in range(len(metrics)):
+    for _ in range(len(metrics) + 1):
         r = _get(url, {"metric": ",".join(metrics), "access_token": TOKEN})
         if r.ok:
             vals = {}
@@ -65,17 +88,10 @@ def fetch_insights(media_id):
                 vals[item["name"]] = v
             return vals
         body = r.text
-        # drop the metric the error complains about, then retry
-        dropped = None
-        for m in metrics:
-            if m in body and ("does not support" in body or "not available" in body
-                              or "Invalid" in body or "unsupported" in body):
-                dropped = m
-                break
-        if dropped:
-            metrics.remove(dropped)
-            if metrics:
-                continue
+        narrowed = _drop_rejected_metric(metrics, body)
+        if narrowed:
+            metrics = narrowed
+            continue
         return {"_error": f"{r.status_code}: {body[:150]}"}
     return {}
 

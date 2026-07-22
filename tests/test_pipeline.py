@@ -12,6 +12,7 @@ import generate_brief as gb
 import render_video as rv
 import news_sources as ns
 import audio_qa as aq
+import ig_analytics as iga
 
 
 # --- chat_json extraction (the 2026-07-05 outage class) -----------------------
@@ -348,3 +349,28 @@ def test_sorted_takes_single_digit_unaffected():
     paths = [Path(f"a{i}.mp3") for i in (2, 0, 1, 4, 3)]
     out = [p.name for p in aq._sorted_takes(paths)]
     assert out == ["a0.mp3", "a1.mp3", "a2.mp3", "a3.mp3", "a4.mp3"]
+
+
+# --- IG insights metric-rejection parsing (2026-07-22 stale-retry incident) ---
+
+def test_drop_rejected_metric_allowed_values_form():
+    # Meta's actual 2026-07-22 error shape: no per-metric phrase, just an
+    # allowed-values list. The old phrase-matching check never fired on this.
+    metrics = ["reach", "views", "ig_reels_avg_watch_time",
+               "ig_reels_video_view_total_count", "saved", "shares",
+               "likes", "comments"]
+    body = ('{"error":{"message":"(#100) metric[3] must be one of the '
+            'following values: impressions, reach, replies, saved, likes, '
+            'comments, shares, total_interactions"}}')
+    out = iga._drop_rejected_metric(metrics, body)
+    assert out == ["reach", "saved", "shares", "likes", "comments"]
+
+
+def test_drop_rejected_metric_named_phrase_form():
+    metrics = ["reach", "plays", "saved"]
+    body = '{"error":{"message":"plays does not support this operation"}}'
+    assert iga._drop_rejected_metric(metrics, body) == ["reach", "saved"]
+
+
+def test_drop_rejected_metric_no_match_returns_none():
+    assert iga._drop_rejected_metric(["reach"], "totally unrelated 500 error") is None
