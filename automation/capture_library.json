@@ -27,6 +27,27 @@
       "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1784738547.mp4",
       "captured": "2026-07-22T16:42:40Z",
       "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "small dog close up",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1784738704.mp4",
+      "captured": "2026-07-22T16:45:17Z",
+      "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "old family photograph",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1784738718.mp4",
+      "captured": "2026-07-22T16:45:36Z",
+      "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "street market crowd",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1784738736.mp4",
+      "captured": "2026-07-22T16:45:49Z",
+      "used": false
     }
   ]
 }
