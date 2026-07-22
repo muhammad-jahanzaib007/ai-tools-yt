@@ -48,6 +48,13 @@
       "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1784738736.mp4",
       "captured": "2026-07-22T16:45:49Z",
       "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "city skyline at night",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1784738865.mp4",
+      "captured": "2026-07-22T16:48:26Z",
+      "used": false
     }
   ]
 }
