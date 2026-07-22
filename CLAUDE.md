@@ -797,3 +797,24 @@ commit, so the other sessions know who did what.
   edge-tts (voice changes Puck->Andrew for that day) and keeps publishing;
   Gemini/Puck returns when quota resets. 45/45 tests. requirements.txt pins
   edge-tts==7.2.8.
+  OPEN (owner said stop for the day 2026-07-22, wait for Gemini quota refresh):
+  the edge-tts fallback is CI-proven for the single-pass path (smoke wer 0.06)
+  but did NOT rescue a real production render (run 29917171569 still gated at
+  wer 0.51). Segments logged "ok" yet the gate caught garble - strong sign
+  Gemini near-quota returns DEGRADED 200-status audio (garbled but not a hard
+  429), so tts_gemini accepts it and the fallback never triggers. The current
+  fallback only fires on a raised exception (clean 429/error), not on
+  bad-but-valid Gemini audio. RESUME FIX: make the Gemini voice path validate
+  its own output (WER/energy) and fall to edge-tts when Gemini returns garbled
+  audio - i.e. treat a garbled Gemini take as a failure, not a success. Until
+  then, quota-degradation days still fail the gate. Gemini free-tier TTS quota
+  resets daily (~rolling 24h / Pacific midnight) - tomorrow's slots should
+  voice on Gemini/Puck again. self-heal will retry + may open a watchdog issue
+  on today's remaining slots; expected, ignore until resume.
+  VOICE FEEDBACK (owner 2026-07-22): the edge-tts (Microsoft) voices "sounded
+  so robotic" - owner disliked all 5 samples. So edge-tts is a WORKING but
+  LOW-QUALITY floor; acceptable only to keep a quota-out day publishing, not as
+  a voice we'd want heard often. When revisiting the fallback, try KOKORO (the
+  newer open-source local model, higher quality than edge/Piper, free, CPU-fast)
+  as the preferred free fallback voice instead. Real fix remains: keep Gemini
+  the primary (quota permitting) + detect garbled Gemini output.
