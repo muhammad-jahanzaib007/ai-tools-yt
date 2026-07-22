@@ -1,0 +1,110 @@
+{
+  "slug": "top-ai-ecommerce-descriptions",
+  "title": "Top 5 AI Tools for E-commerce Product Descriptions",
+  "hook": "Stop writing e-commerce product descriptions yourself. There is a better way.",
+  "ranking": {
+    "theme": "AI tools for e-commerce product descriptions",
+    "items": [
+      {
+        "rank": 5,
+        "name": "Simplified",
+        "reason": "Great for quick, varied description ideas.",
+        "tag": "Free plan"
+      },
+      {
+        "rank": 4,
+        "name": "Copy.ai",
+        "reason": "Generates multiple tone options quickly.",
+        "tag": "Free trial"
+      },
+      {
+        "rank": 3,
+        "name": "Jasper",
+        "reason": "Best for brand voice consistency.",
+        "tag": "Paid"
+      },
+      {
+        "rank": 2,
+        "name": "ChatGPT",
+        "reason": "Highly customisable, excellent for SEO.",
+        "tag": "Free"
+      },
+      {
+        "rank": 1,
+        "name": "Surfer SEO",
+        "reason": "Combines AI writing with deep SEO analysis.",
+        "tag": "Paid"
+      }
+    ],
+    "cta": "Did we miss your favourite tool?"
+  },
+  "narration": [
+    {
+      "text": "Stop writing e-commerce product descriptions yourself. There is a better way.",
+      "broll": "ecommerce products shopping"
+    },
+    {
+      "text": "Number 5 is Simplified. This tool offers quick, varied description ideas, perfect for brainstorming. It helps you overcome writer's block by giving you a strong starting point for any product.",
+      "broll": "simplified interface"
+    },
+    {
+      "text": "At number 4, we have Copy.ai. It excels at generating multiple tone options quickly. You can tailor your descriptions for different audiences without rewriting them from scratch, saving valuable time.",
+      "broll": "copy.ai interface"
+    },
+    {
+      "text": "Coming in at number 3 is Jasper. It is best for maintaining brand voice consistency across all your product listings. If you have a specific brand personality, Jasper ensures every description aligns perfectly.",
+      "broll": "jasper ai typing"
+    },
+    {
+      "text": "Our runner-up at number 2 is ChatGPT. This free AI is highly customisable and excellent for SEO. You can prompt it to include specific keywords and even create unique selling propositions for your products.",
+      "broll": "chatgpt interface"
+    },
+    {
+      "text": "And the number 1 AI tool for e-commerce product descriptions is Surfer SEO. It combines AI writing with deep SEO analysis, ensuring your descriptions are not only compelling but also rank high in search results.",
+      "broll": "surfer seo analysis"
+    },
+    {
+      "text": "Surfer SEO delivers descriptions that truly convert. Do you agree with our ranking? Let us know in the comments below.",
+      "broll": "product description text"
+    }
+  ],
+  "description": "Discover the top 5 AI tools that will revolutionise how you write e-commerce product descriptions. From generating ideas to optimising for SEO, these tools save you time and boost your sales.",
+  "links": [
+    {
+      "name": "Simplified",
+      "url": "https://simplified.com"
+    },
+    {
+      "name": "Copy.ai",
+      "url": "https://www.copy.ai"
+    },
+    {
+      "name": "Jasper",
+      "url": "https://www.jasper.ai"
+    },
+    {
+      "name": "ChatGPT",
+      "url": "https://chat.openai.com"
+    },
+    {
+      "name": "Surfer SEO",
+      "url": "https://surferseo.com"
+    }
+  ],
+  "tags": [
+    "ai tools",
+    "ecommerce",
+    "product descriptions",
+    "ai writing",
+    "seo",
+    "online store",
+    "business",
+    "ai for marketing",
+    "content creation",
+    "digital marketing"
+  ],
+  "thumbnail_text": "AI ECOMMERCE DESCRIPTIONS",
+  "topic": "Top 5 AI Tools for E-commerce Product Descriptions",
+  "date": "2026-07-22",
+  "hook_type": "pain_point"
+}
