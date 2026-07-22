@@ -116,6 +116,12 @@ def main():
 
     reaches = [num(r["reach"]) for r in rows if r["reach"] is not None]
     awts = [r["awt_s"] for r in rows if isinstance(r["awt_s"], (int, float))]
+    likes = [num(r["likes"]) for r in rows if r["likes"] is not None]
+    # A permission/metric error that hits (almost) every media is one problem,
+    # not 25 - collapse it so the report reads clean and names the fix.
+    err_rows = [r for r in rows if r["err"]]
+    perm_blocked = sum(1 for r in err_rows if "permission" in (r["err"] or "").lower()
+                       or '"code":10' in (r["err"] or ""))
 
     lines = [f"# Instagram Reels analytics ({datetime.now(timezone.utc):%Y-%m-%d %H:%M} UTC)",
              "",
@@ -141,11 +147,24 @@ def main():
               f"- Median reach: {int(statistics.median(reaches)) if reaches else 'n/a'}",
               f"- Max reach: {int(max(reaches)) if reaches else 'n/a'}",
               f"- Median avg watch time: {round(statistics.median(awts), 1) if awts else 'n/a'}s",
+              f"- Likes (median / max): {int(statistics.median(likes)) if likes else 'n/a'} / "
+              f"{int(max(likes)) if likes else 'n/a'}",
               ""]
-    errs = [r for r in rows if r["err"]]
-    if errs:
-        lines += ["## Insight errors (metric availability / permissions)",
-                  *[f"- {r['date']} {r['title']}: {r['err']}" for r in errs], ""]
+    if perm_blocked >= max(1, len(rows) // 2):
+        lines += [
+            "## Insights blocked - token needs `instagram_manage_insights`",
+            f"Reach / views / watch-time came back empty for {perm_blocked}/{len(rows)} "
+            "media with `(#10) Application does not have permission`. The Meta token "
+            "has posting scopes but not insight-read. Re-mint META_PAGE_TOKEN with "
+            "`instagram_manage_insights` (plus `instagram_basic`, `pages_read_engagement`) "
+            "added, update the secret, and re-run - likes/comments above already work "
+            "without it.", ""]
+    else:
+        other = [r for r in err_rows if not ("permission" in (r["err"] or "").lower()
+                                              or '"code":10' in (r["err"] or ""))]
+        if other:
+            lines += ["## Insight errors",
+                      *[f"- {r['date']} {r['title']}: {r['err']}" for r in other], ""]
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text("\n".join(lines) + "\n", encoding="utf-8")
