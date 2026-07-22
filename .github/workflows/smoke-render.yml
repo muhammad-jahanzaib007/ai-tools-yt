@@ -54,13 +54,13 @@ jobs:
           echo "smoke-test-battle" > automation/latest.txt
 
       - name: Render the fixture (real voice + slice + mux path)
+        # No Gemini/ElevenLabs keys on purpose: the smoke test voices with the
+        # free edge-tts fallback so it (a) never spends the scarce Gemini TTS
+        # free-tier quota that production needs - the old smoke test drained it
+        # and helped exhaust it on 2026-07-22 - and (b) doubles as the edge-tts
+        # end-to-end check. It still exercises the real slice + mux + gate path.
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
-          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
-          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
-          VOICE_PROVIDER: ${{ vars.VOICE_PROVIDER }}
-          GEMINI_VOICE: ${{ vars.GEMINI_VOICE }}
+          VOICE_PROVIDER: edge
         run: python automation/render_video.py
 
       - name: Audio QA gate (same gate the pipeline uses)

@@ -73,6 +73,7 @@ GEM_KEY = GEM_KEYS[0] if GEM_KEYS else None
 # ear). ElevenLabs remains a manual override / automatic fallback.
 VOICE_PROVIDER = os.environ.get("VOICE_PROVIDER") or ("gemini" if GEM_KEY else "eleven")
 VOICE_ID = os.environ.get("VOICE_ID") or "Fahco4VZzobUeiPqni1S"      # user-picked library voice
+EDGE_VOICE = os.environ.get("EDGE_VOICE") or "en-US-AndrewNeural"    # free edge-tts fallback voice
 EL_MODEL = os.environ.get("ELEVEN_MODEL") or "eleven_multilingual_v2"
 GEMINI_TTS_MODEL = os.environ.get("GEMINI_TTS_MODEL", "gemini-2.5-flash-preview-tts")
 
@@ -278,52 +279,87 @@ def _align_script_to_timings(text, whisper_words):
     return out or whisper_words
 
 
+def tts_edge(text, dest, voice=None):
+    """Free fallback voice via Microsoft edge-tts: no API key, no quota. Produces
+    an mp3; word timings are recovered by Whisper (like the Gemini path), so a
+    Gemini free-tier quota-out (2026-07-22 blocked every slot) can no longer
+    stop a render. Raises if no audio is produced."""
+    import asyncio
+    import edge_tts
+    v = voice or EDGE_VOICE
+
+    async def _run():
+        comm = edge_tts.Communicate(text, v)
+        with open(dest, "wb") as f:
+            async for ch in comm.stream():
+                if ch["type"] == "audio":
+                    f.write(ch["data"])
+
+    asyncio.run(_run())
+    if not Path(dest).exists() or Path(dest).stat().st_size < 800:
+        raise RuntimeError("edge-tts produced no audio")
+
+
+def _el_tts(text, dest, timestamps):
+    """ElevenLabs REST call. `timestamps` uses the alignment endpoint (returns
+    word timings); otherwise plain audio. Raises on HTTP error."""
+    suffix = "/with-timestamps" if timestamps else ""
+    r = requests.post(
+        f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}{suffix}",
+        params={"output_format": "mp3_44100_128"},
+        headers={"xi-api-key": EL_KEY, "Content-Type": "application/json"},
+        json={"text": text, "model_id": EL_MODEL, "voice_settings": VOICE_SETTINGS},
+        timeout=120,
+    )
+    if r.status_code >= 400:
+        raise RuntimeError(f"ElevenLabs {r.status_code}: {r.text[:200]}")
+    return r
+
+
 def tts(text, dest, voice=None, style=None):
+    # Gemini (owner's chosen voice) -> edge-tts (free) -> ElevenLabs.
     if VOICE_PROVIDER == "gemini":
         try:
             return tts_gemini(text, dest, voice, style)
         except Exception as e:
-            if not EL_KEY:
-                raise
-            print(f"  gemini voice failed ({e}); falling back to ElevenLabs", file=sys.stderr)
-    r = requests.post(
-        f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}",
-        params={"output_format": "mp3_44100_128"},
-        headers={"xi-api-key": EL_KEY, "Content-Type": "application/json"},
-        json={"text": text, "model_id": EL_MODEL, "voice_settings": VOICE_SETTINGS},
-        timeout=120,
-    )
-    if r.status_code >= 400:
-        sys.exit(f"ElevenLabs failed ({r.status_code}): {r.text[:400]}")
-    dest.write_bytes(r.content)
+            print(f"  gemini voice failed ({e}); falling back to edge-tts", file=sys.stderr)
+    try:
+        return tts_edge(text, dest)
+    except Exception as e:
+        if not EL_KEY:
+            raise
+        print(f"  edge-tts failed ({e}); falling back to ElevenLabs", file=sys.stderr)
+    dest.write_bytes(_el_tts(text, dest, timestamps=False).content)
+
+
+def _whisper_timed(text, dest):
+    """Word timings for `dest` via Whisper, captioned with the SCRIPT's spelling
+    (so 'ChatGPT' is never captioned as Whisper's 'Chachi Pt'). Raises if none."""
+    words = _whisper_words(dest, prompt=text)
+    if not words:
+        raise RuntimeError("no word timings recoverable from audio")
+    return _align_script_to_timings(text, words)
 
 
 def tts_timed(text, dest, voice=None, style=None):
-    """TTS with word timings. Returns [(word, start_s, end_s)] or raises if unavailable."""
+    """TTS with word timings. Returns [(word, start_s, end_s)] or raises if unavailable.
+    Provider chain: Gemini -> edge-tts (free, no quota) -> ElevenLabs."""
     if VOICE_PROVIDER == "gemini":
         try:
             tts_gemini(text, dest, voice, style)
-            words = _whisper_words(dest, prompt=text)
-            if not words:
-                raise RuntimeError("no word timings recoverable from gemini audio")
-            # Caption the SCRIPT's words (correct spelling), timed by Whisper —
-            # so 'ChatGPT' is never captioned as Whisper's 'Chachi Pt'.
-            return _align_script_to_timings(text, words)
+            return _whisper_timed(text, dest)
         except Exception as e:
-            # Gemini free tier can hit daily quota; fall back to ElevenLabs
-            # while its key still exists so the cron never misses a day.
-            if not EL_KEY:
-                raise
-            print(f"  gemini voice failed ({e}); falling back to ElevenLabs", file=sys.stderr)
-    r = requests.post(
-        f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}/with-timestamps",
-        params={"output_format": "mp3_44100_128"},
-        headers={"xi-api-key": EL_KEY, "Content-Type": "application/json"},
-        json={"text": text, "model_id": EL_MODEL, "voice_settings": VOICE_SETTINGS},
-        timeout=120,
-    )
-    if r.status_code >= 400:
-        raise RuntimeError(f"with-timestamps {r.status_code}: {r.text[:200]}")
+            print(f"  gemini voice failed ({e}); falling back to edge-tts", file=sys.stderr)
+    # edge-tts: free, no key, no quota. Timings via Whisper (edge audio is clean,
+    # so it transcribes accurately) - keeps a quota-out day publishing.
+    try:
+        tts_edge(text, dest)
+        return _whisper_timed(text, dest)
+    except Exception as e:
+        if not EL_KEY:
+            raise
+        print(f"  edge-tts failed ({e}); falling back to ElevenLabs", file=sys.stderr)
+    r = _el_tts(text, dest, timestamps=True)
     j = r.json()
     dest.write_bytes(base64.b64decode(j["audio_base64"]))
     al = j.get("alignment") or j.get("normalized_alignment")

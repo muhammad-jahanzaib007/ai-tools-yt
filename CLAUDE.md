@@ -778,3 +778,22 @@ commit, so the other sessions know who did what.
   exception. Owner budget: $0 confirmed — improvements #2 token-health dash +
   #3 free edge-tts fallback are designed + queued for post-07-19 checkpoint;
   #4 worker uptime alarm dropped by owner.
+- 2026-07-22 — laptop Claude Code session (direct commit to main): GEMINI TTS
+  QUOTA OUTAGE (owner: "today's run keeps failing, i think api keys running
+  out" — correct). Both 10:59 attempts failed the Audio QA gate (wer 0.62/0.43
+  GARBLED). Render log: both GEMINI keys 429 RESOURCE_EXHAUSTED (free-tier TTS
+  daily quota), single-pass fell to per-scene, each scene hammered Gemini
+  (7+ key rotations) then fell to ElevenLabs, which produced garbled-enough
+  audio to trip the gate. Contributing cause: the smoke test (added 07-17)
+  rendered with the SAME Gemini keys on every render-path push, draining the
+  scarce free quota. FIX = shipped improvement #3 (free TTS fallback):
+  edge-tts (Microsoft neural voices, `pip install edge-tts`, NO key, NO quota)
+  added as the middle of the provider chain Gemini -> edge-tts -> ElevenLabs
+  (tts + tts_timed; timings via the existing Whisper path since edge audio is
+  clean). EDGE_VOICE=en-US-AndrewNeural (override via env). Also fixed the
+  self-inflicted drain: smoke-render.yml now renders with VOICE_PROVIDER=edge
+  and NO Gemini/ElevenLabs secrets, so it costs ZERO quota and doubles as the
+  edge-tts CI check. Behaviour now: a Gemini quota-out day auto-falls to
+  edge-tts (voice changes Puck->Andrew for that day) and keeps publishing;
+  Gemini/Puck returns when quota resets. 45/45 tests. requirements.txt pins
+  edge-tts==7.2.8.
