@@ -1,0 +1,32 @@
+{
+  "clips": [
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "grandmother smiling",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1784738507.mp4",
+      "captured": "2026-07-22T16:42:00Z",
+      "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "mountain landscape",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1784738521.mp4",
+      "captured": "2026-07-22T16:42:13Z",
+      "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "antique car",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1784738534.mp4",
+      "captured": "2026-07-22T16:42:26Z",
+      "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "vintage portrait black and white",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1784738547.mp4",
+      "captured": "2026-07-22T16:42:40Z",
+      "used": false
+    }
+  ]
+}
