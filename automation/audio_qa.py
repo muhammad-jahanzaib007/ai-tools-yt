@@ -43,18 +43,33 @@ def pitch_std_semitones(y):
     return float(np.std(12 * np.log2(f0 / np.median(f0))))
 
 
+def _sorted_takes(paths):
+    """Sort take files (a0.mp3, a1.mp3, ...) by their numeric scene index, not
+    lexicographic string order. String order puts 'a10.mp3' before 'a2.mp3'
+    (and 'a11'/'a12' too), which scrambles the transcript order for any video
+    with 10+ scenes — the b-roll fallback narration commonly runs 12-13 short
+    segments when a battle/ranking schema validation drops to plain narration.
+    A scrambled transcript compared word-for-word against the sequentially
+    -ordered script inflates script_wer() from clean speech into a bogus
+    GARBLED verdict (confirmed 2026-07-22: a 13-segment fallback brief gated
+    at wer=0.51 purely from this reordering, not actual audio quality)."""
+    def idx(p):
+        m = re.search(r"(\d+)", p.stem)
+        return int(m.group(1)) if m else 0
+    return sorted(paths, key=idx)
+
+
 def script_wer():
     """Word error rate of all kept takes vs the brief narration. None = skip."""
     try:
         import json
-        import re
         from faster_whisper import WhisperModel
         slug = (ROOT / "automation" / "latest.txt").read_text(encoding="utf-8").strip()
         brief = json.loads((ROOT / "briefs" / f"{slug}.json").read_text(encoding="utf-8"))
         expected = " ".join(s["text"] for s in brief["narration"])
         model = WhisperModel("tiny.en", device="cpu", compute_type="int8")
         heard = []
-        for v in sorted((ROOT / ".render").glob("a*.mp3")):
+        for v in _sorted_takes((ROOT / ".render").glob("a*.mp3")):
             segs, _ = model.transcribe(str(v), language="en", beam_size=1)
             heard.append(" ".join(s.text for s in segs))
         norm = lambda s: re.sub(r"[^a-z0-9' ]+", " ", s.lower()).split()
@@ -119,7 +134,7 @@ def main():
     gate = "--gate" in sys.argv
     parts, failures = [], []
     have_voice = False
-    voice = sorted((ROOT / ".render").glob("a*.mp3"))
+    voice = _sorted_takes((ROOT / ".render").glob("a*.mp3"))
     if voice:
         have_voice = True
         try:

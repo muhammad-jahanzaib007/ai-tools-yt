@@ -1229,6 +1229,24 @@ def main():
             scene_render = render_ranking
         elif brief.get("battle"):
             scene_render = render_battle
+        else:
+            # generate_brief.py's queue only ever enqueues "X vs Y" battle
+            # topics for this slot, so a missing battle/ranking/news/comic
+            # block here is always a validation drop (_clean_battle returned
+            # None), never an intended plain-narration format. Without this
+            # marker that silent downgrade is invisible: no exception is
+            # raised (the `except BaseException` marker below never fires),
+            # so the receipt reads like the real format shipped even though
+            # every scene/voice-continuity/motion-graphics feature was
+            # skipped (2026-07-22: all 3 of the day's briefs hit this during
+            # the Gemini quota outage — the fallback LLM tier struggled with
+            # the battle JSON schema).
+            print("no news/comic/ranking/battle block in brief; "
+                  "falling back to b-roll render", file=sys.stderr)
+            OUT.mkdir(exist_ok=True)
+            (OUT / f"{slug}.fallback").write_text(
+                "MissingFormatBlock: no news/comic/ranking/battle key in brief\n",
+                encoding="utf-8")
     if scene_render:
         try:
             _reset_work()

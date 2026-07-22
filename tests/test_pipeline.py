@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "automation"))
 import generate_brief as gb
 import render_video as rv
 import news_sources as ns
+import audio_qa as aq
 
 
 # --- chat_json extraction (the 2026-07-05 outage class) -----------------------
@@ -329,3 +330,21 @@ def test_karaoke_ass_lifts_captions_in_windows(tmp_path):
              if l.startswith("Dialogue:")]
     assert ",0,0,0,," in lines[0]      # intro chunk keeps style margin
     assert ",0,0,830,," in lines[1]    # rank-scene chunk lifted above block
+
+
+# --- audio QA take ordering (2026-07-22 wer=0.51 false-GARBLED incident) ------
+
+def test_sorted_takes_numeric_not_lexicographic():
+    # A 13-segment b-roll-fallback narration produces a0..a12.mp3. String sort
+    # puts 'a10'/'a11'/'a12' before 'a2'..'a9', scrambling the transcript order
+    # that script_wer() compares word-for-word against the sequential script.
+    names = [f"a{i}.mp3" for i in (0, 1, 10, 11, 12, 2, 3, 4, 5, 6, 7, 8, 9)]
+    paths = [Path(n) for n in names]
+    out = [p.name for p in aq._sorted_takes(paths)]
+    assert out == [f"a{i}.mp3" for i in range(13)]
+
+
+def test_sorted_takes_single_digit_unaffected():
+    paths = [Path(f"a{i}.mp3") for i in (2, 0, 1, 4, 3)]
+    out = [p.name for p in aq._sorted_takes(paths)]
+    assert out == ["a0.mp3", "a1.mp3", "a2.mp3", "a3.mp3", "a4.mp3"]
