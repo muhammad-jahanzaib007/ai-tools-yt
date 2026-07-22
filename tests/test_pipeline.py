@@ -13,6 +13,7 @@ import render_video as rv
 import news_sources as ns
 import audio_qa as aq
 import ig_analytics as iga
+import screen_capture as sc
 
 
 # --- chat_json extraction (the 2026-07-05 outage class) -----------------------
@@ -374,3 +375,11 @@ def test_drop_rejected_metric_named_phrase_form():
 
 def test_drop_rejected_metric_no_match_returns_none():
     assert iga._drop_rejected_metric(["reach"], "totally unrelated 500 error") is None
+
+
+# --- screen-capture demo crop geometry -----------------------------------------
+
+def test_crop_filter_centers_and_targets_916():
+    vf = sc._crop_filter(720, 1180)
+    # target width = 1180 * 9/16 = 663.75 -> 663; x offset centers it in 720
+    assert vf == "crop=663:1180:28:0,scale=1080:1920"
