@@ -818,3 +818,36 @@ commit, so the other sessions know who did what.
   newer open-source local model, higher quality than edge/Piper, free, CPU-fast)
   as the preferred free fallback voice instead. Real fix remains: keep Gemini
   the primary (quota permitting) + detect garbled Gemini output.
+- 2026-07-22 (later) — laptop Claude Code session (direct commit to main,
+  36618a0): resumed the quota-outage investigation and found the real cause
+  of today's 3 publish failures is DIFFERENT from the morning's guess. Pulled
+  the actual failed job log (run 29917171569): every Gemini TTS call 429'd
+  cleanly (hard RESOURCE_EXHAUSTED, not a degraded-200) and the edge-tts
+  fallback fired correctly every single time — so the "Gemini returns
+  garbled 200 audio" theory does not hold for this run. The real chain: (1)
+  generate_brief.py's queue only ever enqueues "X vs Y" battle topics for
+  this slot, but with Gemini's free tier also exhausted for BRIEF generation
+  (not just TTS), the provider chain fell to Claude/GitHub Models, which
+  failed the battle JSON schema on all 3 of today's topics even after the
+  stern-reminder retry — _clean_battle correctly dropped the block (working
+  as designed), so render_video.py silently downgraded to plain b-roll with
+  no exception and, previously, no telemetry marker; (2) that fallback
+  narration ran 12-13 short segments (a0..a12.mp3) instead of the usual ~5
+  scenes, and audio_qa.py's script_wer() sorted those files as STRINGS
+  ("a10.mp3" < "a2.mp3" lexicographically), scrambling the transcript order
+  before comparing word-for-word against the sequentially-ordered script —
+  this is what actually produced wer=0.51 GARBLED, a measurement bug, not
+  necessarily bad audio. Fixed both: _sorted_takes() in audio_qa.py sorts by
+  numeric scene index; render_video.py now writes the same `.fallback`
+  receipt marker when scene_render is None (missing format block) as it
+  already does on an exception, so a silent battle->b-roll drop is visible
+  in receipts instead of reading like the real format shipped. 2 new
+  regression tests, 47/47 passing. NOT YET DONE: re-dispatch a slot to
+  confirm this alone clears today's gate (Gemini free-tier TTS quota was
+  still exhausted as of this session — if the next attempt again falls to
+  edge-tts with <10 segments, or with the sort fix on a 10+ segment fallback,
+  it should now pass; if it still gates, the audio genuinely is bad and the
+  memory's degraded-Gemini theory needs a real repro, not just this run's).
+  Separately unaddressed: the battle-schema validation is now failing 3/3
+  under the current fallback LLM tier — worth a look if it keeps happening
+  once Gemini's brief-generation quota also recovers tomorrow.
