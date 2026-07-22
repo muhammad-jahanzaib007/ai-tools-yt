@@ -102,18 +102,32 @@ def capture(task_name, prompt, out_path, headless=True):
             record_video_size=CAPTURE_VIEWPORT,
         )
         page = context.new_page()
-        page.goto(task["url"], wait_until="domcontentloaded", timeout=30_000)
+        try:
+            page.goto(task["url"], wait_until="domcontentloaded", timeout=30_000)
 
-        frame = page.frame_locator(task["iframe"]) if task.get("iframe") else page
+            frame = page.frame_locator(task["iframe"]) if task.get("iframe") else page
 
-        role, name = task["prompt_role"]
-        _resolve_target(frame, role, name).fill(prompt)
+            role, name = task["prompt_role"]
+            _resolve_target(frame, role, name).fill(prompt)
 
-        role, name = task["submit_role"]
-        _resolve_target(frame, role, name).click()
+            role, name = task["submit_role"]
+            _resolve_target(frame, role, name).click()
 
-        WAIT_STRATEGIES[task["wait_strategy"]](page, task["timeout_s"])
-        page.wait_for_timeout(int(task["settle_s"] * 1000))
+            WAIT_STRATEGIES[task["wait_strategy"]](page, task["timeout_s"])
+            page.wait_for_timeout(int(task["settle_s"] * 1000))
+        except Exception:
+            # Debug evidence for "why did this fail" (bot-wall vs a plain
+            # timing/headless quirk) instead of guessing from a bare
+            # TimeoutError - a screenshot answers it in one look.
+            debug_shot = Path(out_path).with_suffix(".debug.png")
+            try:
+                page.screenshot(path=str(debug_shot))
+                print(f"debug screenshot saved: {debug_shot}", file=sys.stderr)
+            except Exception as shot_err:
+                print(f"debug screenshot also failed: {shot_err}", file=sys.stderr)
+            context.close()
+            browser.close()
+            raise
 
         video_path = page.video.path()
         context.close()      # finalizes the .webm; must happen before reading video_path's bytes

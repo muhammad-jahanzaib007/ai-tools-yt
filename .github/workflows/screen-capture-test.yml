@@ -40,7 +40,11 @@ jobs:
           ffprobe -v error -show_entries format=duration,size -of default=nw=1 capture_test.mp4
 
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: capture-test-output
-          path: capture_test.mp4
+          path: |
+            capture_test.mp4
+            capture_test.debug.png
+          if-no-files-found: warn
           retention-days: 3
