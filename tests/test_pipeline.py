@@ -465,3 +465,14 @@ def test_replenish_insights_avoids_medical_advice_framing():
     import inspect
     src = inspect.getsource(gb.replenish_insights)
     assert "mental-health-treatment advice" in src or "medical" in src.lower()
+
+
+def test_insight_brief_tagged_so_render_skips_the_fallback_marker():
+    # generate_insight_brief() must tag brief["format"]="insight" - render_video
+    # .py's main() (separate process, no shared env) reads this to know a
+    # missing battle/ranking/news/comic block is intentional for this format,
+    # not a validation drop worth flagging with a .fallback receipt marker.
+    import inspect
+    src = inspect.getsource(gb.generate_insight_brief)
+    assert 'b["format"] = "insight"' in src
+    assert 'brief.get("format") != "insight"' in inspect.getsource(rv.main)

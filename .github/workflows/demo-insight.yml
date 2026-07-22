@@ -1,0 +1,55 @@
+name: Demo insight videos (preview only, no publish)
+
+# One-off: render 3 real "insight" format videos for the owner to watch
+# before this format goes live. Uses free GitHub Models for the script and
+# free edge-tts for voice (VOICE_PROVIDER=edge) - zero cost, zero Gemini
+# quota spent, since this is a preview, not a real publish. No upload, no
+# crosspost, no push - artifacts only. Delete once the format is approved
+# and shipping for real (production keeps using Gemini per the owner).
+on:
+  workflow_dispatch:
+    inputs:
+      count:
+        description: "How many demo videos to render"
+        default: "3"
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Install Python deps
+        run: pip install -r requirements.txt
+
+      - name: Render N insight demos (edge-tts, no Gemini quota)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          VOICE_PROVIDER: edge
+          FORMAT: insight
+        run: |
+          set -e
+          n="${{ inputs.count || '3' }}"
+          mkdir -p demo_output
+          for i in $(seq 1 "$n"); do
+            echo "=== demo $i/$n ==="
+            python automation/generate_brief.py
+            python automation/render_video.py
+            slug=$(cat automation/latest.txt)
+            cp "output/${slug}.mp4" "demo_output/${i}_${slug}.mp4"
+          done
+          ls -la demo_output
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: insight-demos
+          path: demo_output/*.mp4
+          retention-days: 3

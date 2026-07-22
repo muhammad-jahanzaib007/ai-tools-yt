@@ -1229,18 +1229,21 @@ def main():
             scene_render = render_ranking
         elif brief.get("battle"):
             scene_render = render_battle
-        else:
-            # generate_brief.py's queue only ever enqueues "X vs Y" battle
-            # topics for this slot, so a missing battle/ranking/news/comic
-            # block here is always a validation drop (_clean_battle returned
-            # None), never an intended plain-narration format. Without this
-            # marker that silent downgrade is invisible: no exception is
-            # raised (the `except BaseException` marker below never fires),
-            # so the receipt reads like the real format shipped even though
-            # every scene/voice-continuity/motion-graphics feature was
-            # skipped (2026-07-22: all 3 of the day's briefs hit this during
-            # the Gemini quota outage — the fallback LLM tier struggled with
-            # the battle JSON schema).
+        elif brief.get("format") != "insight":
+            # generate_brief.py's battle/ranking/news/comic queues only ever
+            # enqueue topics matching their own format, so a missing block
+            # here is always a validation drop (e.g. _clean_battle returned
+            # None), never an intended plain-narration format. "insight" is
+            # the one format that legitimately never sets one of these
+            # blocks (see INSIGHT_BULLETS) - it's excluded here so every
+            # insight video isn't wrongly flagged as a degraded fallback.
+            # Without this marker a real validation drop is invisible: no
+            # exception is raised (the `except BaseException` marker below
+            # never fires), so the receipt reads like the real format
+            # shipped even though every scene/voice-continuity/motion-
+            # graphics feature was skipped (2026-07-22: all 3 of that day's
+            # battle briefs hit this during the Gemini quota outage - the
+            # fallback LLM tier struggled with the battle JSON schema).
             print("no news/comic/ranking/battle block in brief; "
                   "falling back to b-roll render", file=sys.stderr)
             OUT.mkdir(exist_ok=True)

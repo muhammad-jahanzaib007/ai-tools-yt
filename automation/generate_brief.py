@@ -729,7 +729,14 @@ def generate_insight_brief(topic, hook_style):
         "are not confident is real - if unsure, describe the mechanism qualitatively instead. "
         "No em dashes anywhere."
     )
-    return _clean_common(chat_json(user))
+    b = _clean_common(chat_json(user))
+    # render_video.py runs as a separate process/step from this one (no
+    # shared env), so it can't see FORMAT - it reads this key from the
+    # brief itself to know a missing battle/ranking/news/comic block here
+    # is BY DESIGN (see the render_video.py main() fallback-marker check),
+    # not a validation drop to flag.
+    b["format"] = "insight"
+    return b
 
 
 def replenish_insights(topics, want=12):
