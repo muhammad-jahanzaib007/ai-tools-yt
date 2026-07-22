@@ -1,0 +1,70 @@
+name: Screen-capture demo library
+
+# Builds/tops up the screen-capture demo clip library (automation/
+# capture_batch.py + screen_capture.py). Confirmed 2026-07-22 to work fine
+# from an ordinary GitHub-hosted runner (imgupscaler.ai has no bot-wall from
+# a cloud IP, unlike perchance.org/Pixian.ai which are dead ends here) - no
+# self-hosted runner or owner's-PC dependency needed.
+#
+# QUOTA CAUTION (see screen_capture.py's docstring): imgupscaler's free tier
+# is a shared credit pool. Keep --count modest per run; the weekly schedule
+# trickles in new clips rather than bulk-generating on a cron.
+on:
+  schedule:
+    - cron: "0 6 * * 1"    # Mondays 06:00 UTC - small weekly top-up
+  workflow_dispatch:
+    inputs:
+      count:
+        description: "How many clips to capture this run"
+        default: "3"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: capture-library
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install Playwright
+        run: |
+          pip install playwright requests
+          python -m playwright install --with-deps chromium
+
+      - name: Capture batch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+        run: python automation/capture_batch.py --count "${{ inputs.count || '3' }}"
+
+      - name: Commit the manifest
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add automation/capture_library.json
+          if ! git diff --cached --quiet; then
+            git commit -m "capture-library: $(date -u +%Y-%m-%d)"
+            ok=""
+            for i in 1 2 3 4 5; do
+              if git pull --rebase -X theirs --quiet && git push --quiet; then ok=1; break; fi
+              echo "push attempt $i rejected; cleaning up + retrying"
+              git rebase --abort 2>/dev/null || true
+              git merge  --abort 2>/dev/null || true
+              sleep 5
+            done
+            [ -n "$ok" ] || { echo "manifest push failed after 5 attempts"; exit 1; }
+          fi
