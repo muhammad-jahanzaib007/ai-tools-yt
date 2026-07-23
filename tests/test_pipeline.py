@@ -480,16 +480,6 @@ def test_insight_brief_tagged_so_render_skips_the_fallback_marker():
     assert "scene_render = render_insight" in main_src
 
 
-def test_chunk_words_py_matches_ts_grouping():
-    # mirrors remotion/src/insight/types.ts chunkWords(): groups of <=3,
-    # emphasis = longest word in the group
-    words = [("Your", 1.0, 1.15), ("brain", 1.15, 1.45), ("cancels", 1.45, 1.85),
-             ("out", 1.85, 2.0), ("any", 2.0, 2.2)]
-    chunks = rv._chunk_words_py(words)
-    assert [c["emphasis_word"] for c in chunks] == ["cancels", "out"]
-    assert chunks[0]["start"] == 1.0 and chunks[0]["end"] == 1.85
-
-
 def test_stage_insight_images_filters_stopwords_and_short_words(monkeypatch, tmp_path):
     monkeypatch.setattr(rv, "REMOTION_DIR", tmp_path)
     monkeypatch.setattr(rv, "PX_KEY", "fake")
@@ -501,14 +491,13 @@ def test_stage_insight_images_filters_stopwords_and_short_words(monkeypatch, tmp
         return True
 
     monkeypatch.setattr(rv, "fetch_pexels_photo", fake_fetch)
-    # chunk1 ["it","is","a"] -> longest word is still a stopword/short (<4
-    # chars) -> filtered out; chunk2 ["quiet","old","memory"] -> "memory"
-    # (len 6) wins emphasis and is a real, fetchable keyword.
+    # one image per word now (owner escalated to "every word") - only pure
+    # stopwords/1-letter words are skipped.
     words = [("it", 0.0, 0.1), ("is", 0.1, 0.2), ("a", 0.2, 0.3),
              ("quiet", 0.3, 0.6), ("old", 0.6, 0.7), ("memory", 0.7, 1.1)]
     staged = rv._stage_insight_images(words)
-    assert fetched == ["memory"]
-    assert len(staged) == 1 and staged[0]["file"] == "kw0.jpg"
+    assert fetched == ["quiet", "old", "memory"]
+    assert len(staged) == 3 and staged[0]["file"] == "kw0.jpg"
 
 
 def test_stage_insight_images_no_key_returns_empty(monkeypatch, tmp_path):

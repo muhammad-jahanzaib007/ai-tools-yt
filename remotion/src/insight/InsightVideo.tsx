@@ -151,12 +151,12 @@ function KeywordCard({ file, accent, startFrame, durFrames }: { file: string; ac
   const pop = spring({ frame, fps: FPS, config: { damping: 13, stiffness: 180 }, durationInFrames: 10 });
   const fadeOut = interpolate(frame, [durFrames - 6, durFrames], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   return (
-    <AbsoluteFill style={{ alignItems: "center", justifyContent: "flex-start", paddingTop: 80 }}>
+    <AbsoluteFill style={{ alignItems: "center", justifyContent: "flex-start", paddingTop: 50 }}>
       <div
         style={{
-          width: 700,
-          height: 700,
-          borderRadius: 34,
+          width: 820,
+          height: 820,
+          borderRadius: 38,
           overflow: "hidden",
           border: `6px solid ${accent}`,
           boxShadow: `0 0 90px ${accent}88`,

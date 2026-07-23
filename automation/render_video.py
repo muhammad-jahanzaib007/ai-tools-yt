@@ -772,37 +772,16 @@ _STOPWORDS = {
 }
 
 
-def _chunk_words_py(words):
-    """Mirror remotion/src/insight/types.ts chunkWords() exactly, so the
-    keyword each chunk highlights (and the image we fetch for it) lines up
-    frame-for-frame with what the composition renders."""
-    chunks = []
-    i = 0
-    while i < len(words):
-        size = min(3, len(words) - i)
-        slice_ = words[i:i + size]
-        ei = 0
-        for k in range(1, len(slice_)):
-            if len(slice_[k][0]) > len(slice_[ei][0]):
-                ei = k
-        chunks.append({
-            "start": slice_[0][1],
-            "end": slice_[-1][2],
-            "emphasis_word": slice_[ei][0],
-        })
-        i += size
-    return chunks
-
-
-def _stage_insight_images(words, max_images=40):
-    """Fetch one Pexels photo per stand-out keyword chunk (the same word the
-    caption already highlights in accent color) and stage it into
-    remotion/public/insight/ (gitignored, like ranking's favicons). This is
-    the owner's 2026-07-23 idea to visually distinguish the format: images
-    tied to MAIN words only, not a photo per word - keeps it readable
-    instead of turning into slideshow noise. Best-effort throughout: a
-    skipped/failed fetch just means that chunk stays text-only, same
-    graceful-degradation pattern as ranking favicons."""
+def _stage_insight_images(words, max_images=120):
+    """Fetch one Pexels photo per WORD (2026-07-23, owner escalated from
+    "every chunk" to "every word" across 3 rounds of feedback) and stage it
+    into remotion/public/insight/ (gitignored, like ranking's favicons).
+    Only true stopwords/1-letter words are skipped - a photo for "the"/"is"
+    is meaningless noise, everything else gets one. Best-effort throughout:
+    a skipped/failed fetch just means that word stays text-only. NOTE: at
+    this density a normal ~150-250 word script means 100+ Pexels calls -
+    fine for demo/creative-direction rendering, but worth watching render
+    time if/when this format goes to the real 3x/day production pipeline."""
     pub = REMOTION_DIR / "public" / "insight"
     if pub.exists():
         shutil.rmtree(pub)
@@ -810,15 +789,11 @@ def _stage_insight_images(words, max_images=40):
     if not PX_KEY:
         return []
 
-    chunks = _chunk_words_py(words)
-    # 2026-07-23 (owner: "more pictures, larger" x2): EVERY chunk gets an
-    # image now unless its emphasis word is a pure stopword ("the"/"is"/
-    # "to" - no photo makes those meaningful) or a single letter. max_images
-    # is a safety cap, not a target.
     candidates = [
-        c for c in chunks
-        if len(c["emphasis_word"].strip(".,!?\"'")) >= 2
-        and c["emphasis_word"].strip(".,!?\"'").lower() not in _STOPWORDS
+        {"start": s, "end": e, "word": w}
+        for (w, s, e) in words
+        if len(w.strip(".,!?\"'")) >= 2
+        and w.strip(".,!?\"'").lower() not in _STOPWORDS
     ]
     if len(candidates) > max_images:
         step = len(candidates) / max_images
@@ -826,7 +801,7 @@ def _stage_insight_images(words, max_images=40):
 
     staged = []
     for n, c in enumerate(candidates):
-        word = c["emphasis_word"].strip(".,!?\"'")
+        word = c["word"].strip(".,!?\"'")
         dest = pub / f"kw{n}.jpg"
         try:
             if fetch_pexels_photo(word, dest):
