@@ -794,7 +794,7 @@ def _chunk_words_py(words):
     return chunks
 
 
-def _stage_insight_images(words, max_images=20):
+def _stage_insight_images(words, max_images=40):
     """Fetch one Pexels photo per stand-out keyword chunk (the same word the
     caption already highlights in accent color) and stage it into
     remotion/public/insight/ (gitignored, like ranking's favicons). This is
@@ -811,14 +811,13 @@ def _stage_insight_images(words, max_images=20):
         return []
 
     chunks = _chunk_words_py(words)
-    # 2026-07-23 (owner: "need more images"): almost every chunk gets an
-    # image now - only drop a chunk whose emphasis word is a stopword or
-    # too short (2 letters) to search into anything meaningful. max_images
-    # is a safety cap, not a target - with ~1 image per 3-word chunk a
-    # normal insight script (7-10 segments) stays well under it.
+    # 2026-07-23 (owner: "more pictures, larger" x2): EVERY chunk gets an
+    # image now unless its emphasis word is a pure stopword ("the"/"is"/
+    # "to" - no photo makes those meaningful) or a single letter. max_images
+    # is a safety cap, not a target.
     candidates = [
         c for c in chunks
-        if len(c["emphasis_word"].strip(".,!?\"'")) >= 3
+        if len(c["emphasis_word"].strip(".,!?\"'")) >= 2
         and c["emphasis_word"].strip(".,!?\"'").lower() not in _STOPWORDS
     ]
     if len(candidates) > max_images:
