@@ -825,14 +825,54 @@ def _stage_insight_images(words, max_images=30):
     staged = []
     for n, c in enumerate(candidates):
         word = c["emphasis_word"].strip(".,!?\"'")
-        dest = pub / f"kw{n}.jpg"
+        dest_a = pub / f"kw{n}a.jpg"
+        dest_b = pub / f"kw{n}b.jpg"
         try:
-            if fetch_pexels_photo(word, dest):
-                staged.append({"start": c["start"], "end": c["end"], "file": dest.name})
+            ok_a, ok_b = fetch_pexels_photo_pair(word, dest_a, dest_b)
         except requests.RequestException:
             continue
+        if not ok_a:
+            continue
+        entry = {"start": c["start"], "end": c["end"], "file": dest_a.name}
+        if ok_b:
+            entry["file2"] = dest_b.name
+        staged.append(entry)
     print(f"  insight keyword images: {len(staged)}/{len(candidates)} staged")
     return staged
+
+
+def _download_pexels_url(url, dest):
+    with requests.get(url, stream=True, timeout=60) as dl:
+        if dl.status_code >= 400:
+            return False
+        with open(dest, "wb") as f:
+            for chunk in dl.iter_content(1 << 16):
+                f.write(chunk)
+    return Path(dest).stat().st_size > 5000
+
+
+def fetch_pexels_photo_pair(query, dest_a, dest_b):
+    """Download TWO different Pexels photos for the same query - top/bottom
+    keyword cards (2026-07-23, owner: "two images on screen ... both be
+    different but both belong to the same word") need visual variety, not
+    the same photo twice. One search call, first two distinct results;
+    falls back to re-downloading the first result for dest_b if Pexels only
+    has one match. Returns (ok_a, ok_b)."""
+    if not PX_KEY:
+        return False, False
+    r = requests.get(
+        "https://api.pexels.com/v1/search",
+        params={"query": query, "per_page": 5, "orientation": "portrait"},
+        headers={"Authorization": PX_KEY}, timeout=30)
+    if r.status_code >= 400:
+        return False, False
+    photos = r.json().get("photos", [])
+    if not photos:
+        return False, False
+    ok_a = _download_pexels_url(photos[0]["src"]["large"], dest_a)
+    second = photos[1] if len(photos) > 1 else photos[0]
+    ok_b = _download_pexels_url(second["src"]["large"], dest_b)
+    return ok_a, ok_b
 
 
 def fetch_pexels_photo(query, dest):

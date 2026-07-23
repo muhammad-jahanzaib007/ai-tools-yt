@@ -11,7 +11,8 @@ export type Word = {
 export type KeywordImage = {
   start: number; // seconds
   end: number;
-  file: string; // filename under public/insight/, staged by render_video.py
+  file: string; // top card image, filename under public/insight/
+  file2?: string; // bottom card - a DIFFERENT photo of the same keyword
 };
 
 export type InsightProps = {

@@ -131,7 +131,7 @@ const sampleInsight: InsightProps = {
   ],
   accentSeed: "sample-insight",
   durationInFrames: 150,
-  keywordImages: [{ start: 1.15, end: 1.45, file: "kw0.jpg" }],
+  keywordImages: [{ start: 1.15, end: 1.45, file: "kw0a.jpg", file2: "kw0b.jpg" }],
 };
 
 const insightMetadata: CalculateMetadataFunction<InsightProps> = ({ props }) => ({

@@ -142,25 +142,34 @@ function CaptionChunk({
   );
 }
 
-function KeywordCard({ file, accent, startFrame, durFrames }: { file: string; accent: string; startFrame: number; durFrames: number }) {
-  // Owner's 2026-07-23 differentiator: pop a real photo next to the caption
-  // for each stand-out keyword, timed to that word's own chunk - a small
-  // framed card above the caption, not a full-bleed cutaway, so the
-  // typography stays the hero and this reads as an accent, not a slideshow.
+function KeywordCard({ file, accent, startFrame, durFrames, position }: { file: string; accent: string; startFrame: number; durFrames: number; position: "top" | "bottom" }) {
+  // Owner's 2026-07-23 differentiator, iterated to v6: a card top AND
+  // bottom (owner: "lower part of the video is empty ... add images to the
+  // lower part as well ... two images ... both be different but both
+  // belong to the same word") - sized down from the v5 single-card size so
+  // both fit around the centered caption without collision.
   const frame = useCurrentFrame() - startFrame;
   const pop = spring({ frame, fps: FPS, config: { damping: 13, stiffness: 180 }, durationInFrames: 10 });
   const fadeOut = interpolate(frame, [durFrames - 6, durFrames], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const rotate = position === "top" ? -6 : 6;
   return (
-    <AbsoluteFill style={{ alignItems: "center", justifyContent: "flex-start", paddingTop: 50 }}>
+    <AbsoluteFill
+      style={{
+        alignItems: "center",
+        justifyContent: position === "top" ? "flex-start" : "flex-end",
+        paddingTop: position === "top" ? 40 : 0,
+        paddingBottom: position === "bottom" ? 40 : 0,
+      }}
+    >
       <div
         style={{
-          width: 820,
-          height: 820,
-          borderRadius: 38,
+          width: 640,
+          height: 640,
+          borderRadius: 32,
           overflow: "hidden",
           border: `6px solid ${accent}`,
-          boxShadow: `0 0 90px ${accent}88`,
-          transform: `scale(${0.7 + pop * 0.3}) rotate(${(1 - pop) * -6}deg)`,
+          boxShadow: `0 0 80px ${accent}88`,
+          transform: `scale(${0.7 + pop * 0.3}) rotate(${(1 - pop) * rotate}deg)`,
           opacity: Math.min(pop, 1) * fadeOut,
         }}
       >
@@ -208,15 +217,23 @@ export const InsightVideo: React.FC<InsightProps> = ({ hook, words, accentSeed, 
         // one holds to the end of the video), so the visual only changes
         // when a new main word actually arrives.
         const imgs = keywordImages ?? [];
-        return imgs.map((k: KeywordImage, i: number) => {
+        return imgs.flatMap((k: KeywordImage, i: number) => {
           const startFrame = Math.round(k.start * FPS);
           const nextStart = i + 1 < imgs.length ? Math.round(imgs[i + 1].start * FPS) : durationInFrames;
           const durFrames = Math.max(12, nextStart - startFrame);
-          return (
-            <Sequence key={`kw${i}`} from={startFrame} durationInFrames={durFrames}>
-              <KeywordCard file={k.file} accent={accent} startFrame={0} durFrames={durFrames} />
-            </Sequence>
-          );
+          const seqs = [
+            <Sequence key={`kwT${i}`} from={startFrame} durationInFrames={durFrames}>
+              <KeywordCard file={k.file} accent={accent} startFrame={0} durFrames={durFrames} position="top" />
+            </Sequence>,
+          ];
+          if (k.file2) {
+            seqs.push(
+              <Sequence key={`kwB${i}`} from={startFrame} durationInFrames={durFrames}>
+                <KeywordCard file={k.file2} accent={accent} startFrame={0} durFrames={durFrames} position="bottom" />
+              </Sequence>
+            );
+          }
+          return seqs;
         });
       })()}
     </AbsoluteFill>

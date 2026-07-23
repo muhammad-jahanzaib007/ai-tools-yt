@@ -493,20 +493,23 @@ def test_stage_insight_images_filters_stopwords_and_short_words(monkeypatch, tmp
     monkeypatch.setattr(rv, "PX_KEY", "fake")
     fetched = []
 
-    def fake_fetch(query, dest):
+    def fake_fetch_pair(query, dest_a, dest_b):
         fetched.append(query)
-        dest.write_bytes(b"x" * 6000)
-        return True
+        dest_a.write_bytes(b"x" * 6000)
+        dest_b.write_bytes(b"y" * 6000)
+        return True, True
 
-    monkeypatch.setattr(rv, "fetch_pexels_photo", fake_fetch)
-    # v5: back to one image per MAIN word (3-word chunk emphasis), not
-    # per-word. chunk1 ["it","is","a"] -> longest is still a stopword/short
+    monkeypatch.setattr(rv, "fetch_pexels_photo_pair", fake_fetch_pair)
+    # v5: back to one KEYWORD per MAIN word (3-word chunk emphasis), not
+    # per-word - but each keyword now stages a top/bottom PAIR of different
+    # photos. chunk1 ["it","is","a"] -> longest is still a stopword/short
     # -> filtered; chunk2 ["quiet","old","memory"] -> "memory" wins.
     words = [("it", 0.0, 0.1), ("is", 0.1, 0.2), ("a", 0.2, 0.3),
              ("quiet", 0.3, 0.6), ("old", 0.6, 0.7), ("memory", 0.7, 1.1)]
     staged = rv._stage_insight_images(words)
     assert fetched == ["memory"]
-    assert len(staged) == 1 and staged[0]["file"] == "kw0.jpg"
+    assert len(staged) == 1
+    assert staged[0]["file"] == "kw0a.jpg" and staged[0]["file2"] == "kw0b.jpg"
 
 
 def test_stage_insight_images_no_key_returns_empty(monkeypatch, tmp_path):
