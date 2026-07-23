@@ -73,7 +73,7 @@ export const ChannelBanner: React.FC = () => {
               letterSpacing: 1,
             }}
           >
-            Why your brain does that.
+Why your mind and body do that.
           </div>
         </div>
       </AbsoluteFill>
