@@ -8,6 +8,7 @@ import { RankingProps, RankingVideo, totalRankingFrames } from "./ranking/Rankin
 import { Thumb, ThumbProps } from "./thumb/Thumb";
 import { InsightVideo } from "./insight/InsightVideo";
 import { InsightProps } from "./insight/types";
+import { ChannelBanner } from "./banner/ChannelBanner";
 
 const sampleBattle: BattleProps = {
   toolA: "ElevenLabs",
@@ -207,6 +208,14 @@ export const RemotionRoot: React.FC = () => {
         width={1280}
         height={720}
         defaultProps={sampleThumb}
+      />
+      <Composition
+        id="ChannelBanner"
+        component={ChannelBanner}
+        durationInFrames={1}
+        fps={FPS}
+        width={2560}
+        height={1440}
       />
       <Composition
         id="ComicShort"
