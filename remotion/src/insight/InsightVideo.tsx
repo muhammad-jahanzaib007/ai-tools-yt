@@ -196,11 +196,20 @@ export const InsightVideo: React.FC<InsightProps> = ({ hook, words, accentSeed, 
         // two word-groups never render on screen at once - the "2018"
         // overlap artifact came from adjacent Sequences bleeding into each
         // other's fade window.
+        // 2026-07-23: the old +6-frame-minimum/+2-frame-pad on every chunk
+        // was harmless on a normally-paced script but on a fast/dense one
+        // (many short chunks) the padding compounds - each chunk borrows a
+        // few extra frames from the next, and across 60-80 chunks that
+        // drift ate an entire 26s demo (captions/images only appeared
+        // jammed together in the last second). Minimum duration is now
+        // just enough to avoid a literal 0-frame Sequence, no added pad,
+        // so drift can only happen on genuine overlaps, not every chunk.
         let prevEnd = hookFrames;
         return chunks.map((c, i) => {
           const rawStart = Math.round(c.start * FPS);
           const startFrame = Math.max(prevEnd, rawStart);
-          const endFrame = Math.max(startFrame + 6, Math.round(c.end * FPS) + 2);
+          if (startFrame >= durationInFrames - 2) return null;
+          const endFrame = Math.min(durationInFrames, Math.max(startFrame + 3, Math.round(c.end * FPS)));
           const durFrames = endFrame - startFrame;
           prevEnd = endFrame;
           return (
