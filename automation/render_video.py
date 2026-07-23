@@ -794,50 +794,72 @@ def _chunk_words_py(words):
     return chunks
 
 
-def _stage_insight_images(words, max_images=30):
-    """Fetch one Pexels photo per MAIN word (2026-07-23: v4 fetched every
-    word and the owner correctly called it out as flickery noise - back to
-    one keyword per 3-word chunk, same as the caption's own accent-word
-    highlight, so an image only shows up on a word that actually matters).
-    Stage into remotion/public/insight/ (gitignored, like ranking's
-    favicons). Each staged image's on-screen duration is NOT its own
-    word's timing - InsightVideo.tsx keeps it up until the NEXT image
-    arrives (owner: "remain on screen until next main word"), so this only
-    needs to hand over accurate START times; best-effort throughout, a
-    failed fetch just means that stretch stays text-only."""
+_UNSAFE = {
+    "nude", "nudity", "naked", "topless", "sex", "sexy", "sexual", "erotic",
+    "erotica", "lingerie", "bikini", "underwear", "boudoir", "cleavage",
+    "breast", "breasts", "butt", "buttocks", "booty", "thong", "seductive",
+    "seduction", "provocative", "sensual", "porn", "fetish", "nsfw", "lust",
+    "orgasm", "strip", "stripper", "bdsm", "blood", "bloody", "gore", "gory",
+    "corpse", "wound", "weapon", "gun", "knife", "cigarette", "smoking",
+    "cocaine", "heroin", "syringe",
+}
+
+
+def _is_unsafe(text):
+    """True if any whole word in `text` is on the brand-safety blocklist. Used
+    to keep adult/suggestive/violent stock imagery out of videos (owner hard
+    requirement 2026-07-23). Whole-word match, so 'essex' won't trip 'sex'."""
+    toks = set("".join(c if c.isalnum() else " " for c in (text or "").lower()).split())
+    return bool(toks & _UNSAFE)
+
+
+def _stage_insight_images(segs, words, max_images=30):
+    """One RELEVANT image pair per narration segment (2026-07-23): query the
+    segment's own LLM-chosen `broll` term (which is written to match the
+    sentence) instead of a random caption word, so the picture reinforces the
+    idea instead of being decorative noise. Timed to the segment via the 1:1
+    script-word alignment; InsightVideo.tsx keeps each image up until the next
+    one. Brand-safety filtered (skips adult/suggestive/violent queries AND
+    results). Best-effort: a skipped or unsafe segment just stays text-only."""
     pub = REMOTION_DIR / "public" / "insight"
     if pub.exists():
         shutil.rmtree(pub)
     pub.mkdir(parents=True)
-    if not PX_KEY:
+    if not PX_KEY or not words:
         return []
 
-    chunks = _chunk_words_py(words)
-    candidates = [
-        c for c in chunks
-        if len(c["emphasis_word"].strip(".,!?\"'")) >= 3
-        and c["emphasis_word"].strip(".,!?\"'").lower() not in _STOPWORDS
-    ]
-    if len(candidates) > max_images:
-        step = len(candidates) / max_images
-        candidates = [candidates[int(i * step)] for i in range(max_images)]
+    # Map each narration segment to a time range via the aligned words, and
+    # take its broll term as the (relevant) image query.
+    ranges, wi = [], 0
+    for seg in segs:
+        n = len((seg.get("text") or "").split())
+        if n <= 0:
+            continue
+        j = min(wi + n, len(words))
+        if j <= wi:
+            break
+        query = (seg.get("broll") or seg.get("text") or "").strip()
+        ranges.append((query, words[wi][1], words[j - 1][2]))
+        wi = j
+    ranges = ranges[:max_images]
 
     staged = []
-    for n, c in enumerate(candidates):
-        word = c["emphasis_word"].strip(".,!?\"'")
+    for n, (query, start, end) in enumerate(ranges):
+        if not query or _is_unsafe(query):
+            continue
         dest_a = pub / f"kw{n}a.jpg"
         dest_b = pub / f"kw{n}b.jpg"
         try:
-            ok_a, ok_b = fetch_pexels_photo_pair(word, dest_a, dest_b)
+            ok_a, ok_b = fetch_pexels_photo_pair(query, dest_a, dest_b)
         except requests.RequestException:
             continue
         if not ok_a:
             continue
-        entry = {"start": c["start"], "end": c["end"], "file": dest_a.name}
+        entry = {"start": start, "end": end, "file": dest_a.name}
         if ok_b:
             entry["file2"] = dest_b.name
         staged.append(entry)
-    print(f"  insight keyword images: {len(staged)}/{len(candidates)} staged")
+    print(f"  insight keyword images: {len(staged)}/{len(ranges)} staged (broll-matched, safe)")
     return staged
 
 
@@ -862,11 +884,13 @@ def fetch_pexels_photo_pair(query, dest_a, dest_b):
         return False, False
     r = requests.get(
         "https://api.pexels.com/v1/search",
-        params={"query": query, "per_page": 5, "orientation": "portrait"},
+        params={"query": query, "per_page": 15, "orientation": "portrait"},
         headers={"Authorization": PX_KEY}, timeout=30)
     if r.status_code >= 400:
         return False, False
-    photos = r.json().get("photos", [])
+    # brand-safety: drop any result whose alt text trips the blocklist, then
+    # take the first two distinct SAFE photos.
+    photos = [p for p in r.json().get("photos", []) if not _is_unsafe(p.get("alt", ""))]
     if not photos:
         return False, False
     ok_a = _download_pexels_url(photos[0]["src"]["large"], dest_a)
@@ -919,7 +943,7 @@ def render_insight(brief):
     dur = probe_duration(audio)
     tail = 1.0
     total_frames = int(round((dur + tail) * FPS))
-    keyword_images = _stage_insight_images(words)
+    keyword_images = _stage_insight_images(segs, words)
 
     props = {
         "hook": brief["hook"],

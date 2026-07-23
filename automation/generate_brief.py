@@ -688,7 +688,9 @@ def replenish_rankings(topics, want=12):
 INSIGHT_BULLETS = (
     "- narration: an array of 7-10 segments, each an object with \"text\" (ONE spoken sentence, "
     "max 16 words, natural spoken cadence) and \"broll\" (a 2-4 word stock-footage search query "
-    "matching the text). This is NOT a flat fact-dump - it needs real structure, or it reads as "
+    "matching the text; describe a CONCRETE, advertiser-safe scene (everyday objects, nature, "
+    "hands, places), NEVER nudity, suggestive or romantic imagery, or violence). This is NOT a "
+    "flat fact-dump - it needs real structure, or it reads as "
     "templated filler:\n"
     "  1. HOOK (segment 1 only): one surprising, concrete, specific claim about how the mind "
     "or body works. State it directly as fact - no 'did you know', no meta-announcement.\n"

@@ -27,12 +27,12 @@ export type InsightProps = {
 // bold-poster ranking style already uses, so the channel's look stays
 // varied video-to-video but each video reads as one cohesive palette.
 const ACCENTS = [
-  "#7C5CFF", // violet
-  "#3DD6D0", // cyan
-  "#FF5C8A", // pink
-  "#5CC8FF", // sky blue
-  "#B6FF3D", // acid green
+  "#e6a95c", // gold (Snackbyte Human brand)
   "#FFB23D", // amber
+  "#d97757", // coral
+  "#f0b46a", // light amber
+  "#c9822e", // caramel
+  "#e8b923", // warm yellow
 ];
 
 export function pickAccent(seed: string): string {
