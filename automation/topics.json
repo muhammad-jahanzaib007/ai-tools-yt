@@ -108,7 +108,6 @@
     "5 AI Tools That Beat ChatGPT for Creative Writing"
   ],
   "insight_queue": [
-    "why you can't tickle yourself",
     "why a song gets stuck in your head and won't leave",
     "why we misremember arguments in our own favour",
     "why yawns are contagious even over video calls",
@@ -121,5 +120,7 @@
     "why bad news sticks in memory longer than good news",
     "why you cannot read your own handwriting sometimes"
   ],
-  "insight_published": []
+  "insight_published": [
+    "why you can't tickle yourself"
+  ]
 }
