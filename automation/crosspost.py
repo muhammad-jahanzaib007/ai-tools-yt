@@ -107,11 +107,14 @@ def build_caption(brief):
         h = "".join(ch for ch in s if ch.isalnum())
         return f"#{h}" if h else ""
 
+    generic = (["#psychology", "#brain", "#didyouknow"]
+               if brief.get("format") == "insight"
+               else ["#AItools", "#AI", "#technology"])
     seen, tags = set(), []
     for h in (["#Reels", "#Shorts"]
               + [_hash(l["name"]) for l in brief.get("links", [])]
               + [_hash(t) for t in brief.get("tags", [])]
-              + ["#AItools", "#AI", "#technology"]):
+              + generic):
         k = h.lower()
         if h and k not in seen:
             seen.add(k)

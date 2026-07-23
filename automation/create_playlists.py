@@ -62,7 +62,7 @@ def main():
         try:
             resp = yt.playlists().insert(part="snippet,status", body={
                 "snippet": {"title": title,
-                            "description": f"Snackbyte AI · {title}, new videos daily."},
+                            "description": f"Snackbyte Human · {title}. New videos daily."},
                 "status": {"privacyStatus": "public"},
             }).execute()
             m[fmt] = resp["id"]

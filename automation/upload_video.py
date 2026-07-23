@@ -67,7 +67,7 @@ def add_to_playlist(yt, vid, fmt):
         if not pid:
             resp = yt.playlists().insert(part="snippet,status", body={
                 "snippet": {"title": title,
-                            "description": f"Snackbyte AI · {title}, new videos daily."},
+                            "description": f"Snackbyte Human · {title}. New videos daily."},
                 "status": {"privacyStatus": "public"},
             }).execute()
             pid = resp["id"]
@@ -135,11 +135,14 @@ def main():
     def _hash(s):
         h = "".join(ch for ch in s if ch.isalnum())
         return f"#{h}" if h else ""
+    generic = (["#psychology", "#brain", "#didyouknow"]
+               if brief.get("format") == "insight"
+               else ["#AItools", "#AI", "#technology"])
     seen, htags = set(), []
     for h in (["#Shorts"]
               + [_hash(l["name"]) for l in links]
               + [_hash(t) for t in brief.get("tags", [])]
-              + ["#AItools", "#AI", "#technology"]):
+              + generic):
         k = h.lower()
         if h and k not in seen:
             seen.add(k)
