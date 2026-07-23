@@ -238,7 +238,10 @@ jobs:
           META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
           FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
-          CROSSPOST_TARGETS: ${{ vars.CROSSPOST_TARGETS || 'ig,fb,tt' }}
+          # TikTok dropped for the 14-day test (owner 2026-07-24): the manual
+          # upload chore is not worth it pre-traction. YouTube + IG + FB auto-post.
+          # Restore ig,fb,tt (or the vars.CROSSPOST_TARGETS reference) to re-enable.
+          CROSSPOST_TARGETS: "ig,fb"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python automation/crosspost.py
 
