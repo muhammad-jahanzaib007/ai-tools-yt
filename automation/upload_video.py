@@ -34,10 +34,18 @@ PLAYLIST_TITLES = {
     "ranking": "AI Tool Rankings",
     "comic": "The AI Toolverse",
     "news": "Daily AI News",
+    "insight": "Mind & Body Explained",
 }
 
 
 def brief_format(brief):
+    # insight briefs carry brief["format"]="insight" (no battle/ranking/
+    # comic/news block by design) - without this check every insight video
+    # silently mislabels itself fmt=battle in the receipt AND lands in the
+    # wrong (battle) YouTube playlist. Found 2026-07-23 while investigating
+    # why a real insight-topic upload's receipt said fmt=battle.
+    if brief.get("format") == "insight":
+        return "insight"
     for f in ("news", "comic", "ranking", "battle"):
         if brief.get(f):
             return f

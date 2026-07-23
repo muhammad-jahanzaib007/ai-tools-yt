@@ -97,22 +97,18 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      # FORMAT PIVOT 2026-07-23: the AI-tools battle/ranking niche checkpoint
-      # (2026-07-22) read median 4 YouTube views / near-zero IG after ~3
-      # weeks, and separately, a same-age competitor channel (MangoCuts,
-      # general curiosity facts, no tool comparisons) hit median 700-1000
-      # views over the same window on a format our engine already produces
-      # (narration + b-roll + captions, no avatars, no tool demos). Broad
-      # market research (2026-07-23) also surfaced YouTube's July 2026
-      # "inauthentic content" monetization crackdown, which explicitly
-      # targets "templated content where only the topic changes" - a risk
-      # that applies MORE to flat SaaS feature-comparison Shorts than to a
-      # format with a real explanatory structure. So: pivot to "insight"
-      # (psychology/neuroscience/body-mechanism explainers with a genuine
-      # hook -> mechanism -> stakes structure, not a fact-dump - see
-      # INSIGHT_BULLETS in generate_brief.py) as the format for every slot.
-      # battle/ranking/comic/news code stays intact, reachable only via an
-      # explicit format= override - not deleted, just paused.
+      # FORMAT PIVOT 2026-07-23 (ab29dac) set format=insight as the default
+      # for every slot the SAME DAY this session started iterating the
+      # insight format's visuals with the owner (b-roll -> typography-only ->
+      # keyword-images v1-v7, several rejected/reworked live in this
+      # conversation). Owner was not aware production had already switched
+      # over mid-iteration ("why are new format videos publishing even
+      # though I didn't pass it yet") - real videos in intermediate,
+      # unapproved visual states were shipping to the channel this whole
+      # time. PAUSED BACK to the pre-pivot battle/ranking split (insight
+      # code/topics untouched, still reachable via explicit format=insight
+      # override for controlled testing) until the owner explicitly signs
+      # off on a final insight visual state.
       - name: Pick format by slot
         id: fmt
         run: |
@@ -125,11 +121,19 @@ jobs:
             # a late external fire can't flip it off the wall clock.
             ov=$(echo "${{ inputs.format }}" | tr "A-Z" "a-z" | grep -oE "insight|battle|ranking|comic|news") || true
           fi
+          if [ "$GITHUB_EVENT_NAME" = "schedule" ]; then
+            # cron is "MIN HOUR * * *" - use the scheduled hour, not now().
+            h=$(echo '${{ github.event.schedule }}' | cut -d' ' -f2)
+          else
+            h=$(date -u +%H)
+          fi
           if [ -n "$ov" ]; then
             echo "format=$ov (trigger override)"
             echo "format=$ov" >> "$GITHUB_OUTPUT"
+          elif [ "$h" -lt 15 ]; then
+            echo "format=battle" >> "$GITHUB_OUTPUT"
           else
-            echo "format=insight" >> "$GITHUB_OUTPUT"
+            echo "format=ranking" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Generate brief

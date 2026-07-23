@@ -16,6 +16,7 @@ import ig_analytics as iga
 import screen_capture as sc
 import capture_batch as cbatch
 import crosspost as cp
+import upload_video as uv
 
 
 # --- chat_json extraction (the 2026-07-05 outage class) -----------------------
@@ -517,3 +518,14 @@ def test_stage_insight_images_no_key_returns_empty(monkeypatch, tmp_path):
     monkeypatch.setattr(rv, "PX_KEY", None)
     words = [("memory", 0.0, 0.5)]
     assert rv._stage_insight_images(words) == []
+
+
+def test_brief_format_recognises_insight():
+    # 2026-07-23: insight briefs have no battle/ranking/comic/news block by
+    # design - without the explicit check this fell through to "battle",
+    # mislabeling the receipt AND filing every insight upload into the
+    # wrong (battle) playlist.
+    assert uv.brief_format({"format": "insight", "hook": "x"}) == "insight"
+    assert uv.brief_format({"battle": {"a": 1}}) == "battle"
+    assert uv.brief_format({"ranking": {"a": 1}}) == "ranking"
+    assert uv.brief_format({}) == "battle"
