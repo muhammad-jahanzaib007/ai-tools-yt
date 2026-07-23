@@ -157,14 +157,14 @@ function KeywordCard({ file, accent, startFrame, durFrames, position }: { file: 
       style={{
         alignItems: "center",
         justifyContent: position === "top" ? "flex-start" : "flex-end",
-        paddingTop: position === "top" ? 40 : 0,
-        paddingBottom: position === "bottom" ? 40 : 0,
+        paddingTop: position === "top" ? 20 : 0,
+        paddingBottom: position === "bottom" ? 20 : 0,
       }}
     >
       <div
         style={{
-          width: 640,
-          height: 640,
+          width: 736,
+          height: 736,
           borderRadius: 32,
           overflow: "hidden",
           border: `6px solid ${accent}`,
