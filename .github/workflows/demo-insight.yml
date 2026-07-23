@@ -13,6 +13,12 @@ on:
         description: "How many demo videos to render"
         default: "3"
 
+# Brief generation falls to free GitHub Models here (no Gemini/Anthropic key in
+# this preview job, by design = zero Gemini quota), which needs models:read.
+permissions:
+  contents: read
+  models: read
+
 jobs:
   demo:
     runs-on: ubuntu-latest

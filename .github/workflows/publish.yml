@@ -42,6 +42,7 @@ jobs:
     outputs:
       skip: ${{ steps.dedupe.outputs.skip }}
     steps:
+      - uses: actions/checkout@v4
       - name: Skip a cron whose slot another run already covers
         id: dedupe
         env:
@@ -49,6 +50,16 @@ jobs:
         run: |
           set -euo pipefail
           skip=false
+          # Manual pause (Claude, executing owner's "leave AI tools" 2026-07-23):
+          # while .github/PAUSED exists EVERY publish path skips (schedule,
+          # heartbeat workflow_dispatch, trigger push) - stops the retired
+          # AI-tools battle/ranking format shipping until the mind/body insight
+          # format is approved and switched in. Resume = delete .github/PAUSED.
+          if [ -f .github/PAUSED ]; then
+            echo "publishing paused (.github/PAUSED present) - skipping"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           if [ "$GITHUB_EVENT_NAME" = "schedule" ]; then
             slot='${{ github.event.schedule }}'
             m=$(echo "$slot" | cut -d' ' -f1)
