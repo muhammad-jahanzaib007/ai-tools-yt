@@ -20,7 +20,9 @@ permissions:
 jobs:
   demo:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    # Each insight render is ~10 min on CI (edge-tts + Whisper word-alignment +
+    # ~1200-frame Remotion render), so 3 demos need well over the old 25 min.
+    timeout-minutes: 50
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -61,7 +63,9 @@ jobs:
           ls -la demo_output
 
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: insight-demos
           path: demo_output/*.mp4
           retention-days: 3
+          if-no-files-found: ignore
