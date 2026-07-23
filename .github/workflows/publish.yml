@@ -60,6 +60,18 @@ jobs:
             echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+          # 2/day cadence (2026-07-24): drop the middle (15:59 UTC) heartbeat
+          # slot so only the ~10:59 and ~19:59 slots publish. Only the
+          # autonomous fire (workflow_dispatch with no explicit format) is
+          # dropped; a manual format= dispatch or a trigger push still runs.
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] && [ -z "${{ inputs.format }}" ]; then
+            h=$(date -u +%H)
+            if [ "$h" = "15" ] || [ "$h" = "16" ]; then
+              echo "2/day: skipping the middle 15:59 slot"
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          fi
           if [ "$GITHUB_EVENT_NAME" = "schedule" ]; then
             slot='${{ github.event.schedule }}'
             m=$(echo "$slot" | cut -d' ' -f1)
@@ -141,10 +153,11 @@ jobs:
           if [ -n "$ov" ]; then
             echo "format=$ov (trigger override)"
             echo "format=$ov" >> "$GITHUB_OUTPUT"
-          elif [ "$h" -lt 15 ]; then
-            echo "format=battle" >> "$GITHUB_OUTPUT"
           else
-            echo "format=ranking" >> "$GITHUB_OUTPUT"
+            # Snackbyte Human 14-day mind/body test (2026-07-23): every slot is
+            # insight. Battle/ranking (AI tools) are shelved, reachable only via
+            # an explicit format= trigger/dispatch override.
+            echo "format=insight" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Generate brief

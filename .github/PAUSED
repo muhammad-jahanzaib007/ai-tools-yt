@@ -1,9 +1,0 @@
-Publishing paused 2026-07-23.
-
-Owner decision: pivot niche from AI tools to mind/body psychology (insight
-format). While this file exists, publish.yml's precheck skips every
-scheduled / heartbeat-dispatch / trigger publish run, so the retired
-AI-tools battle/ranking format stops shipping.
-
-Resume: delete this file AND switch publish.yml's "Pick format by slot" to
-insight, once the mind/body insight visual is approved by the owner.
