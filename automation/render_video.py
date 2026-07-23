@@ -760,6 +760,70 @@ def build_ass_at(segs, delays, durs, path, margins=None):
     path.write_text(header + "\n".join(lines) + "\n", encoding="utf-8")
 
 
+def render_insight(brief):
+    """Insight format: pure kinetic-typography Remotion composition
+    (InsightShort) - NO stock b-roll (2026-07-23: owner rejected the old
+    stock-footage-plus-karaoke-caption look as "looks so 2018"; research
+    confirmed current best-in-class explainer Shorts use text/motion
+    graphics as the actual visual). Single continuous voice take for pitch
+    continuity; word-level timings drive the on-screen animation directly
+    in React instead of an ffmpeg-burned ASS caption layer, so there is no
+    separate caption-burn step for this format."""
+    slug = brief["slug"]
+    segs = brief["narration"]
+    text = " ".join(s["text"].strip() for s in segs)
+    _reset_work()
+    audio = WORK / "narration_full.mp3"
+    words, _ps = tts_take(text, audio)
+    if not words:
+        raise RuntimeError("no word timings for insight narration")
+    dur = probe_duration(audio)
+    tail = 1.0
+    total_frames = int(round((dur + tail) * FPS))
+
+    props = {
+        "hook": brief["hook"],
+        "words": [{"word": w, "start": s, "end": e} for (w, s, e) in words],
+        "accentSeed": slug,
+        "durationInFrames": total_frames,
+    }
+    props_file = WORK / "props.json"
+    props_file.write_text(json.dumps(props, ensure_ascii=False), encoding="utf-8")
+    graphics = WORK / "insight.mp4"
+    run([NPX, "remotion", "render", "src/index.ts", "InsightShort", str(graphics.resolve()),
+         f"--props={props_file.resolve()}", "--log=error"], cwd=str(REMOTION_DIR))
+
+    music = pick_music()
+    inputs = ["-i", str(graphics.resolve()), "-i", str(audio.resolve())]
+    filters, alabels = [], ["[1:a]"]
+    if music:
+        print(f"music: {music.name}")
+        inputs += ["-stream_loop", "-1", "-i", str(music.resolve())]
+        filters.append("[2:a]volume=0.06[m]")
+        alabels.append("[m]")
+    filters.append("".join(alabels) + f"amix=inputs={len(alabels)}:duration=longest:normalize=0[mix]")
+    filters.append("[mix]loudnorm=I=-14:TP=-1.5:LRA=11,alimiter=level=disabled:limit=0.89[a]")
+    final = OUT / f"{slug}.mp4"
+    run(["ffmpeg", "-y"] + inputs + [
+        "-filter_complex", ";".join(filters),
+        "-map", "0:v", "-map", "[a]",
+        "-c:v", "libx264", "-preset", "medium", "-crf", "21",
+        "-c:a", "aac", "-ar", "44100",
+        "-t", f"{dur + tail:.3f}", str(final.resolve())], cwd=str(WORK))
+
+    # thumbnail: frame-grab from partway into the video (no dedicated Thumb
+    # card for this format yet - functional fallback, same as other formats
+    # use when their Thumb still render fails).
+    thumb = OUT / f"{slug}.jpg"
+    p = subprocess.run(
+        ["ffmpeg", "-y", "-i", str(graphics.resolve()), "-vf", "select=eq(n\\,40)",
+         "-frames:v", "1", str(thumb.resolve())], capture_output=True, text=True)
+    if p.returncode != 0:
+        print("thumbnail step skipped:", p.stderr[-300:], file=sys.stderr)
+
+    print(f"DONE (insight): {final.relative_to(ROOT)}  ({dur + tail:.1f}s, {final.stat().st_size // 1024} KB)")
+
+
 def render_battle(brief):
     """Battle format: one presenter voice, BattleShort composition."""
     battle = brief["battle"]
@@ -1229,7 +1293,9 @@ def main():
             scene_render = render_ranking
         elif brief.get("battle"):
             scene_render = render_battle
-        elif brief.get("format") != "insight":
+        elif brief.get("format") == "insight":
+            scene_render = render_insight
+        else:
             # generate_brief.py's battle/ranking/news/comic queues only ever
             # enqueue topics matching their own format, so a missing block
             # here is always a validation drop (e.g. _clean_battle returned

@@ -22,9 +22,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
 
       - name: Install ffmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Install Remotion deps (insight graphics)
+        run: npm ci --prefix remotion
 
       - name: Install Python deps
         run: pip install -r requirements.txt

@@ -475,4 +475,6 @@ def test_insight_brief_tagged_so_render_skips_the_fallback_marker():
     import inspect
     src = inspect.getsource(gb.generate_insight_brief)
     assert 'b["format"] = "insight"' in src
-    assert 'brief.get("format") != "insight"' in inspect.getsource(rv.main)
+    main_src = inspect.getsource(rv.main)
+    assert 'brief.get("format") == "insight"' in main_src
+    assert "scene_render = render_insight" in main_src

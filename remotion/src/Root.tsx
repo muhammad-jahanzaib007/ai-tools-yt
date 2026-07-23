@@ -6,6 +6,8 @@ import { ComicProps, ComicVideo, totalComicFrames } from "./comic/ComicVideo";
 import { NewsProps, NewsVideo, totalNewsFrames } from "./news/NewsVideo";
 import { RankingProps, RankingVideo, totalRankingFrames } from "./ranking/RankingVideo";
 import { Thumb, ThumbProps } from "./thumb/Thumb";
+import { InsightVideo } from "./insight/InsightVideo";
+import { InsightProps } from "./insight/types";
 
 const sampleBattle: BattleProps = {
   toolA: "ElevenLabs",
@@ -115,6 +117,26 @@ const rankingMetadata: CalculateMetadataFunction<RankingProps> = ({ props }) => 
   durationInFrames: totalRankingFrames(props),
 });
 
+const sampleInsight: InsightProps = {
+  hook: "You can't tickle yourself, and there's a real reason why.",
+  words: [
+    { word: "Your", start: 1.0, end: 1.15 },
+    { word: "brain", start: 1.15, end: 1.45 },
+    { word: "cancels", start: 1.45, end: 1.85 },
+    { word: "out", start: 1.85, end: 2.0 },
+    { word: "any", start: 2.0, end: 2.2 },
+    { word: "touch", start: 2.2, end: 2.55 },
+    { word: "it", start: 2.55, end: 2.65 },
+    { word: "predicts", start: 2.65, end: 3.1 },
+  ],
+  accentSeed: "sample-insight",
+  durationInFrames: 150,
+};
+
+const insightMetadata: CalculateMetadataFunction<InsightProps> = ({ props }) => ({
+  durationInFrames: props.durationInFrames,
+});
+
 const sampleThumb: ThumbProps = {
   kind: "ranking",
   title: "Free AI tools that beat the paid ones",
@@ -165,6 +187,16 @@ export const RemotionRoot: React.FC = () => {
         height={1920}
         defaultProps={sampleRanking}
         calculateMetadata={rankingMetadata}
+      />
+      <Composition
+        id="InsightShort"
+        component={InsightVideo}
+        durationInFrames={sampleInsight.durationInFrames}
+        fps={FPS}
+        width={1080}
+        height={1920}
+        defaultProps={sampleInsight}
+        calculateMetadata={insightMetadata}
       />
       <Composition
         id="Thumb"
