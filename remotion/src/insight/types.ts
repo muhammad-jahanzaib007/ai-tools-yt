@@ -8,11 +8,18 @@ export type Word = {
   end: number;
 };
 
+export type KeywordImage = {
+  start: number; // seconds
+  end: number;
+  file: string; // filename under public/insight/, staged by render_video.py
+};
+
 export type InsightProps = {
   hook: string;
   words: Word[];
   accentSeed: string; // hashed into an accent color, one per video (see pickAccent)
   durationInFrames: number; // computed in render_video.py from the real audio length
+  keywordImages?: KeywordImage[]; // 2026-07-23: one photo per stand-out keyword chunk
 };
 
 // One saturated accent per video, hashed from the slug — same idea the

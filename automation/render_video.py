@@ -760,6 +760,107 @@ def build_ass_at(segs, delays, durs, path, margins=None):
     path.write_text(header + "\n".join(lines) + "\n", encoding="utf-8")
 
 
+_STOPWORDS = {
+    "a", "an", "the", "is", "are", "was", "were", "be", "been", "being",
+    "to", "of", "in", "on", "at", "by", "for", "with", "and", "or", "but",
+    "so", "if", "as", "it", "its", "this", "that", "these", "those", "you",
+    "your", "we", "our", "i", "not", "no", "do", "does", "did", "has",
+    "have", "had", "can", "will", "would", "could", "should", "just",
+    "very", "even", "than", "then", "when", "why", "how", "what", "who",
+    "which", "into", "out", "up", "down", "over", "under", "again", "here",
+    "there", "all", "some", "any", "each", "more", "most", "one", "own",
+}
+
+
+def _chunk_words_py(words):
+    """Mirror remotion/src/insight/types.ts chunkWords() exactly, so the
+    keyword each chunk highlights (and the image we fetch for it) lines up
+    frame-for-frame with what the composition renders."""
+    chunks = []
+    i = 0
+    while i < len(words):
+        size = min(3, len(words) - i)
+        slice_ = words[i:i + size]
+        ei = 0
+        for k in range(1, len(slice_)):
+            if len(slice_[k][0]) > len(slice_[ei][0]):
+                ei = k
+        chunks.append({
+            "start": slice_[0][1],
+            "end": slice_[-1][2],
+            "emphasis_word": slice_[ei][0],
+        })
+        i += size
+    return chunks
+
+
+def _stage_insight_images(words, max_images=6):
+    """Fetch one Pexels photo per stand-out keyword chunk (the same word the
+    caption already highlights in accent color) and stage it into
+    remotion/public/insight/ (gitignored, like ranking's favicons). This is
+    the owner's 2026-07-23 idea to visually distinguish the format: images
+    tied to MAIN words only, not a photo per word - keeps it readable
+    instead of turning into slideshow noise. Best-effort throughout: a
+    skipped/failed fetch just means that chunk stays text-only, same
+    graceful-degradation pattern as ranking favicons."""
+    pub = REMOTION_DIR / "public" / "insight"
+    if pub.exists():
+        shutil.rmtree(pub)
+    pub.mkdir(parents=True)
+    if not PX_KEY:
+        return []
+
+    chunks = _chunk_words_py(words)
+    # Only stand-out (non-stopword, 4+ letters) keywords are candidates -
+    # short/function words rarely search into a meaningful photo and would
+    # just add clutter. Cap the count so the video doesn't turn into a
+    # slideshow, spread through the video rather than clustered.
+    candidates = [
+        c for c in chunks
+        if len(c["emphasis_word"].strip(".,!?\"'")) >= 4
+        and c["emphasis_word"].strip(".,!?\"'").lower() not in _STOPWORDS
+    ]
+    if len(candidates) > max_images:
+        step = len(candidates) / max_images
+        candidates = [candidates[int(i * step)] for i in range(max_images)]
+
+    staged = []
+    for n, c in enumerate(candidates):
+        word = c["emphasis_word"].strip(".,!?\"'")
+        dest = pub / f"kw{n}.jpg"
+        try:
+            if fetch_pexels_photo(word, dest):
+                staged.append({"start": c["start"], "end": c["end"], "file": dest.name})
+        except requests.RequestException:
+            continue
+    print(f"  insight keyword images: {len(staged)}/{len(candidates)} staged")
+    return staged
+
+
+def fetch_pexels_photo(query, dest):
+    """Download one Pexels photo matching `query` to `dest`. Same helper as
+    capture_batch.py's (kept local here to avoid a cross-module import)."""
+    if not PX_KEY:
+        return False
+    r = requests.get(
+        "https://api.pexels.com/v1/search",
+        params={"query": query, "per_page": 5, "orientation": "portrait"},
+        headers={"Authorization": PX_KEY}, timeout=30)
+    if r.status_code >= 400:
+        return False
+    photos = r.json().get("photos", [])
+    if not photos:
+        return False
+    url = photos[0]["src"]["large"]
+    with requests.get(url, stream=True, timeout=60) as dl:
+        if dl.status_code >= 400:
+            return False
+        with open(dest, "wb") as f:
+            for chunk in dl.iter_content(1 << 16):
+                f.write(chunk)
+    return Path(dest).stat().st_size > 5000
+
+
 def render_insight(brief):
     """Insight format: pure kinetic-typography Remotion composition
     (InsightShort) - NO stock b-roll (2026-07-23: owner rejected the old
@@ -780,12 +881,14 @@ def render_insight(brief):
     dur = probe_duration(audio)
     tail = 1.0
     total_frames = int(round((dur + tail) * FPS))
+    keyword_images = _stage_insight_images(words)
 
     props = {
         "hook": brief["hook"],
         "words": [{"word": w, "start": s, "end": e} for (w, s, e) in words],
         "accentSeed": slug,
         "durationInFrames": total_frames,
+        "keywordImages": keyword_images,
     }
     props_file = WORK / "props.json"
     props_file.write_text(json.dumps(props, ensure_ascii=False), encoding="utf-8")

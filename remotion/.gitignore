@@ -13,3 +13,7 @@ public/toolverse
 # Staged ranking media (Pexels backgrounds + tool favicons), fetched fresh
 # each render by render_video.py _stage_ranking_media().
 public/ranking
+
+# Staged insight keyword-image cards (Pexels photos), fetched fresh each
+# render by render_video.py _stage_insight_images().
+public/insight

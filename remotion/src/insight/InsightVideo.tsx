@@ -1,8 +1,8 @@
 import React from "react";
-import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, spring, Sequence } from "remotion";
+import { AbsoluteFill, Img, staticFile, useCurrentFrame, useVideoConfig, interpolate, spring, Sequence } from "remotion";
 import { loadFont as loadAnton } from "@remotion/google-fonts/Anton";
 import { loadFont as loadMontserrat } from "@remotion/google-fonts/Montserrat";
-import { InsightProps, FPS, chunkWords, pickAccent } from "./types";
+import { InsightProps, KeywordImage, FPS, chunkWords, pickAccent } from "./types";
 
 const { fontFamily: antonFont } = loadAnton();
 const { fontFamily: montserratFont } = loadMontserrat();
@@ -142,7 +142,35 @@ function CaptionChunk({
   );
 }
 
-export const InsightVideo: React.FC<InsightProps> = ({ hook, words, accentSeed }) => {
+function KeywordCard({ file, accent, startFrame, durFrames }: { file: string; accent: string; startFrame: number; durFrames: number }) {
+  // Owner's 2026-07-23 differentiator: pop a real photo next to the caption
+  // for each stand-out keyword, timed to that word's own chunk - a small
+  // framed card above the caption, not a full-bleed cutaway, so the
+  // typography stays the hero and this reads as an accent, not a slideshow.
+  const frame = useCurrentFrame() - startFrame;
+  const pop = spring({ frame, fps: FPS, config: { damping: 13, stiffness: 180 }, durationInFrames: 10 });
+  const fadeOut = interpolate(frame, [durFrames - 6, durFrames], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  return (
+    <AbsoluteFill style={{ alignItems: "center", justifyContent: "flex-start", paddingTop: 260 }}>
+      <div
+        style={{
+          width: 260,
+          height: 260,
+          borderRadius: 20,
+          overflow: "hidden",
+          border: `4px solid ${accent}`,
+          boxShadow: `0 0 50px ${accent}66`,
+          transform: `scale(${0.7 + pop * 0.3}) rotate(${(1 - pop) * -6}deg)`,
+          opacity: Math.min(pop, 1) * fadeOut,
+        }}
+      >
+        <Img src={staticFile(`insight/${file}`)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      </div>
+    </AbsoluteFill>
+  );
+}
+
+export const InsightVideo: React.FC<InsightProps> = ({ hook, words, accentSeed, keywordImages }) => {
   const accent = pickAccent(accentSeed);
   const chunks = chunkWords(words);
   const hookFrames = 27; // ~0.9s hard-cut hook card, then straight into captions
@@ -172,6 +200,15 @@ export const InsightVideo: React.FC<InsightProps> = ({ hook, words, accentSeed }
           );
         });
       })()}
+      {(keywordImages ?? []).map((k: KeywordImage, i: number) => {
+        const startFrame = Math.round(k.start * FPS);
+        const endFrame = Math.max(startFrame + 6, Math.round(k.end * FPS) + 2);
+        return (
+          <Sequence key={`kw${i}`} from={startFrame} durationInFrames={endFrame - startFrame}>
+            <KeywordCard file={k.file} accent={accent} startFrame={0} durFrames={endFrame - startFrame} />
+          </Sequence>
+        );
+      })}
     </AbsoluteFill>
   );
 };
