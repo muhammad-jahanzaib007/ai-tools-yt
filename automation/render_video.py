@@ -772,16 +772,39 @@ _STOPWORDS = {
 }
 
 
-def _stage_insight_images(words, max_images=120):
-    """Fetch one Pexels photo per WORD (2026-07-23, owner escalated from
-    "every chunk" to "every word" across 3 rounds of feedback) and stage it
-    into remotion/public/insight/ (gitignored, like ranking's favicons).
-    Only true stopwords/1-letter words are skipped - a photo for "the"/"is"
-    is meaningless noise, everything else gets one. Best-effort throughout:
-    a skipped/failed fetch just means that word stays text-only. NOTE: at
-    this density a normal ~150-250 word script means 100+ Pexels calls -
-    fine for demo/creative-direction rendering, but worth watching render
-    time if/when this format goes to the real 3x/day production pipeline."""
+def _chunk_words_py(words):
+    """Mirror remotion/src/insight/types.ts chunkWords() exactly, so the
+    keyword each chunk highlights (and the image we fetch for it) lines up
+    with what the composition renders."""
+    chunks = []
+    i = 0
+    while i < len(words):
+        size = min(3, len(words) - i)
+        slice_ = words[i:i + size]
+        ei = 0
+        for k in range(1, len(slice_)):
+            if len(slice_[k][0]) > len(slice_[ei][0]):
+                ei = k
+        chunks.append({
+            "start": slice_[0][1],
+            "end": slice_[-1][2],
+            "emphasis_word": slice_[ei][0],
+        })
+        i += size
+    return chunks
+
+
+def _stage_insight_images(words, max_images=30):
+    """Fetch one Pexels photo per MAIN word (2026-07-23: v4 fetched every
+    word and the owner correctly called it out as flickery noise - back to
+    one keyword per 3-word chunk, same as the caption's own accent-word
+    highlight, so an image only shows up on a word that actually matters).
+    Stage into remotion/public/insight/ (gitignored, like ranking's
+    favicons). Each staged image's on-screen duration is NOT its own
+    word's timing - InsightVideo.tsx keeps it up until the NEXT image
+    arrives (owner: "remain on screen until next main word"), so this only
+    needs to hand over accurate START times; best-effort throughout, a
+    failed fetch just means that stretch stays text-only."""
     pub = REMOTION_DIR / "public" / "insight"
     if pub.exists():
         shutil.rmtree(pub)
@@ -789,11 +812,11 @@ def _stage_insight_images(words, max_images=120):
     if not PX_KEY:
         return []
 
+    chunks = _chunk_words_py(words)
     candidates = [
-        {"start": s, "end": e, "word": w}
-        for (w, s, e) in words
-        if len(w.strip(".,!?\"'")) >= 2
-        and w.strip(".,!?\"'").lower() not in _STOPWORDS
+        c for c in chunks
+        if len(c["emphasis_word"].strip(".,!?\"'")) >= 3
+        and c["emphasis_word"].strip(".,!?\"'").lower() not in _STOPWORDS
     ]
     if len(candidates) > max_images:
         step = len(candidates) / max_images
@@ -801,7 +824,7 @@ def _stage_insight_images(words, max_images=120):
 
     staged = []
     for n, c in enumerate(candidates):
-        word = c["word"].strip(".,!?\"'")
+        word = c["emphasis_word"].strip(".,!?\"'")
         dest = pub / f"kw{n}.jpg"
         try:
             if fetch_pexels_photo(word, dest):

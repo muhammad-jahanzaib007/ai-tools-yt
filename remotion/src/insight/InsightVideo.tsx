@@ -174,6 +174,7 @@ export const InsightVideo: React.FC<InsightProps> = ({ hook, words, accentSeed, 
   const accent = pickAccent(accentSeed);
   const chunks = chunkWords(words);
   const hookFrames = 27; // ~0.9s hard-cut hook card, then straight into captions
+  const { durationInFrames } = useVideoConfig();
 
   return (
     <AbsoluteFill>
@@ -200,15 +201,24 @@ export const InsightVideo: React.FC<InsightProps> = ({ hook, words, accentSeed, 
           );
         });
       })()}
-      {(keywordImages ?? []).map((k: KeywordImage, i: number) => {
-        const startFrame = Math.round(k.start * FPS);
-        const endFrame = Math.max(startFrame + 6, Math.round(k.end * FPS) + 2);
-        return (
-          <Sequence key={`kw${i}`} from={startFrame} durationInFrames={endFrame - startFrame}>
-            <KeywordCard file={k.file} accent={accent} startFrame={0} durFrames={endFrame - startFrame} />
-          </Sequence>
-        );
-      })}
+      {(() => {
+        // Owner: images should "remain on screen until next main word
+        // comes on screen" - not fade per-word. Each card's Sequence runs
+        // from its own keyword start until the NEXT keyword's start (last
+        // one holds to the end of the video), so the visual only changes
+        // when a new main word actually arrives.
+        const imgs = keywordImages ?? [];
+        return imgs.map((k: KeywordImage, i: number) => {
+          const startFrame = Math.round(k.start * FPS);
+          const nextStart = i + 1 < imgs.length ? Math.round(imgs[i + 1].start * FPS) : durationInFrames;
+          const durFrames = Math.max(12, nextStart - startFrame);
+          return (
+            <Sequence key={`kw${i}`} from={startFrame} durationInFrames={durFrames}>
+              <KeywordCard file={k.file} accent={accent} startFrame={0} durFrames={durFrames} />
+            </Sequence>
+          );
+        });
+      })()}
     </AbsoluteFill>
   );
 };
