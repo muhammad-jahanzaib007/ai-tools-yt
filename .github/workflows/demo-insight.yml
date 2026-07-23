@@ -1,11 +1,10 @@
 name: Demo insight videos (preview only, no publish)
 
-# One-off: render 3 real "insight" format videos for the owner to watch
-# before this format goes live. Uses free GitHub Models for the script and
-# free edge-tts for voice (VOICE_PROVIDER=edge) - zero cost, zero Gemini
-# quota spent, since this is a preview, not a real publish. No upload, no
-# crosspost, no push - artifacts only. Delete once the format is approved
-# and shipping for real (production keeps using Gemini per the owner).
+# One-off: render N real "insight" format videos for the owner to watch
+# before this format goes live. Script via Claude (ANTHROPIC_API_KEY); voice
+# via free edge-tts (VOICE_PROVIDER=edge) so this preview spends ZERO Gemini
+# quota. No upload, no crosspost, no push - artifacts only. Delete once the
+# format is approved and shipping for real.
 on:
   workflow_dispatch:
     inputs:
@@ -13,11 +12,10 @@ on:
         description: "How many demo videos to render"
         default: "3"
 
-# Brief generation falls to free GitHub Models here (no Gemini/Anthropic key in
-# this preview job, by design = zero Gemini quota), which needs models:read.
+# GitHub Models (the old free script fallback) is being retired (410 brownout
+# 2026-07-23), so briefs use Claude here instead. contents:read is for checkout.
 permissions:
   contents: read
-  models: read
 
 jobs:
   demo:
@@ -45,6 +43,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_MODEL: ${{ vars.CLAUDE_MODEL || 'claude-sonnet-5' }}
           VOICE_PROVIDER: edge
           FORMAT: insight
         run: |
