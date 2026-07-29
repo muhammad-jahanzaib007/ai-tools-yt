@@ -1,0 +1,58 @@
+{
+  "slug": "why-your-voice-sounds-strange",
+  "title": "Why Your Own Voice Sounds So Weird on Recordings",
+  "hook": "Your recorded voice sounds different because you hear two versions of it.",
+  "narration": [
+    {
+      "text": "Your recorded voice sounds odd because you hear your own voice through bone vibrations.",
+      "broll": "ear inner structure"
+    },
+    {
+      "text": "When you speak, sound travels directly through your skull to your inner ear.",
+      "broll": "vibrating skull bones"
+    },
+    {
+      "text": "This bone conduction adds lower frequencies, making your voice sound fuller to you.",
+      "broll": "sound waves diagram"
+    },
+    {
+      "text": "Recordings only capture the sound travelling through the air.",
+      "broll": "microphone recording sound"
+    },
+    {
+      "text": "This airborne sound lacks those lower bone-conducted frequencies.",
+      "broll": "sound meter levels"
+    },
+    {
+      "text": "So, the recorded version is closer to how others always hear you.",
+      "broll": "person listening headphones"
+    },
+    {
+      "text": "It is not that your recorded voice is wrong, it is just different from what you expect.",
+      "broll": "person speaking clearly"
+    },
+    {
+      "text": "Have you ever gotten used to how your recorded voice sounds?",
+      "broll": "person thinking contemplating"
+    }
+  ],
+  "description": "Ever wondered why your voice sounds so weird when you hear it played back? It is all about how sound travels, both through the air and through your own bones. This short explains the surprising science behind why your recorded voice is not what you expect.",
+  "links": [],
+  "tags": [
+    "voice",
+    "sound",
+    "recording",
+    "hearing",
+    "psychology",
+    "science explained",
+    "human body facts",
+    "audio perception",
+    "bone conduction",
+    "how sound works"
+  ],
+  "thumbnail_text": "Your voice sounds weird",
+  "format": "insight",
+  "topic": "Why your voice sounds strange to you on recordings.",
+  "date": "2026-07-29",
+  "hook_type": "conflict_tease"
+}
