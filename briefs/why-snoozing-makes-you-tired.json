@@ -1,0 +1,58 @@
+{
+  "slug": "why-snoozing-makes-you-tired",
+  "title": "Snoozing Actually Makes You More Tired",
+  "hook": "Hitting the snooze button makes you more tired, not less.",
+  "narration": [
+    {
+      "text": "Hitting the snooze button makes you more tired, not less.",
+      "broll": "alarm clock rings"
+    },
+    {
+      "text": "Your body has a natural sleep cycle, moving between light and deep stages.",
+      "broll": "sleep phases graphic"
+    },
+    {
+      "text": "When your alarm first goes off, you might be in a lighter sleep stage.",
+      "broll": "person gently waking"
+    },
+    {
+      "text": "Pressing snooze lets you drift back into a deeper sleep state.",
+      "broll": "person sleeping deeply"
+    },
+    {
+      "text": "Waking from deep sleep causes 'sleep inertia', that groggy feeling.",
+      "broll": "person rubbing eyes"
+    },
+    {
+      "text": "Each snooze button press restarts this cycle, making inertia worse.",
+      "broll": "multiple alarm clocks"
+    },
+    {
+      "text": "It leaves you feeling more fatigued and disoriented all day.",
+      "broll": "person looking tired"
+    },
+    {
+      "text": "Do you find yourself hitting snooze multiple times each morning?",
+      "broll": "phone snooze button"
+    }
+  ],
+  "description": "Ever wonder why you feel more exhausted after hitting snooze a few times? It's not just in your head. Your body's sleep cycles are to blame, creating 'sleep inertia' that makes you feel groggier.",
+  "links": [],
+  "tags": [
+    "snooze button",
+    "sleep tips",
+    "morning routine",
+    "sleep science",
+    "feel tired",
+    "sleep cycle",
+    "sleep inertia",
+    "wake up easy",
+    "productivity",
+    "daily habits"
+  ],
+  "thumbnail_text": "Snooze, more tired",
+  "format": "insight",
+  "topic": "Why you feel more tired after pressing the snooze button multiple times.",
+  "date": "2026-07-31",
+  "hook_type": "bold_claim"
+}
