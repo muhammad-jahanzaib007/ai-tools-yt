@@ -167,6 +167,27 @@
       "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1784740114.mp4",
       "captured": "2026-07-22T17:08:47Z",
       "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "child playing outdoors",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1785747613.mp4",
+      "captured": "2026-08-03T09:00:32Z",
+      "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "antique car",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1785747632.mp4",
+      "captured": "2026-08-03T09:00:52Z",
+      "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "vintage portrait black and white",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1785747653.mp4",
+      "captured": "2026-08-03T09:01:11Z",
+      "used": false
     }
   ]
 }
