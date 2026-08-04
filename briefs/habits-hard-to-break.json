@@ -1,0 +1,64 @@
+{
+  "slug": "habits-hard-to-break",
+  "title": "Why Habits Are So Hard to Break: The Brain's Reward Prediction Error",
+  "hook": "Your brain likes being right, even about bad habits.",
+  "narration": [
+    {
+      "text": "Your brain likes being right, even about bad habits.",
+      "broll": "Brain scan animation"
+    },
+    {
+      "text": "When you expect a reward, like a sugary snack, your brain releases dopamine.",
+      "broll": "Hand holding biscuit"
+    },
+    {
+      "text": "If you get the snack, your brain updates its prediction for next time.",
+      "broll": "Person eating snack"
+    },
+    {
+      "text": "This is called the reward prediction error.",
+      "broll": "Brain diagram"
+    },
+    {
+      "text": "It reinforces the habit loop, making it stronger each time.",
+      "broll": "Circuit board"
+    },
+    {
+      "text": "Breaking a habit means teaching your brain new predictions.",
+      "broll": "Person exercising"
+    },
+    {
+      "text": "Replacing the old reward with a new, healthier one helps.",
+      "broll": "Healthy food options"
+    },
+    {
+      "text": "It takes time for your brain to learn the new pattern.",
+      "broll": "Calendar marking days"
+    },
+    {
+      "text": "Which habits are you trying to change?",
+      "broll": "Thinking person"
+    }
+  ],
+  "description": "Ever wondered why some habits are so tough to ditch? It all comes down to your brain's reward system and something called the reward prediction error. Understanding this mechanism can help you finally break free from unwanted patterns.",
+  "links": [],
+  "tags": [
+    "habits",
+    "habit formation",
+    "bad habits",
+    "neuroscience",
+    "brain science",
+    "dopamine",
+    "reward system",
+    "self improvement",
+    "psychology",
+    "habit breaking",
+    "mind explained",
+    "brain hacks"
+  ],
+  "thumbnail_text": "Habits Explained",
+  "format": "insight",
+  "topic": "Why habits are so hard to break, explaining the reward prediction error.",
+  "date": "2026-08-04",
+  "hook_type": "result_first"
+}
