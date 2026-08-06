@@ -692,8 +692,10 @@ INSIGHT_BULLETS = (
     "hands, places), NEVER nudity, suggestive or romantic imagery, or violence). This is NOT a "
     "flat fact-dump - it needs real structure, or it reads as "
     "templated filler:\n"
-    "  1. HOOK (segment 1 only): one surprising, concrete, specific claim about how the mind "
-    "or body works. State it directly as fact - no 'did you know', no meta-announcement.\n"
+    "  1. HOOK (segment 1 only): segment 1's \"text\" MUST be the \"hook\" line above, repeated "
+    "WORD FOR WORD - the hook is the spoken opening line, not a separate title. One surprising, "
+    "concrete, specific claim about how the mind or body works. State it directly as fact - no "
+    "'did you know', no meta-announcement.\n"
     "  2. MECHANISM (segments 2-4): explain WHY this actually happens - the real underlying "
     "cause or process. This is what makes it insight instead of trivia: the viewer should "
     "understand something new about how their own mind/body works, not just collect an "
@@ -707,6 +709,32 @@ INSIGHT_BULLETS = (
     "you cannot be sure is real - describe the mechanism in accurate general terms instead of a "
     "fake percentage or fake study name.\n"
 )
+
+
+def _spoken_line(s):
+    """Comparison form of a spoken line: case, punctuation and spacing are all
+    things TTS ignores, so they must not count as a difference."""
+    return " ".join(re.sub(r"[^a-z0-9 ]+", " ", (s or "").lower()).split())
+
+
+def _clean_insight(b):
+    """Force the hook to be the FIRST SPOKEN line.
+
+    InsightVideo holds the big hook card for exactly as long as the hook is
+    spoken, and suppresses the small captions underneath it. That only works
+    if the hook is actually in the narration. The model left it out in 10 of
+    the first 28 insight briefs, which shipped videos whose opening card said
+    something nobody says, and whose first caption chunk was clamped behind
+    the card and so appeared AFTER those words had already been spoken - the
+    "subtitles do not match the voice" report of 2026-08-06. The prompt now
+    demands it; this makes it structural rather than a request.
+    """
+    hook = (b.get("hook") or "").strip()
+    segs = b.get("narration") or []
+    if hook and segs and _spoken_line(segs[0]["text"]) != _spoken_line(hook):
+        segs.insert(0, {"text": hook, "broll": segs[0].get("broll", b["title"])})
+        b["narration"] = segs
+    return b
 
 
 def generate_insight_brief(topic, hook_style):
@@ -731,7 +759,7 @@ def generate_insight_brief(topic, hook_style):
         "are not confident is real - if unsure, describe the mechanism qualitatively instead. "
         "No em dashes anywhere."
     )
-    b = _clean_common(chat_json(user))
+    b = _clean_insight(_clean_common(chat_json(user)))
     # render_video.py runs as a separate process/step from this one (no
     # shared env), so it can't see FORMAT - it reads this key from the
     # brief itself to know a missing battle/ranking/news/comic block here

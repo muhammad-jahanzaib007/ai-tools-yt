@@ -29,6 +29,13 @@ jobs:
 
       # Only what the tested modules import at module level; the heavy audio
       # stack is imported lazily inside functions and isn't exercised here.
-      - run: pip install pytest==9.1.1 requests==2.34.2
+      # numpy is NOT optional despite that: audio_qa.py imports it at module
+      # level, so leaving it out made the whole suite die at collection
+      # ("No module named 'numpy'") on every push from 2026-07-23 onward -
+      # 6+ silent red runs, which is also why a stale test signature went
+      # unnoticed straight through the insight go-live. pillow backs the
+      # flat-photo check in render_video. Both unpinned, matching the
+      # requirements.txt note about numpy's resolver.
+      - run: pip install pytest==9.1.1 requests==2.34.2 numpy pillow
 
       - run: python -m pytest tests -q

@@ -1023,3 +1023,45 @@ commit, so the other sessions know who did what.
   reasonable 2-week buffer and the workflow already has a light weekly
   Monday top-up scheduled instead of bulk-generating again soon. 58/58
   tests passing throughout.
+- 2026-08-06 — laptop Claude Code session (branch fix/insight-caption-sync):
+  owner reported that some insight videos "miss visual images and subtitles"
+  and some "don't match the visual subtitles with the voice". Diagnosed
+  against real artifacts rather than by reading code: pulled the last
+  published mp4 off the crosspost Release, yt-dlp'd 8 more live Shorts, and
+  measured caption/image presence per second with ffmpeg. THREE separate
+  defects, each confirmed with numbers:
+  (1) HOOK NOT SPOKEN in 10 of 28 insight briefs - the model returned a `hook`
+  that appears nowhere in the narration, so the fixed 27-frame hook card
+  displayed a line nobody says, AND the caption chunks were clamped behind it:
+  the opening words were captioned ~0.6s LATE as a 3-frame flash, after they
+  had already been spoken. This is the "subtitles don't match the voice" set,
+  and it explains why only SOME videos were affected. Fixed at both ends -
+  INSIGHT_BULLETS now requires segment 1 to BE the hook word for word, and a
+  new _clean_insight() prepends it structurally when the model ignores that.
+  (2) CAPTION HOLES - a chunk ended on its own last word, so the screen went
+  textless during every inter-sentence pause (measured 7-12 dead seconds per
+  ~30s video). Chunks now hold until the NEXT chunk starts; only the final one
+  fades. Same end-fade removed from the keyword cards, where it caused a
+  visible dark dip at every image change.
+  (3) FLAT GRADIENT PHOTOS - Pexels answers abstract broll queries with pastel
+  or dark gradient "backgrounds" that read on screen as an empty card. This,
+  not an absent card, is what the "missing images" report was: measured, the
+  cards were nearly always present. New _image_richness() (grayscale stddev
+  via Pillow; real photos ~50, gradients ~12) rejects them, and
+  fetch_pexels_photo_pair now WALKS the result list instead of blindly taking
+  hits 1 and 2. A lone survivor is mirrored onto the bottom card so the lower
+  half is never left empty.
+  Hook card length now comes from _hook_end_sec() (when the spoken hook ends)
+  instead of a fixed 27 frames, capped at 5s, with font auto-shrink so a long
+  hook cannot collide with the image cards. The caption ratchet
+  (start = max(prevChunkEnd, ownStart)) is gone - each chunk starts at its own
+  measured time, so no overlap can push the whole track late.
+  ALSO FOUND, unrelated to the report and arguably worse: tests.yml has been
+  RED since 2026-07-23 (6+ consecutive runs, straight through the insight
+  go-live). audio_qa.py imports numpy at module level but the workflow
+  installed only pytest+requests, so the suite died at COLLECTION and no test
+  has run since. That is how a stale _stage_insight_images() call signature
+  (changed to (segs, words) on 07-24) survived. Fixed the install (numpy +
+  pillow), fixed the stale tests, added 7 new ones. Rule 8 preview: this
+  branch is NOT merged - demo-insight.yml is dispatched on it so the owner
+  watches real renders before any of this reaches a published slot.

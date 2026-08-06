@@ -813,6 +813,22 @@ def _is_unsafe(text):
     return bool(toks & _UNSAFE)
 
 
+def _hook_end_sec(segs, words):
+    """When the spoken hook (narration segment 1) finishes, in seconds.
+
+    InsightVideo holds the big hook card for exactly this long instead of a
+    fixed 0.9s, so the card tracks the voice and the captions underneath it
+    resume on the word the voice actually reaches. Uses the same 1:1
+    script-word alignment `_stage_insight_images` maps segments with.
+    """
+    if not segs or not words:
+        return 0.0
+    n = len((segs[0].get("text") or "").split())
+    if n <= 0:
+        return 0.0
+    return float(words[min(n, len(words)) - 1][2])
+
+
 def _stage_insight_images(segs, words, max_images=30):
     """One RELEVANT image pair per narration segment (2026-07-23): query the
     segment's own LLM-chosen `broll` term (which is written to match the
@@ -859,6 +875,10 @@ def _stage_insight_images(segs, words, max_images=30):
         if ok_b:
             entry["file2"] = dest_b.name
         staged.append(entry)
+    # The first card would otherwise pop in at the first spoken word, leaving
+    # the opening frames empty; start it with the video instead.
+    if staged:
+        staged[0]["start"] = 0.0
     print(f"  insight keyword images: {len(staged)}/{len(ranges)} staged (broll-matched, safe)")
     return staged
 
@@ -873,13 +893,35 @@ def _download_pexels_url(url, dest):
     return Path(dest).stat().st_size > 5000
 
 
+# Grayscale standard deviation below which a "photo" is really a flat colour
+# wash. Real photographs measure 40+; the pastel and dark-blue gradient stock
+# images Pexels returns for abstract queries measure in the teens and read on
+# screen as an empty card (the "missing visual images" report, 2026-08-06).
+MIN_PHOTO_RICHNESS = 20.0
+
+
+def _image_richness(path):
+    """Grayscale standard deviation of a downloaded photo, or a passing score
+    when it cannot be measured (never reject on a broken measurement)."""
+    try:
+        from PIL import Image, ImageStat
+        with Image.open(path) as im:
+            return float(ImageStat.Stat(im.convert("L").resize((64, 64))).stddev[0])
+    except Exception:
+        return 999.0
+
+
 def fetch_pexels_photo_pair(query, dest_a, dest_b):
     """Download TWO different Pexels photos for the same query - top/bottom
     keyword cards (2026-07-23, owner: "two images on screen ... both be
     different but both belong to the same word") need visual variety, not
-    the same photo twice. One search call, first two distinct results;
-    falls back to re-downloading the first result for dest_b if Pexels only
-    has one match. Returns (ok_a, ok_b)."""
+    the same photo twice.
+
+    Walks the result list rather than blindly taking results 1 and 2, skipping
+    anything that fails to download or that measures as a flat gradient. A
+    segment left with no usable photo is better than a blank-looking one: the
+    composition holds the PREVIOUS keyword's card until the next real one
+    arrives. Returns (ok_a, ok_b)."""
     if not PX_KEY:
         return False, False
     r = requests.get(
@@ -888,15 +930,26 @@ def fetch_pexels_photo_pair(query, dest_a, dest_b):
         headers={"Authorization": PX_KEY}, timeout=30)
     if r.status_code >= 400:
         return False, False
-    # brand-safety: drop any result whose alt text trips the blocklist, then
-    # take the first two distinct SAFE photos.
+    # brand-safety: drop any result whose alt text trips the blocklist.
     photos = [p for p in r.json().get("photos", []) if not _is_unsafe(p.get("alt", ""))]
-    if not photos:
-        return False, False
-    ok_a = _download_pexels_url(photos[0]["src"]["large"], dest_a)
-    second = photos[1] if len(photos) > 1 else photos[0]
-    ok_b = _download_pexels_url(second["src"]["large"], dest_b)
-    return ok_a, ok_b
+    picked = []
+    for p in photos[:8]:
+        dest = dest_a if not picked else dest_b
+        if not _download_pexels_url(p["src"]["large"], dest):
+            continue
+        if _image_richness(dest) < MIN_PHOTO_RICHNESS:
+            Path(dest).unlink(missing_ok=True)   # flat wash: try the next result
+            continue
+        picked.append(dest)
+        if len(picked) == 2:
+            break
+    if len(picked) == 1:
+        # Only one usable photo for this query. Repeat it on the bottom card
+        # rather than leave the lower half of the frame empty - that emptiness
+        # is what the bottom card was added to fix (owner, 2026-07-23).
+        shutil.copyfile(dest_a, dest_b)
+        return True, True
+    return len(picked) >= 1, len(picked) >= 2
 
 
 def fetch_pexels_photo(query, dest):
@@ -951,6 +1004,7 @@ def render_insight(brief):
         "accentSeed": slug,
         "durationInFrames": total_frames,
         "keywordImages": keyword_images,
+        "hookEndSec": _hook_end_sec(segs, words),
     }
     props_file = WORK / "props.json"
     props_file.write_text(json.dumps(props, ensure_ascii=False), encoding="utf-8")

@@ -73,16 +73,24 @@ function Backdrop({ accent }: { accent: string }) {
   );
 }
 
-function HookCard({ hook, accent }: { hook: string; accent: string }) {
+function HookCard({ hook, accent, durFrames }: { hook: string; accent: string; durFrames: number }) {
   const frame = useCurrentFrame();
   const scale = spring({ frame, fps: FPS, config: { damping: 14, stiffness: 140 }, durationInFrames: 18 });
-  const opacity = interpolate(frame, [0, 8, 22, 27], [0, 1, 1, 0], { extrapolateRight: "clamp" });
+  // Fade relative to the card's OWN length: it now runs for as long as the
+  // hook is spoken (a few seconds), not a fixed 27 frames.
+  const opacity = interpolate(
+    frame, [0, 8, Math.max(9, durFrames - 5), durFrames],
+    [0, 1, 1, 0], { extrapolateRight: "clamp" });
+  // The card sits between the two keyword cards, so a long hook has to shrink
+  // to stay clear of them instead of colliding.
+  const words = hook.split(/\s+/).length;
+  const fontSize = words > 12 ? 68 : words > 9 ? 78 : 92;
   return (
     <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", padding: "0 90px" }}>
       <div
         style={{
           fontFamily: antonFont,
-          fontSize: 92,
+          fontSize,
           lineHeight: 1.05,
           textAlign: "center",
           color: "#fff",
@@ -105,16 +113,23 @@ function CaptionChunk({
   accent,
   startFrame,
   durFrames,
+  fade,
 }: {
   text: string;
   emphasisIndex: number;
   accent: string;
   startFrame: number;
   durFrames: number;
+  fade: boolean;
 }) {
   const frame = useCurrentFrame() - startFrame;
   const pop = spring({ frame, fps: FPS, config: { damping: 12, stiffness: 200 }, durationInFrames: 10 });
-  const fadeOut = interpolate(frame, [durFrames - 6, durFrames], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  // Only the FINAL chunk fades. Every chunk fading meant the line dissolved
+  // before the next one arrived, so the screen went textless in every pause
+  // between sentences (7-12 dead seconds per video, reported 2026-08-06).
+  const fadeOut = fade
+    ? interpolate(frame, [durFrames - 6, durFrames], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })
+    : 1;
   const words = text.split(" ");
   return (
     <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", padding: "0 70px" }}>
@@ -142,7 +157,7 @@ function CaptionChunk({
   );
 }
 
-function KeywordCard({ file, accent, startFrame, durFrames, position }: { file: string; accent: string; startFrame: number; durFrames: number; position: "top" | "bottom" }) {
+function KeywordCard({ file, accent, startFrame, durFrames, position, fade }: { file: string; accent: string; startFrame: number; durFrames: number; position: "top" | "bottom"; fade: boolean }) {
   // Owner's 2026-07-23 differentiator, iterated to v6: a card top AND
   // bottom (owner: "lower part of the video is empty ... add images to the
   // lower part as well ... two images ... both be different but both
@@ -150,7 +165,12 @@ function KeywordCard({ file, accent, startFrame, durFrames, position }: { file: 
   // both fit around the centered caption without collision.
   const frame = useCurrentFrame() - startFrame;
   const pop = spring({ frame, fps: FPS, config: { damping: 13, stiffness: 180 }, durationInFrames: 10 });
-  const fadeOut = interpolate(frame, [durFrames - 6, durFrames], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  // Same reason as CaptionChunk: a fade at the end of every card produced a
+  // visible dark dip at each image change, since the next card is still
+  // springing in while this one dissolves. Only the last card fades.
+  const fadeOut = fade
+    ? interpolate(frame, [durFrames - 6, durFrames], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })
+    : 1;
   const rotate = position === "top" ? -6 : 6;
   return (
     <AbsoluteFill
@@ -179,42 +199,49 @@ function KeywordCard({ file, accent, startFrame, durFrames, position }: { file: 
   );
 }
 
-export const InsightVideo: React.FC<InsightProps> = ({ hook, words, accentSeed, keywordImages }) => {
+export const InsightVideo: React.FC<InsightProps> = ({ hook, words, accentSeed, keywordImages, hookEndSec }) => {
   const accent = pickAccent(accentSeed);
   const chunks = chunkWords(words);
-  const hookFrames = 27; // ~0.9s hard-cut hook card, then straight into captions
   const { durationInFrames } = useVideoConfig();
+  // The hook card runs for as long as the hook is actually SPOKEN (segment 1
+  // of the narration, measured in render_video._hook_end_sec). It used to be a
+  // fixed 27 frames, which meant a 13-word hook flashed for 0.9s and the
+  // captions underneath were clamped behind it - so the opening words were
+  // captioned only after they had been said. Capped so a bad timing value
+  // cannot swallow the video, floored so it is never a subliminal flash.
+  const hookFrames = Math.min(
+    Math.max(Math.round((hookEndSec ?? 0) * FPS), 27),
+    Math.min(Math.round(5 * FPS), Math.max(27, durationInFrames - 30)),
+  );
 
   return (
     <AbsoluteFill>
       <Backdrop accent={accent} />
       <Sequence from={0} durationInFrames={hookFrames}>
-        <HookCard hook={hook} accent={accent} />
+        <HookCard hook={hook} accent={accent} durFrames={hookFrames} />
       </Sequence>
       {(() => {
-        // Clamp each chunk's start to at least the previous chunk's end so
-        // two word-groups never render on screen at once - the "2018"
-        // overlap artifact came from adjacent Sequences bleeding into each
-        // other's fade window.
-        // 2026-07-23: the old +6-frame-minimum/+2-frame-pad on every chunk
-        // was harmless on a normally-paced script but on a fast/dense one
-        // (many short chunks) the padding compounds - each chunk borrows a
-        // few extra frames from the next, and across 60-80 chunks that
-        // drift ate an entire 26s demo (captions/images only appeared
-        // jammed together in the last second). Minimum duration is now
-        // just enough to avoid a literal 0-frame Sequence, no added pad,
-        // so drift can only happen on genuine overlaps, not every chunk.
-        let prevEnd = hookFrames;
-        return chunks.map((c, i) => {
-          const rawStart = Math.round(c.start * FPS);
-          const startFrame = Math.max(prevEnd, rawStart);
+        // The hook's own words are already on screen as the big card, so their
+        // caption chunks are dropped rather than repeated underneath it.
+        const visible = chunks.filter((c) => Math.round(c.end * FPS) > hookFrames);
+        return visible.map((c, i) => {
+          // Each chunk starts at its OWN measured time. The previous code
+          // clamped every start to the previous chunk's end, which let any
+          // overlap ratchet forward and push the whole caption track late.
+          const startFrame = Math.max(hookFrames, Math.round(c.start * FPS));
           if (startFrame >= durationInFrames - 2) return null;
-          const endFrame = Math.min(durationInFrames, Math.max(startFrame + 3, Math.round(c.end * FPS)));
+          // Hold each chunk until the NEXT one starts instead of dropping it
+          // when its own last word ends: speech has pauses between sentences,
+          // and text that vanishes in every pause reads as missing subtitles.
+          const nextStart = i + 1 < visible.length
+            ? Math.round(visible[i + 1].start * FPS)
+            : durationInFrames;
+          const endFrame = Math.min(durationInFrames, Math.max(startFrame + 3, nextStart));
           const durFrames = endFrame - startFrame;
-          prevEnd = endFrame;
+          const isLast = i === visible.length - 1;
           return (
             <Sequence key={i} from={startFrame} durationInFrames={durFrames}>
-              <CaptionChunk text={c.text} emphasisIndex={c.emphasisIndex} accent={accent} startFrame={0} durFrames={durFrames} />
+              <CaptionChunk text={c.text} emphasisIndex={c.emphasisIndex} accent={accent} startFrame={0} durFrames={durFrames} fade={isLast} />
             </Sequence>
           );
         });
@@ -230,15 +257,16 @@ export const InsightVideo: React.FC<InsightProps> = ({ hook, words, accentSeed, 
           const startFrame = Math.round(k.start * FPS);
           const nextStart = i + 1 < imgs.length ? Math.round(imgs[i + 1].start * FPS) : durationInFrames;
           const durFrames = Math.max(12, nextStart - startFrame);
+          const isLast = i === imgs.length - 1;
           const seqs = [
             <Sequence key={`kwT${i}`} from={startFrame} durationInFrames={durFrames}>
-              <KeywordCard file={k.file} accent={accent} startFrame={0} durFrames={durFrames} position="top" />
+              <KeywordCard file={k.file} accent={accent} startFrame={0} durFrames={durFrames} position="top" fade={isLast} />
             </Sequence>,
           ];
           if (k.file2) {
             seqs.push(
               <Sequence key={`kwB${i}`} from={startFrame} durationInFrames={durFrames}>
-                <KeywordCard file={k.file2} accent={accent} startFrame={0} durFrames={durFrames} position="bottom" />
+                <KeywordCard file={k.file2} accent={accent} startFrame={0} durFrames={durFrames} position="bottom" fade={isLast} />
               </Sequence>
             );
           }

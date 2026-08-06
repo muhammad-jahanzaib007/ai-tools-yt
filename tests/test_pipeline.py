@@ -501,23 +501,126 @@ def test_stage_insight_images_filters_stopwords_and_short_words(monkeypatch, tmp
         return True, True
 
     monkeypatch.setattr(rv, "fetch_pexels_photo_pair", fake_fetch_pair)
-    # v5: back to one KEYWORD per MAIN word (3-word chunk emphasis), not
-    # per-word - but each keyword now stages a top/bottom PAIR of different
-    # photos. chunk1 ["it","is","a"] -> longest is still a stopword/short
-    # -> filtered; chunk2 ["quiet","old","memory"] -> "memory" wins.
+    # Images are queried per NARRATION SEGMENT off its LLM-written `broll`
+    # term (2026-07-23), not off a caption word: the picture has to match the
+    # sentence. Each segment stages a top/bottom PAIR of different photos.
+    segs = [{"text": "it is a", "broll": "quiet street"},
+            {"text": "quiet old memory", "broll": "old photograph"}]
     words = [("it", 0.0, 0.1), ("is", 0.1, 0.2), ("a", 0.2, 0.3),
              ("quiet", 0.3, 0.6), ("old", 0.6, 0.7), ("memory", 0.7, 1.1)]
-    staged = rv._stage_insight_images(words)
-    assert fetched == ["memory"]
-    assert len(staged) == 1
+    staged = rv._stage_insight_images(segs, words)
+    assert fetched == ["quiet street", "old photograph"]
+    assert len(staged) == 2
     assert staged[0]["file"] == "kw0a.jpg" and staged[0]["file2"] == "kw0b.jpg"
+    # the opening card starts with the video, not at the first spoken word
+    assert staged[0]["start"] == 0.0
+    assert staged[1]["start"] == 0.3
 
 
 def test_stage_insight_images_no_key_returns_empty(monkeypatch, tmp_path):
     monkeypatch.setattr(rv, "REMOTION_DIR", tmp_path)
     monkeypatch.setattr(rv, "PX_KEY", None)
+    segs = [{"text": "memory", "broll": "old photograph"}]
     words = [("memory", 0.0, 0.5)]
-    assert rv._stage_insight_images(words) == []
+    assert rv._stage_insight_images(segs, words) == []
+
+
+# --- insight caption/hook sync (defects reported 2026-08-06) --------------------
+
+def test_hook_end_sec_is_the_end_of_the_spoken_hook():
+    # The hook card is held for exactly as long as segment 1 is spoken, so its
+    # length comes from the aligned word timings, not a fixed frame count.
+    segs = [{"text": "Your brain decides first"}, {"text": "Then you notice"}]
+    words = [("Your", 0.0, 0.3), ("brain", 0.3, 0.7), ("decides", 0.7, 1.1),
+             ("first", 1.1, 1.6), ("Then", 1.9, 2.2), ("you", 2.2, 2.4),
+             ("notice", 2.4, 2.9)]
+    assert rv._hook_end_sec(segs, words) == 1.6
+
+
+def test_hook_end_sec_survives_short_or_missing_timings():
+    assert rv._hook_end_sec([], []) == 0.0
+    assert rv._hook_end_sec([{"text": ""}], [("a", 0.0, 0.2)]) == 0.0
+    # fewer words than the segment claims must clamp, not IndexError
+    assert rv._hook_end_sec([{"text": "one two three"}], [("one", 0.0, 0.4)]) == 0.4
+
+
+def test_clean_insight_forces_the_hook_to_be_spoken():
+    # 10 of the first 28 insight briefs returned a hook that appeared nowhere
+    # in the narration, so the card showed words nobody said.
+    b = {"title": "T", "hook": "Your brain decides before you know it.",
+         "narration": [{"text": "This is not magic.", "broll": "person thinking"}]}
+    out = gb._clean_insight(b)
+    assert out["narration"][0]["text"] == "Your brain decides before you know it."
+    assert out["narration"][1]["text"] == "This is not magic."
+    assert out["narration"][0]["broll"] == "person thinking"
+
+
+def test_clean_insight_leaves_an_already_spoken_hook_alone():
+    # punctuation/case differences are not a real difference - TTS ignores them,
+    # so re-prepending on those would duplicate the opening line.
+    b = {"title": "T", "hook": "Your brain decides first",
+         "narration": [{"text": "Your brain decides first.", "broll": "x"},
+                       {"text": "Then you notice.", "broll": "y"}]}
+    out = gb._clean_insight(b)
+    assert len(out["narration"]) == 2
+
+
+def test_image_richness_rejects_a_flat_wash_and_keeps_a_photo(tmp_path):
+    # Pexels answers abstract queries with flat gradient "backgrounds"; on
+    # screen they read as an empty card (2026-08-06 "missing images" report).
+    from PIL import Image
+    import random
+    flat = tmp_path / "flat.jpg"
+    Image.new("RGB", (64, 64), (120, 120, 130)).save(flat)
+    assert rv._image_richness(flat) < rv.MIN_PHOTO_RICHNESS
+
+    rnd = Image.new("RGB", (64, 64))
+    r = random.Random(7)
+    rnd.putdata([(r.randrange(256), r.randrange(256), r.randrange(256))
+                 for _ in range(64 * 64)])
+    photo = tmp_path / "photo.jpg"
+    rnd.save(photo)
+    assert rv._image_richness(photo) >= rv.MIN_PHOTO_RICHNESS
+
+
+def test_image_richness_never_rejects_on_a_broken_measurement(tmp_path):
+    bad = tmp_path / "notanimage.jpg"
+    bad.write_bytes(b"not a jpeg")
+    assert rv._image_richness(bad) >= rv.MIN_PHOTO_RICHNESS
+
+
+def test_photo_pair_walks_past_flat_results(monkeypatch, tmp_path):
+    # The old version took results 1 and 2 unconditionally, so a query whose
+    # top hits are gradient "backgrounds" produced two blank-looking cards.
+    from PIL import Image
+    import random
+    monkeypatch.setattr(rv, "PX_KEY", "fake")
+
+    class FakeResp:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return {"photos": [{"alt": "gradient", "src": {"large": "flat1"}},
+                               {"alt": "a street", "src": {"large": "good1"}},
+                               {"alt": "a hand", "src": {"large": "good2"}}]}
+
+    monkeypatch.setattr(rv.requests, "get", lambda *a, **k: FakeResp())
+    rnd = Image.new("RGB", (64, 64))
+    r = random.Random(3)
+    rnd.putdata([(r.randrange(256), r.randrange(256), r.randrange(256))
+                 for _ in range(64 * 64)])
+    grabbed = []
+
+    def fake_dl(url, dest):
+        grabbed.append(url)
+        (Image.new("RGB", (64, 64), (120, 120, 130)) if url.startswith("flat") else rnd).save(dest)
+        return True
+
+    monkeypatch.setattr(rv, "_download_pexels_url", fake_dl)
+    ok_a, ok_b = rv.fetch_pexels_photo_pair("q", tmp_path / "a.jpg", tmp_path / "b.jpg")
+    assert (ok_a, ok_b) == (True, True)
+    assert grabbed == ["flat1", "good1", "good2"]
 
 
 def test_brief_format_recognises_insight():

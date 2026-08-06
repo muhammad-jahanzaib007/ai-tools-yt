@@ -21,6 +21,10 @@ export type InsightProps = {
   accentSeed: string; // hashed into an accent color, one per video (see pickAccent)
   durationInFrames: number; // computed in render_video.py from the real audio length
   keywordImages?: KeywordImage[]; // 2026-07-23: one photo per stand-out keyword chunk
+  // Seconds at which the SPOKEN hook ends (render_video._hook_end_sec). The
+  // hook card is held for exactly this long so it tracks the voice; omitted or
+  // 0 falls back to the old fixed-length card.
+  hookEndSec?: number;
 };
 
 // One saturated accent per video, hashed from the slug — same idea the
