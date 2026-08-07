@@ -1,0 +1,58 @@
+{
+  "slug": "multitasking-less-efficient",
+  "title": "Why Multitasking Actually Makes You Slower",
+  "hook": "Do you often feel less productive when juggling multiple tasks?",
+  "narration": [
+    {
+      "text": "Your brain can only truly focus on one complex task at a time.",
+      "broll": "Brain illustration focus"
+    },
+    {
+      "text": "What feels like multitasking is actually rapid task-switching.",
+      "broll": "Person typing switching"
+    },
+    {
+      "text": "Each switch incurs a 'cost' as your brain reorients itself.",
+      "broll": "Gears turning slowly"
+    },
+    {
+      "text": "This cognitive load slows you down and increases errors.",
+      "broll": "Stack of papers falling"
+    },
+    {
+      "text": "It takes time to regain deep focus on the original task.",
+      "broll": "Focused person writing"
+    },
+    {
+      "text": "Think of it like repeatedly stopping and starting a car on a journey.",
+      "broll": "Car driving stop"
+    },
+    {
+      "text": "You use more fuel and the journey takes much longer.",
+      "broll": "Fuel gauge empty"
+    },
+    {
+      "text": "Have you noticed this mental fatigue when you try to multitask?",
+      "broll": "Person rubbing temples"
+    }
+  ],
+  "description": "It feels like we are getting more done when we multitask, but the science shows the opposite is true. Discover why your brain is actually less efficient when trying to juggle multiple tasks simultaneously.",
+  "links": [],
+  "tags": [
+    "multitasking myth",
+    "productivity tips",
+    "brain science",
+    "focus hacks",
+    "time management",
+    "cognitive load",
+    "deep work",
+    "task switching",
+    "work efficiency",
+    "mindfulness at work"
+  ],
+  "thumbnail_text": "Stop Multitasking Now",
+  "format": "insight",
+  "topic": "Why multitasking is often less efficient than focusing on one task.",
+  "date": "2026-08-07",
+  "hook_type": "question"
+}
