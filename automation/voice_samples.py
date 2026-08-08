@@ -59,17 +59,33 @@ EL_VOICES = {
 # them aloud (rule 8, _style_leaked). Only kept here for the control sample.
 SPORTS = "Say this like an excited sports commentator calling a match, fast and punchy: "
 
-# engine, label, params. The Gemini control is what production ships today, so
-# the comparison has a baseline the owner has already heard in context.
+# Round 3 (2026-08-08): owner ruled ElevenLabs OUT for good on cost, and named
+# ElevenLabs Charlotte as the best of round 2 - a calm, warm, British-accented
+# female read. So this round hunts that same PROFILE inside Kokoro, the only
+# free engine that survived, whose four British female voices were represented
+# by exactly one sample last round.
+#
+# Charlotte is NOT being cloned: she is a proprietary ElevenLabs voice and
+# copying a specific voice is a legal and ethical problem, not a technical one.
+# The target is her character (calm, warm, British), matched with free voices.
+#
+# Pace is held at 0.92 across the new voices on purpose. Charlotte read ~37s
+# against Kokoro Emma's ~30s on the same script, so part of what read better
+# may have been the slower delivery, not the timbre. Holding one calmer pace
+# isolates the voice choice; bf_emma at native 1.0 stays in as the reference
+# the owner already heard, so the comparison has a fixed point.
+CALM = 0.92
 CANDIDATES = [
-    ("gemini", "control-current", {"voice": "Puck", "style": SPORTS}),
-    ("eleven", "v3-brian",     {"voice": "brian",     "model": "eleven_v3"}),
-    ("eleven", "v3-jessica",   {"voice": "jessica",   "model": "eleven_v3"}),
-    ("eleven", "v2-brian",     {"voice": "brian",     "model": "eleven_multilingual_v2"}),
-    ("eleven", "v2-charlotte", {"voice": "charlotte", "model": "eleven_multilingual_v2"}),
-    ("eleven", "turbo-daniel", {"voice": "daniel",    "model": "eleven_turbo_v2_5"}),
-    ("kokoro", "kokoro-am",    {"voice": "am_michael"}),
-    ("kokoro", "kokoro-bf",    {"voice": "bf_emma"}),
+    ("kokoro", "emma-reference",  {"voice": "bf_emma",    "speed": 1.0}),
+    ("kokoro", "emma-calm",       {"voice": "bf_emma",    "speed": CALM}),
+    ("kokoro", "isabella-calm",   {"voice": "bf_isabella", "speed": CALM}),
+    ("kokoro", "alice-calm",      {"voice": "bf_alice",   "speed": CALM}),
+    ("kokoro", "lily-calm",       {"voice": "bf_lily",    "speed": CALM}),
+    # Kokoro's two highest-rated voices overall are American female; worth
+    # hearing in case timbre quality matters more to the owner than the accent.
+    ("kokoro", "heart-calm",      {"voice": "af_heart",   "speed": CALM}),
+    ("kokoro", "bella-calm",      {"voice": "af_bella",   "speed": CALM}),
+    ("kokoro", "nicole-calm",     {"voice": "af_nicole",  "speed": CALM}),
 ]
 
 
@@ -101,9 +117,11 @@ def tts_eleven(text, dest, voice, model):
     dest.write_bytes(r.content)
 
 
-def tts_kokoro(text, dest, voice):
+def tts_kokoro(text, dest, voice, speed=1.0):
     """Kokoro via kokoro-onnx: the free local model flagged back on 2026-07-22
     as the better free floor than edge-tts, never actually tried until now.
+    Apache-2.0, so commercial use is clear (unlike XTTS-v2's non-commercial
+    licence, which rules it out for this channel however good it sounds).
     Model files are fetched by the workflow; absent them this raises and the
     candidate is reported failed rather than silently skipped."""
     import numpy as np
@@ -115,7 +133,7 @@ def tts_kokoro(text, dest, voice):
     if not model.exists() or not voices.exists():
         raise RuntimeError("kokoro model files not downloaded")
     k = Kokoro(str(model), str(voices))
-    samples, rate = k.create(text, voice=voice, speed=1.0, lang="en-us")
+    samples, rate = k.create(text, voice=voice, speed=speed, lang="en-us")
     wav = dest.with_suffix(".wav")
     sf.write(str(wav), np.asarray(samples), rate)
     subprocess.run(["ffmpeg", "-y", "-i", str(wav), "-b:a", "128k", str(dest)],
@@ -147,7 +165,7 @@ def main():
                     raise RuntimeError("no ELEVENLABS_API_KEY")
                 tts_eleven(script, dest, p["voice"], p["model"])
             elif engine == "kokoro":
-                tts_kokoro(script, dest, p["voice"])
+                tts_kokoro(script, dest, p["voice"], p.get("speed", 1.0))
             else:
                 raise RuntimeError(f"unknown engine {engine}")
         except (SystemExit, Exception) as e:
