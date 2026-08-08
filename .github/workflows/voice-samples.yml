@@ -29,7 +29,9 @@ permissions:
 jobs:
   samples:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # Chatterbox on CPU is the slow part: ~2GB model download plus inference at
+    # several times slower than realtime, per sample.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -57,6 +59,15 @@ jobs:
           curl -fsSL -o kokoro-v1.0.onnx "$base/kokoro-v1.0.onnx"
           curl -fsSL -o voices-v1.0.bin  "$base/voices-v1.0.bin"
           ls -la kokoro-v1.0.onnx voices-v1.0.bin
+
+      # Chatterbox is the only free engine with an emotion control, which is the
+      # thing four rejected engines all lacked. CPU-only here (no GPU runner), so
+      # it pulls torch and is slow; non-blocking so a bad install cannot cost the
+      # run, and its candidates then report as failed rather than vanish.
+      - name: Install Chatterbox (free, emotion control)
+        if: inputs.probe != '1'
+        continue-on-error: true
+        run: pip install chatterbox-tts
 
       # Read-only: tells us whether the ElevenLabs plan is still alive and which
       # models it can reach, before any sample set is built against it.

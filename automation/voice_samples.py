@@ -75,17 +75,36 @@ SPORTS = "Say this like an excited sports commentator calling a match, fast and 
 # isolates the voice choice; bf_emma at native 1.0 stays in as the reference
 # the owner already heard, so the comparison has a fixed point.
 CALM = 0.92
-CANDIDATES = [
+KOKORO_ROUND = [
     ("kokoro", "emma-reference",  {"voice": "bf_emma",    "speed": 1.0}),
     ("kokoro", "emma-calm",       {"voice": "bf_emma",    "speed": CALM}),
     ("kokoro", "isabella-calm",   {"voice": "bf_isabella", "speed": CALM}),
     ("kokoro", "alice-calm",      {"voice": "bf_alice",   "speed": CALM}),
     ("kokoro", "lily-calm",       {"voice": "bf_lily",    "speed": CALM}),
-    # Kokoro's two highest-rated voices overall are American female; worth
-    # hearing in case timbre quality matters more to the owner than the accent.
     ("kokoro", "heart-calm",      {"voice": "af_heart",   "speed": CALM}),
     ("kokoro", "bella-calm",      {"voice": "af_bella",   "speed": CALM}),
     ("kokoro", "nicole-calm",     {"voice": "af_nicole",  "speed": CALM}),
+]
+
+# Round 4 (2026-08-08): owner rejected all eight Kokoro voices as "robotic, no
+# expressions in tone", which is the fourth engine down (edge-tts, Gemini TTS,
+# ElevenLabs on cost, Kokoro). Every engine tried so far reads a sentence at a
+# fixed affect, which is exactly the complaint.
+#
+# Chatterbox (Resemble AI, MIT, English-only) is the one remaining free model
+# with a real EMOTION control rather than a flat read: `exaggeration` sets
+# intensity and `cfg_weight` trades pacing against fidelity (lower = slower,
+# more deliberate). So this round varies expressiveness on one voice instead of
+# hunting timbre, because tone is what was rejected.
+#
+# Using the model's built-in voice deliberately: steering it at a target timbre
+# needs a reference clip, i.e. cloning someone's voice, which stays off the
+# table. Settle the expression question first, voice identity second.
+CANDIDATES = [
+    ("chatterbox", "restrained",  {"exaggeration": 0.35, "cfg_weight": 0.6}),
+    ("chatterbox", "natural",     {"exaggeration": 0.5,  "cfg_weight": 0.5}),
+    ("chatterbox", "expressive",  {"exaggeration": 0.8,  "cfg_weight": 0.4}),
+    ("chatterbox", "animated",    {"exaggeration": 1.2,  "cfg_weight": 0.3}),
 ]
 
 
@@ -141,11 +160,34 @@ def tts_kokoro(text, dest, voice, speed=1.0):
     wav.unlink(missing_ok=True)
 
 
+def tts_chatterbox(text, dest, exaggeration=0.5, cfg_weight=0.5):
+    """Chatterbox (MIT). CPU-only on a GitHub runner, so this is slow: the model
+    downloads ~2GB on first use and inference runs several times slower than
+    realtime. Fine for a handful of samples, would need a real look before it
+    goes anywhere near a 2-a-day pipeline.
+
+    No audio_prompt_path is passed on purpose: that parameter is voice cloning,
+    which stays out of scope. This uses the model's own voice."""
+    import torch
+    import torchaudio
+    from chatterbox.tts import ChatterboxTTS
+
+    model = ChatterboxTTS.from_pretrained(device="cpu")
+    with torch.no_grad():
+        wav = model.generate(text, exaggeration=exaggeration, cfg_weight=cfg_weight)
+    raw = dest.with_suffix(".wav")
+    torchaudio.save(str(raw), wav, model.sr)
+    subprocess.run(["ffmpeg", "-y", "-i", str(raw), "-b:a", "128k", str(dest)],
+                   capture_output=True, check=True)
+    raw.unlink(missing_ok=True)
+
+
 def main():
     brief = rv.pick_brief()
     script = script_from(brief)
     wanted = [s.strip() for s in (os.environ.get("VOICE_CANDIDATES") or "").split(",") if s.strip()]
-    runs = [c for c in CANDIDATES if not wanted or c[1] in wanted]
+    pool = CANDIDATES + KOKORO_ROUND
+    runs = [c for c in pool if not wanted or c[1] in wanted] if wanted else list(CANDIDATES)
 
     OUT.mkdir(parents=True, exist_ok=True)
     for f in list(OUT.glob("*.mp3")) + list(OUT.glob("*.json")):
@@ -166,6 +208,8 @@ def main():
                 tts_eleven(script, dest, p["voice"], p["model"])
             elif engine == "kokoro":
                 tts_kokoro(script, dest, p["voice"], p.get("speed", 1.0))
+            elif engine == "chatterbox":
+                tts_chatterbox(script, dest, p["exaggeration"], p["cfg_weight"])
             else:
                 raise RuntimeError(f"unknown engine {engine}")
         except (SystemExit, Exception) as e:
