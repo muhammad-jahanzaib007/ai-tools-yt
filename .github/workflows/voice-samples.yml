@@ -19,6 +19,9 @@ on:
       candidates:
         description: "Comma-separated labels (blank = all)"
         default: ""
+      probe:
+        description: "Set to 1 to only probe ElevenLabs tier/models/voices, no audio"
+        default: ""
 
 permissions:
   contents: read
@@ -42,10 +45,20 @@ jobs:
       - name: Install Python deps
         run: pip install requests
 
+      # Read-only: tells us whether the ElevenLabs plan is still alive and which
+      # models it can reach, before any sample set is built against it.
+      - name: Probe ElevenLabs account
+        if: inputs.probe == '1'
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+        run: python automation/voice_probe.py
+
       - name: Render voice samples
+        if: inputs.probe != '1'
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
           BRIEF_SLUG: ${{ inputs.slug }}
           VOICE_CANDIDATES: ${{ inputs.candidates }}
         run: python automation/voice_samples.py
