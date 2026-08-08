@@ -1023,3 +1023,43 @@ commit, so the other sessions know who did what.
   reasonable 2-week buffer and the workflow already has a light weekly
   Monday top-up scheduled instead of bulk-generating again soon. 58/58
   tests passing throughout.
+- 2026-08-08 — laptop Claude Code session (direct commit to main): owner asked
+  how the videos are performing, then said they think the VOICEOVER is the
+  problem. Pulled live numbers rather than reasoning from memory. INSIGHT
+  FORMAT IS WORKING ON YOUTUBE: 14-day window 07-24..08-07, 29 videos, median
+  110 views / mean 193 / max 914 / 5,605 total, 8 videos over 200 and 3 over
+  500 (RSS for the last 15, watch-page viewCount scrape for the rest). The
+  AI-tools format it replaced was median 4, 115 total. INSTAGRAM IS NOT:
+  refreshed ig-analytics (25 Reels) shows median reach 58, median avg watch
+  3.5s, likes median 0 — statistically flat against the 3.2s AI-tools
+  baseline. So the pre-committed kill line reads as technically triggered (no
+  video cleared 1k, IG watch flat) while YouTube shows a 27x median lift;
+  recommended NOT applying it mechanically, since it was written to catch
+  "nothing works".
+  OWNER'S VOICE HYPOTHESIS IS WELL FOUNDED, with a precise cause: repo var
+  GEMINI_VOICE=Puck was pinned 2026-07-10 for the BATTLE format, and because
+  that var is set select_gemini_voice() falls back to VOICE_ROSTER[0]'s style,
+  which is "Say this like an excited sports commentator calling a match, fast
+  and punchy: ". That prompt is prepended to every mind/body explainer. The
+  persona never moved with the niche pivot, and "fast and punchy" also drives
+  pace up on content that wants the opposite. Confirmed today's published run
+  (31253971503) voices on gemini/Puck, NOT edge-tts, so this is live in
+  production. Also flagged a confound: demo-insight.yml pins VOICE_PROVIDER=
+  edge to save quota, so the owner-facing preview renders use the edge voice
+  they already rejected as robotic — voice judgements taken from those demos
+  are judging the wrong voice.
+  Shipped automation/voice_samples.py + .github/workflows/voice-samples.yml
+  (preview only, no brief gen, no render, no upload): speaks one brief's whole
+  narration in ONE Gemini call per candidate (matching _voice_single_pass, so
+  a sample sounds like what ships) across 6 voice+persona combos, including
+  the current sports-commentator read as a control. Deliberately on the real
+  Gemini path; ~6 TTS calls, do not loop it (same pool renders the day's
+  videos). Style prompts kept short per rule 8.
+  ALSO STILL OPEN, and arguably bigger than the voice: branch
+  fix/insight-caption-sync (3a0119d + cc91e7c) has been sitting UNMERGED since
+  08-06 with no PR — hook-not-spoken in 10 of 28 briefs, caption holes of
+  7-12s per video, and flat-gradient Pexels images, all fixed and green there,
+  while tests.yml stays RED on main (it installs a drifting dep subset).
+  Every video published since 08-06, including today's, still ships all three
+  defects. Voice and hook damage the same first three seconds; fix both or the
+  next read is muddy.

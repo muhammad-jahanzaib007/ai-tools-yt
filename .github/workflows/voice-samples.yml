@@ -1,0 +1,59 @@
+name: Voice samples (preview only, no publish)
+
+# Speaks one brief's narration in several Gemini voice + persona combinations
+# so the presenter is chosen by ear. The production voice pin (GEMINI_VOICE=
+# Puck, "excited sports commentator") dates from the AI-tool battle format and
+# was never revisited when the channel pivoted to mind/body explainers.
+#
+# Runs on the REAL Gemini path on purpose: an edge-tts preview would prove
+# nothing about the voice that actually ships. Cost is one TTS call per
+# candidate (six by default), which is small against the free-tier daily pool,
+# but do not loop this workflow - the same quota renders the day's videos.
+# No brief generation, no render, no upload, no push: artifacts only.
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: "Brief slug to voice (blank = newest brief)"
+        default: ""
+      candidates:
+        description: "Comma-separated labels (blank = all)"
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  samples:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # tts_gemini converts Gemini's raw PCM to mp3 with ffmpeg.
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      # render_video's module-level imports are stdlib + requests, so the heavy
+      # render/analysis deps in requirements.txt are not needed to call TTS.
+      - name: Install Python deps
+        run: pip install requests
+
+      - name: Render voice samples
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
+          BRIEF_SLUG: ${{ inputs.slug }}
+          VOICE_CANDIDATES: ${{ inputs.candidates }}
+        run: python automation/voice_samples.py
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: voice-samples
+          path: output/samples/*
+          retention-days: 7
+          if-no-files-found: ignore
