@@ -1,0 +1,58 @@
+{
+  "slug": "light-before-bed-sleep-cycle",
+  "title": "Why Light Before Bed Disrupts Your Sleep Cycle",
+  "hook": "Your smartphone before bed is actively fighting your natural sleep.",
+  "narration": [
+    {
+      "text": "Your smartphone before bed is actively fighting your natural sleep.",
+      "broll": "person using phone"
+    },
+    {
+      "text": "Our bodies run on a 24-hour internal clock, called the circadian rhythm.",
+      "broll": "abstract clock gears"
+    },
+    {
+      "text": "This rhythm largely responds to light and darkness cues from our environment.",
+      "broll": "sun rising setting"
+    },
+    {
+      "text": "Bright light, especially blue light, signals our brain that it is daytime.",
+      "broll": "blue light screen"
+    },
+    {
+      "text": "This suppresses melatonin, the hormone that helps us feel sleepy.",
+      "broll": "sleepy person yawning"
+    },
+    {
+      "text": "Even a short exposure can delay the onset of natural sleepiness.",
+      "broll": "person tossing turning"
+    },
+    {
+      "text": "This makes it harder to fall asleep and reduces sleep quality.",
+      "broll": "peaceful sleeping person"
+    },
+    {
+      "text": "Do you notice a difference in your sleep after using devices late?",
+      "broll": "person thinking question"
+    }
+  ],
+  "description": "Discover how light exposure, especially from screens, can significantly disrupt your body's natural sleep cycle. Understanding the science behind your circadian rhythm can help you improve your sleep quality.",
+  "links": [],
+  "tags": [
+    "sleep",
+    "sleep cycle",
+    "circadian rhythm",
+    "melatonin",
+    "blue light",
+    "sleep tips",
+    "insomnia",
+    "health",
+    "wellness",
+    "brain health"
+  ],
+  "thumbnail_text": "Light, Sleep, Disruption",
+  "format": "insight",
+  "topic": "Why exposure to light before bed can disrupt your sleep cycle.",
+  "date": "2026-08-08",
+  "hook_type": "conflict_tease"
+}
