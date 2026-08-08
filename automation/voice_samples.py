@@ -137,17 +137,38 @@ _CONFIDING = ("Speak like a friend explaining something delightfully odd, playfu
               "explanation: ")
 PRO = "gemini-2.5-pro-preview-tts"
 FLASH = "gemini-2.5-flash-preview-tts"
-CANDIDATES = [
+GEMINI_EXPRESSIVE_ROUND = [
+    # PRO IS NOT AVAILABLE: all six pro candidates returned 429 on both keys
+    # (2026-08-08). The free tier carries no quota for gemini-2.5-pro-preview-tts,
+    # so the model lever is closed unless the project starts paying. Kept here as
+    # the record of what was tested; do not re-run these expecting audio.
     ("gemini", "pro-discovery-kore",   {"voice": "Kore",  "style": _DISCOVERY,  "model": PRO}),
-    ("gemini", "pro-discovery-aoede",  {"voice": "Aoede", "style": _DISCOVERY,  "model": PRO}),
-    ("gemini", "pro-fascinated-kore",  {"voice": "Kore",  "style": _FASCINATED, "model": PRO}),
     ("gemini", "pro-fascinated-leda",  {"voice": "Leda",  "style": _FASCINATED, "model": PRO}),
-    ("gemini", "pro-confiding-aoede",  {"voice": "Aoede", "style": _CONFIDING,  "model": PRO}),
-    ("gemini", "pro-confiding-leda",   {"voice": "Leda",  "style": _CONFIDING,  "model": PRO}),
-    # Same prompt on the model production actually uses, so the pro-vs-flash
-    # difference is attributable rather than guessed at.
     ("gemini", "flash-discovery-kore", {"voice": "Kore",  "style": _DISCOVERY,  "model": FLASH}),
     ("gemini", "flash-fascinated-leda", {"voice": "Leda", "style": _FASCINATED, "model": FLASH}),
+]
+
+# Round 6 (2026-08-08): owner picked flash-discovery-kore ("7 is okay, just a
+# bit slow"). Measured 38.7s for 97 words = 2.51 wps, against the rejected
+# production read's 3.46 wps; the target is the middle, roughly 2.9-3.0 wps
+# (~33s).
+#
+# Two independent ways to speed it up, and this round tests both off ONE TTS
+# call because Gemini's free-tier quota also renders the day's uploads and
+# draining it is what broke publishing on 2026-07-22:
+#   PROMPT: drop "natural pause before each reveal" (it was explicitly buying
+#     the slowness) and ask for momentum instead. No resampling artifact.
+#   ATEMPO: post-process the same audio. Free, but artificial - the owner heard
+#     a 1.15 atempo as "fast/pitched" on 2026-07-14, so the ladder stays well
+#     under that.
+# Whichever wins, note that Gemini has no speed parameter, so prompt wording is
+# the only artifact-free lever.
+_BRISK = ("Read this like you are letting someone in on a strange fact about "
+          "their own body, curious and a little amazed, warm British accent, "
+          "keeping it moving: ")
+PACE_LADDER = [1.06, 1.12]
+CANDIDATES = [
+    ("gemini", "brisk-kore", {"voice": "Kore", "style": _BRISK, "model": FLASH}),
 ]
 
 
@@ -265,6 +286,28 @@ def main():
             continue
         print(f"  {label} ({engine}) -> {dest.name}")
         made.append({"label": label, "engine": engine, "params": p, "file": dest.name})
+
+    # Pace ladder: atempo copies of the first sample, so alternative speeds cost
+    # zero extra TTS calls. atempo is pitch-preserving, which is why it is worth
+    # offering at all, but it is still resampled audio and the owner has rejected
+    # an aggressive setting before - treat these as the fallback if the prompt
+    # rewrite alone does not land.
+    if made and PACE_LADDER:
+        src = OUT / made[0]["file"]
+        for speed in PACE_LADDER:
+            dest = OUT / f"{src.stem}-x{str(speed).replace('.', '')}.mp3"
+            try:
+                subprocess.run(["ffmpeg", "-y", "-i", str(src),
+                                "-filter:a", f"atempo={speed}",
+                                "-b:a", "128k", str(dest)],
+                               capture_output=True, check=True)
+            except Exception as e:
+                print(f"  pace {speed}: FAILED {e}", file=sys.stderr)
+                continue
+            print(f"  pace x{speed} -> {dest.name}")
+            made.append({"label": f"{made[0]['label']}-atempo-{speed}",
+                         "engine": "atempo", "params": {"speed": speed},
+                         "file": dest.name})
 
     (OUT / "samples.json").write_text(
         json.dumps({"slug": brief.get("slug"), "title": brief.get("title"),
