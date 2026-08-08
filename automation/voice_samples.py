@@ -100,11 +100,54 @@ KOKORO_ROUND = [
 # Using the model's built-in voice deliberately: steering it at a target timbre
 # needs a reference clip, i.e. cloning someone's voice, which stays off the
 # table. Settle the expression question first, voice identity second.
-CANDIDATES = [
+CHATTERBOX_ROUND = [
     ("chatterbox", "restrained",  {"exaggeration": 0.35, "cfg_weight": 0.6}),
     ("chatterbox", "natural",     {"exaggeration": 0.5,  "cfg_weight": 0.5}),
     ("chatterbox", "expressive",  {"exaggeration": 0.8,  "cfg_weight": 0.4}),
     ("chatterbox", "animated",    {"exaggeration": 1.2,  "cfg_weight": 0.3}),
+]
+
+# Round 5 (2026-08-08): owner asked to retry Gemini but "be more expressive
+# according to the video's theme". Two levers that rounds 1-4 never touched:
+#
+# 1. PROMPT RICHNESS. Round 1's prompts were kept deliberately short because
+#    Gemini sometimes reads its style instruction aloud (rule 8, _style_leaked).
+#    Short prompts also cap how much delivery direction the model gets, so a
+#    flat read was partly self-inflicted. These are longer and name emotion,
+#    pacing and accent. The leak risk is real: listen for the instruction being
+#    spoken at the top of a sample before trusting one.
+# 2. A BETTER MODEL. Production is pinned to gemini-2.5-flash-preview-tts.
+#    gemini-2.5-pro-preview-tts is the higher-quality sibling and has never been
+#    tried here. "pro" vs "flash" on an identical prompt isolates it.
+#
+# Accent is requested in the prompt because the owner's reference (ElevenLabs
+# Charlotte) was British female, and Gemini has no separate accent parameter.
+# Prompts are written for THIS brief's theme (a strange fact about your own
+# body). Theme-matching cannot stay hand-written: the real design is for
+# generate_brief to emit a per-video `voice_style`, which is the follow-up once
+# a direction wins here.
+_DISCOVERY = ("Read this like you are letting someone in on a strange fact about "
+              "their own body, curious and a little amazed, warm British accent, "
+              "natural pause before each reveal: ")
+_FASCINATED = ("Narrate with genuine fascination, as if you just discovered this "
+               "yourself, warm and unhurried British accent, interest rising on "
+               "each new detail: ")
+_CONFIDING = ("Speak like a friend explaining something delightfully odd, playful "
+              "but never silly, warm British accent, slowing down on the "
+              "explanation: ")
+PRO = "gemini-2.5-pro-preview-tts"
+FLASH = "gemini-2.5-flash-preview-tts"
+CANDIDATES = [
+    ("gemini", "pro-discovery-kore",   {"voice": "Kore",  "style": _DISCOVERY,  "model": PRO}),
+    ("gemini", "pro-discovery-aoede",  {"voice": "Aoede", "style": _DISCOVERY,  "model": PRO}),
+    ("gemini", "pro-fascinated-kore",  {"voice": "Kore",  "style": _FASCINATED, "model": PRO}),
+    ("gemini", "pro-fascinated-leda",  {"voice": "Leda",  "style": _FASCINATED, "model": PRO}),
+    ("gemini", "pro-confiding-aoede",  {"voice": "Aoede", "style": _CONFIDING,  "model": PRO}),
+    ("gemini", "pro-confiding-leda",   {"voice": "Leda",  "style": _CONFIDING,  "model": PRO}),
+    # Same prompt on the model production actually uses, so the pro-vs-flash
+    # difference is attributable rather than guessed at.
+    ("gemini", "flash-discovery-kore", {"voice": "Kore",  "style": _DISCOVERY,  "model": FLASH}),
+    ("gemini", "flash-fascinated-leda", {"voice": "Leda", "style": _FASCINATED, "model": FLASH}),
 ]
 
 
@@ -186,8 +229,8 @@ def main():
     brief = rv.pick_brief()
     script = script_from(brief)
     wanted = [s.strip() for s in (os.environ.get("VOICE_CANDIDATES") or "").split(",") if s.strip()]
-    pool = CANDIDATES + KOKORO_ROUND
-    runs = [c for c in pool if not wanted or c[1] in wanted] if wanted else list(CANDIDATES)
+    pool = CANDIDATES + KOKORO_ROUND + CHATTERBOX_ROUND
+    runs = [c for c in pool if c[1] in wanted] if wanted else list(CANDIDATES)
 
     OUT.mkdir(parents=True, exist_ok=True)
     for f in list(OUT.glob("*.mp3")) + list(OUT.glob("*.json")):
@@ -201,6 +244,9 @@ def main():
             if engine == "gemini":
                 if not rv.GEM_KEYS:
                     raise RuntimeError("no GEMINI_API_KEY")
+                # tts_gemini reads the model from a module global, so swap it per
+                # candidate to compare flash against pro on one prompt.
+                rv.GEMINI_TTS_MODEL = p.get("model", rv.GEMINI_TTS_MODEL)
                 rv.tts_gemini(script, dest, voice=p["voice"], style=p["style"])
             elif engine == "eleven":
                 if not EL_KEY:
