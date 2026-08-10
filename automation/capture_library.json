@@ -188,6 +188,27 @@
       "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1785747653.mp4",
       "captured": "2026-08-03T09:01:11Z",
       "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "small dog close up",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1786345643.mp4",
+      "captured": "2026-08-10T07:07:36Z",
+      "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "cat close up fur detail",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1786345657.mp4",
+      "captured": "2026-08-10T07:07:49Z",
+      "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "faded polaroid photo",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1786345669.mp4",
+      "captured": "2026-08-10T07:08:02Z",
+      "used": false
     }
   ]
 }
