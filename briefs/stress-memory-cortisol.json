@@ -1,0 +1,58 @@
+{
+  "slug": "stress-memory-cortisol",
+  "title": "Why Stress Wipes Your Memory Clean: The Cortisol Connection",
+  "hook": "Stress makes it harder to remember simple things, like where you left your keys.",
+  "narration": [
+    {
+      "text": "Stress makes it harder to remember simple things, like where you left your keys.",
+      "broll": "lost keys searching"
+    },
+    {
+      "text": "When you are stressed, your body releases a hormone called cortisol.",
+      "broll": "stress hormones diagram"
+    },
+    {
+      "text": "Cortisol is helpful for short-term danger, preparing you to act quickly.",
+      "broll": "person running quickly"
+    },
+    {
+      "text": "However, high cortisol levels can interfere with brain areas vital for memory.",
+      "broll": "brain scan abstract"
+    },
+    {
+      "text": "It especially affects the hippocampus, crucial for forming new memories.",
+      "broll": "hippocampus brain model"
+    },
+    {
+      "text": "This is why recalling recent events or learning new facts becomes a struggle.",
+      "broll": "person struggling to recall"
+    },
+    {
+      "text": "So, reducing stress can actually help improve your memory function.",
+      "broll": "calm person meditating"
+    },
+    {
+      "text": "Have you noticed your memory getting worse when you are feeling stressed?",
+      "broll": "person thinking deeply"
+    }
+  ],
+  "description": "Ever wondered why your memory fails you under pressure? It turns out stress hormones play a big role. Discover how cortisol impacts your brain's ability to recall information and form new memories.",
+  "links": [],
+  "tags": [
+    "stress",
+    "memory",
+    "cortisol",
+    "brain health",
+    "mental well being",
+    "hormones",
+    "psychology",
+    "cognitive function",
+    "stress relief",
+    "mind body connection"
+  ],
+  "thumbnail_text": "Stress, Memory, Cortisol",
+  "format": "insight",
+  "topic": "Why stress can make it harder to remember things, explaining the role of cortisol.",
+  "date": "2026-08-12",
+  "hook_type": "result_first"
+}
