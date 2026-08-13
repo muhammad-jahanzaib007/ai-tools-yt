@@ -1,1 +1,5 @@
-2026-07-10T21:25:04Z success brief=invideo-vs-canva-video
+2026-08-13T20:00:42Z failure (publish run)
+--- log tail ---
+Hook style: conflict_tease
+Generating insight brief for: Why offering a reward for an activity you enjoy can reduce your motivation for it, explaining the overjustification effect.
+brief missing key: hook
