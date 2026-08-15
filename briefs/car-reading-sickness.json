@@ -1,0 +1,63 @@
+{
+  "slug": "car-reading-sickness",
+  "title": "The Real Reason Reading In A Car Makes You Sick",
+  "hook": "Reading in a car makes your brain think you are poisoned.",
+  "narration": [
+    {
+      "text": "Reading in a car makes your brain think you are poisoned.",
+      "broll": "Person reading book"
+    },
+    {
+      "text": "Your eyes see the book, telling your brain you are still.",
+      "broll": "Eyes reading text"
+    },
+    {
+      "text": "But your inner ear detects motion, sensing movement.",
+      "broll": "Inner ear diagram"
+    },
+    {
+      "text": "This mismatch of signals is called sensory conflict.",
+      "broll": "Confused brain animation"
+    },
+    {
+      "text": "Your brain interprets this conflict as a sign of toxin exposure.",
+      "broll": "Stomach churning"
+    },
+    {
+      "text": "It then triggers nausea and vomiting to protect you.",
+      "broll": "Sick person car"
+    },
+    {
+      "text": "This is why looking out the window can help.",
+      "broll": "Person looking window"
+    },
+    {
+      "text": "Your eyes then see the motion your inner ear feels.",
+      "broll": "Road passing by"
+    },
+    {
+      "text": "Does looking out the window help you avoid car sickness?",
+      "broll": "Question mark animation"
+    }
+  ],
+  "description": "Have you ever wondered why reading in a car makes you feel ill? It is all down to a fascinating brain trick called sensory conflict. Your brain gets mixed signals, leading to motion sickness.",
+  "links": [],
+  "tags": [
+    "motion sickness",
+    "car sickness",
+    "sensory conflict",
+    "reading in car",
+    "why we get sick",
+    "human body facts",
+    "brain science",
+    "travel tips",
+    "health facts",
+    "science explained",
+    "curiosity"
+  ],
+  "thumbnail_text": "Car, Reading, Sick",
+  "format": "insight",
+  "topic": "Why you get motion sickness when reading in a car, linking it to sensory conflict.",
+  "date": "2026-08-15",
+  "hook_type": "result_first"
+}
