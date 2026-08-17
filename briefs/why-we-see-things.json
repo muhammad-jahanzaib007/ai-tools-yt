@@ -1,0 +1,58 @@
+{
+  "slug": "why-we-see-things",
+  "title": "Why you see things that are not there",
+  "hook": "Why do you sometimes see things that are not actually there?",
+  "narration": [
+    {
+      "text": "Your brain sometimes creates what it expects to see, even if it is not real.",
+      "broll": "Brain scanning images"
+    },
+    {
+      "text": "This is called top-down processing, where expectations shape perception.",
+      "broll": "Abstract light patterns"
+    },
+    {
+      "text": "It means your brain uses prior knowledge and context to interpret sensory input.",
+      "broll": "Person reading book"
+    },
+    {
+      "text": "So, if you expect a familiar face in a crowd, you might briefly \"see\" it.",
+      "broll": "Crowd walking city"
+    },
+    {
+      "text": "This helps us quickly make sense of the world, filling in missing details.",
+      "broll": "Puzzle pieces fitting"
+    },
+    {
+      "text": "However, it can also lead to illusions or misinterpretations of reality.",
+      "broll": "Optical illusion art"
+    },
+    {
+      "text": "Our brains are constantly predicting, rather than just passively observing.",
+      "broll": "Person thinking deeply"
+    },
+    {
+      "text": "Have you ever experienced seeing something that was not truly there?",
+      "broll": "Question mark animation"
+    }
+  ],
+  "description": "Discover the fascinating reason your brain sometimes shows you things that are not actually present. Learn about top-down processing and how your expectations can influence what you perceive in the world around you.",
+  "links": [],
+  "tags": [
+    "brain science",
+    "perception",
+    "top-down processing",
+    "psychology",
+    "mind tricks",
+    "optical illusions",
+    "human brain",
+    "cognitive science",
+    "sensory perception",
+    "neuroscience"
+  ],
+  "thumbnail_text": "Brain sees things",
+  "format": "insight",
+  "topic": "Why you sometimes see things that are not there when your mind expects them, explaining top-down processing in perception.",
+  "date": "2026-08-17",
+  "hook_type": "question"
+}
