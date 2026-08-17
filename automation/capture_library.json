@@ -209,6 +209,27 @@
       "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1786345669.mp4",
       "captured": "2026-08-10T07:08:02Z",
       "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "old man portrait wrinkles",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1786948201.mp4",
+      "captured": "2026-08-17T06:30:20Z",
+      "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "antique car",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1786948220.mp4",
+      "captured": "2026-08-17T06:30:33Z",
+      "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "vintage portrait black and white",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1786948234.mp4",
+      "captured": "2026-08-17T06:30:49Z",
+      "used": false
     }
   ]
 }
