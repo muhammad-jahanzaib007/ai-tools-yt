@@ -1,0 +1,56 @@
+{
+  "slug": "hunger-concentration-link",
+  "title": "Why You Cannot Focus When You Are Hungry",
+  "hook": "Feeling hungry makes it much harder to concentrate.",
+  "narration": [
+    {
+      "text": "Feeling hungry makes it much harder to concentrate.",
+      "broll": "Stomach growling person"
+    },
+    {
+      "text": "This is because your brain needs a steady supply of glucose to function optimally.",
+      "broll": "Brain scanning activity"
+    },
+    {
+      "text": "When glucose levels drop, your brain enters a 'preservation mode'.",
+      "broll": "Empty blood glucose"
+    },
+    {
+      "text": "It diverts resources from complex tasks, like focusing, to essential functions.",
+      "broll": "Brain diverting resources"
+    },
+    {
+      "text": "This prioritisation means your brain is less effective at sustained attention.",
+      "broll": "Person struggling work"
+    },
+    {
+      "text": "So, next time you are struggling to focus, consider if you have skipped a meal.",
+      "broll": "Clock and food"
+    },
+    {
+      "text": "Have you noticed your focus dropping when you are hungry?",
+      "broll": "Person eating snack"
+    }
+  ],
+  "description": "Ever wonder why it is so hard to concentrate when your stomach is rumbling? This short explains the direct link between your brain's glucose supply and its ability to maintain focus, revealing why hunger can truly make you lose your train of thought.",
+  "links": [],
+  "tags": [
+    "hunger",
+    "concentration",
+    "focus",
+    "brain health",
+    "glucose",
+    "attention span",
+    "productivity",
+    "cognitive function",
+    "mind body connection",
+    "health tips",
+    "science explained",
+    "daily habits"
+  ],
+  "thumbnail_text": "Hunger and Focus",
+  "format": "insight",
+  "topic": "Why you struggle to concentrate when you are hungry, explaining the link between glucose and attention.",
+  "date": "2026-08-20",
+  "hook_type": "result_first"
+}

@@ -108,11 +108,22 @@
     "5 AI Tools That Beat ChatGPT for Creative Writing"
   ],
   "insight_queue": [
-    "Why you struggle to concentrate when you are hungry, explaining the link between glucose and attention.",
     "Why external rewards can sometimes decrease your inner drive, explaining intrinsic versus extrinsic motivation.",
     "Why you remember stories better than lists of facts, explaining the narrative bias.",
     "Why you might mishear words in a song, explaining auditory pareidolia and predictive coding.",
-    "Why people tend to rate themselves as above average in many abilities, explaining the Dunning-Kruger effect."
+    "Why people tend to rate themselves as above average in many abilities, explaining the Dunning-Kruger effect.",
+    "Why you sometimes see an optical illusion after staring at a strong colour, explaining afterimages.",
+    "Why new skills feel difficult but become automatic, explaining neural plasticity and myelination.",
+    "Why you often crave comfort foods when stressed, explaining emotional eating and cortisol.",
+    "Why social interaction can reduce feelings of pain, explaining the role of oxytocin.",
+    "Why you procrastinate on important tasks, explaining temporal discounting.",
+    "Why jet lag affects your body and mind, explaining circadian rhythm disruption.",
+    "Why it is harder to pay attention when you are emotionally aroused, explaining the Yerkes-Dodson law.",
+    "Why you feel more motivated after achieving a small goal, explaining the reward feedback loop.",
+    "Why you can instantly recognise a familiar face, explaining prosopagnosia and facial recognition areas.",
+    "Why your perception of taste changes with smell, explaining chemosensory interaction.",
+    "Why repetition helps you remember new information, explaining memory consolidation.",
+    "Why you often mirror the facial expressions of others, explaining motor mimicry."
   ],
   "insight_published": [
     "why you can't tickle yourself",
@@ -169,6 +180,7 @@
     "Why you feel a surge of energy during a stressful situation, explaining the fight or flight response.",
     "Why you are more likely to help someone who is similar to you, explaining ingroup favouritism.",
     "Why you often make different choices when options are framed differently, explaining the framing effect.",
-    "Why waking up at the same time each day improves your sleep quality, explaining circadian rhythm synchronisation."
+    "Why waking up at the same time each day improves your sleep quality, explaining circadian rhythm synchronisation.",
+    "Why you struggle to concentrate when you are hungry, explaining the link between glucose and attention."
   ]
 }
