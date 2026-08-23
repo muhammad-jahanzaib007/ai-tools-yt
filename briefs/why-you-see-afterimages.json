@@ -1,0 +1,62 @@
+{
+  "slug": "why-you-see-afterimages",
+  "title": "Why You See Afterimages After Staring at Bright Colours",
+  "hook": "Stare at a strong colour, and you will see a different one.",
+  "narration": [
+    {
+      "text": "Stare at a strong colour, and you will see a different one.",
+      "broll": "Eye staring closely"
+    },
+    {
+      "text": "This is an afterimage, and it is caused by your eyes adjusting.",
+      "broll": "Eye pupil dilating"
+    },
+    {
+      "text": "The cells in your eyes, called cones, get tired after prolonged stimulation.",
+      "broll": "Microscopic cell view"
+    },
+    {
+      "text": "For example, staring at red makes the red-sensitive cones less responsive.",
+      "broll": "Red colour field"
+    },
+    {
+      "text": "When you look away, the other cones are still fresh and active.",
+      "broll": "Person blinking"
+    },
+    {
+      "text": "This temporary imbalance creates the illusion of the opposite colour.",
+      "broll": "Colour wheel spinning"
+    },
+    {
+      "text": "Try it with a bright blue object, and then look at a white wall.",
+      "broll": "Blue object white wall"
+    },
+    {
+      "text": "You will briefly see a yellow-orange afterimage on the wall.",
+      "broll": "Orange light appearing"
+    },
+    {
+      "text": "Have you ever noticed this surprising effect in your own vision?",
+      "broll": "Person surprised eyes"
+    }
+  ],
+  "description": "Ever wondered why you sometimes see a ghost image after staring at a bright colour? It is an optical illusion called an afterimage, and it is all about how your eye's cells respond to light. Learn the fascinating science behind this common visual trick.",
+  "links": [],
+  "tags": [
+    "afterimages",
+    "optical illusion",
+    "eye science",
+    "colour perception",
+    "human eye",
+    "vision science",
+    "how eyes work",
+    "brain tricks",
+    "visual phenomena",
+    "curiosity"
+  ],
+  "thumbnail_text": "See Opposite Colours",
+  "format": "insight",
+  "topic": "Why you sometimes see an optical illusion after staring at a strong colour, explaining afterimages.",
+  "date": "2026-08-23",
+  "hook_type": "result_first"
+}
