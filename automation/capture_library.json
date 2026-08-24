@@ -230,6 +230,13 @@
       "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1786948234.mp4",
       "captured": "2026-08-17T06:30:49Z",
       "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "worn family portrait",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1787553214.mp4",
+      "captured": "2026-08-24T06:34:16Z",
+      "used": false
     }
   ]
 }
