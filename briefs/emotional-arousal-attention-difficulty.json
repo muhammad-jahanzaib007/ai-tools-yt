@@ -1,0 +1,58 @@
+{
+  "slug": "emotional-arousal-attention-difficulty",
+  "title": "Why You Can't Focus When You're Stressed",
+  "hook": "High stress makes it harder to pay attention, even to important details.",
+  "narration": [
+    {
+      "text": "High stress makes it harder to pay attention, even to important details.",
+      "broll": "stressed person thinking"
+    },
+    {
+      "text": "This is due to the Yerkes-Dodson law, a core principle in psychology.",
+      "broll": "brain diagram light"
+    },
+    {
+      "text": "It shows that performance increases with arousal, up to a point.",
+      "broll": "graph rising curve"
+    },
+    {
+      "text": "Too much arousal, like extreme anxiety, actually makes performance drop.",
+      "broll": "graph falling curve"
+    },
+    {
+      "text": "Our brain's resources shift from focus to handling the emotional threat.",
+      "broll": "person overwhelmed thoughts"
+    },
+    {
+      "text": "This narrows our focus, making us miss crucial information around us.",
+      "broll": "blurry vision effect"
+    },
+    {
+      "text": "So, a little pressure helps, but too much is counterproductive.",
+      "broll": "person calm focused"
+    },
+    {
+      "text": "Have you noticed this struggle to focus when feeling very emotional?",
+      "broll": "person thinking outside"
+    }
+  ],
+  "description": "Discover the Yerkes-Dodson law and how emotional arousal impacts your ability to pay attention. Learn why too much stress can make it harder to focus, not easier.",
+  "links": [],
+  "tags": [
+    "yerkes-dodson law",
+    "emotional arousal",
+    "attention span",
+    "focus tips",
+    "stress management",
+    "psychology facts",
+    "brain science",
+    "cognitive psychology",
+    "mental health",
+    "performance psychology"
+  ],
+  "thumbnail_text": "Stress Kills Focus",
+  "format": "insight",
+  "topic": "Why it is harder to pay attention when you are emotionally aroused, explaining the Yerkes-Dodson law.",
+  "date": "2026-08-26",
+  "hook_type": "bold_claim"
+}
