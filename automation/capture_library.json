@@ -237,6 +237,27 @@
       "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1787553214.mp4",
       "captured": "2026-08-24T06:34:16Z",
       "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "grandmother smiling",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1788177650.mp4",
+      "captured": "2026-08-31T12:01:11Z",
+      "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "worn family portrait",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1788177672.mp4",
+      "captured": "2026-08-31T12:01:57Z",
+      "used": false
+    },
+    {
+      "task": "imgupscaler-upscale",
+      "prompt": "old photograph of soldiers",
+      "url": "https://github.com/muhammad-jahanzaib007/ai-tools-yt/releases/download/capture-library/clip_1788177718.mp4",
+      "captured": "2026-08-31T12:02:12Z",
+      "used": false
     }
   ]
 }
