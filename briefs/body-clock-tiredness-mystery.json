@@ -1,0 +1,60 @@
+{
+  "slug": "body-clock-tiredness-mystery",
+  "title": "Your Body Clock Makes You Tired At The Same Time Every Day",
+  "hook": "Your body has a master clock, making you tired at predictable times.",
+  "narration": [
+    {
+      "text": "Your internal body clock, your circadian rhythm, dictates when you feel tired.",
+      "broll": "analogue clock face"
+    },
+    {
+      "text": "This amazing system is controlled by a tiny brain region, the suprachiasmatic nucleus.",
+      "broll": "human brain scan"
+    },
+    {
+      "text": "It receives signals about light and darkness from your eyes.",
+      "broll": "eyes looking ahead"
+    },
+    {
+      "text": "These signals help it synchronise your sleep-wake cycle with the 24-hour day.",
+      "broll": "sun rising city"
+    },
+    {
+      "text": "When light fades, the nucleus tells your body to produce sleep-inducing melatonin.",
+      "broll": "dark room window"
+    },
+    {
+      "text": "This is why you might feel a natural dip in energy in the early afternoon.",
+      "broll": "person yawning desk"
+    },
+    {
+      "text": "It is not just about how much sleep you had; your body has a schedule.",
+      "broll": "sleeping person bed"
+    },
+    {
+      "text": "Have you noticed your energy levels dip at similar times each day?",
+      "broll": "person drinking coffee"
+    }
+  ],
+  "description": "Ever wondered why you feel sleepy at the same time every day, regardless of your activities? It is all down to your body's amazing internal clock, regulated by a tiny but powerful part of your brain called the suprachiasmatic nucleus.",
+  "links": [],
+  "tags": [
+    "body clock",
+    "circadian rhythm",
+    "sleep science",
+    "suprachiasmatic nucleus",
+    "why we sleep",
+    "brain facts",
+    "human body",
+    "tiredness",
+    "sleep cycle",
+    "melatonin",
+    "health tips",
+    "daily rhythm"
+  ],
+  "thumbnail_text": "Your Body Clock",
+  "format": "insight",
+  "topic": "Why your internal body clock makes you feel tired at certain times, explaining the suprachiasmatic nucleus.",
+  "date": "2026-09-02",
+  "hook_type": "result_first"
+}
