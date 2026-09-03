@@ -1,0 +1,59 @@
+{
+  "slug": "mcgurk-effect-sound-illusion",
+  "title": "Hear a different word just by watching someone's lips",
+  "hook": "Your eyes can trick your ears into hearing different words.",
+  "narration": [
+    {
+      "text": "Your eyes can trick your ears into hearing different words, it's called the McGurk effect.",
+      "broll": "person talking close-up"
+    },
+    {
+      "text": "When you hear a 'ba' sound but see lips forming a 'ga', your brain often hears 'da'.",
+      "broll": "mouth pronouncing sounds"
+    },
+    {
+      "text": "This happens because your brain tries to combine conflicting sensory information.",
+      "broll": "brain scan animation"
+    },
+    {
+      "text": "It integrates what you see with what you hear to create a unified perception.",
+      "broll": "brain connecting dots"
+    },
+    {
+      "text": "The visual input actually overrides or alters the auditory input.",
+      "broll": "eyes and ears symbols"
+    },
+    {
+      "text": "You might experience this effect watching videos with poor audio-visual sync.",
+      "broll": "person watching screen"
+    },
+    {
+      "text": "Or even in conversations, especially in noisy environments.",
+      "broll": "people talking cafe"
+    },
+    {
+      "text": "Have you ever noticed your brain playing these kinds of tricks on you?",
+      "broll": "question mark animation"
+    }
+  ],
+  "description": "Discover the fascinating McGurk effect and how your brain combines visual and auditory information. Learn why you might perceive a spoken word differently depending on what you are looking at.",
+  "links": [],
+  "tags": [
+    "mcgurk effect",
+    "auditory illusion",
+    "visual illusion",
+    "brain science",
+    "perception",
+    "sensory integration",
+    "psychology",
+    "hearing",
+    "sight",
+    "mind tricks",
+    "cognitive science"
+  ],
+  "thumbnail_text": "See, Hear, Believe",
+  "format": "insight",
+  "topic": "Why you might perceive a spoken word differently depending on what you are looking at, explaining the McGurk effect.",
+  "date": "2026-09-03",
+  "hook_type": "conflict_tease"
+}
