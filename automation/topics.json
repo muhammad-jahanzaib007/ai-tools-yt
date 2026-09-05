@@ -108,11 +108,22 @@
     "5 AI Tools That Beat ChatGPT for Creative Writing"
   ],
   "insight_queue": [
-    "Why you often adopt the mood of people around you, explaining emotional contagion.",
     "Why multitasking is often less efficient than focusing on one task, explaining attention switching costs.",
     "Why setting small, achievable goals can increase motivation, explaining the role of dopamine and reward pathways.",
     "Why you feel more tired after pressing the snooze button multiple times, explaining sleep inertia.",
-    "Why your brain fills in your blind spot without you noticing, explaining perceptual completion."
+    "Why your brain fills in your blind spot without you noticing, explaining perceptual completion.",
+    "Why you sometimes see an oasis in the desert, explaining the physics of light refraction and atmospheric conditions.",
+    "Why you can walk a straight line but struggle to stand still with your eyes closed, explaining proprioception and balance.",
+    "Why you suddenly wake up feeling hungry even if you ate before bed, explaining ghrelin and leptin cycles.",
+    "Why you feel a sense of relief after crying, explaining the release of stress hormones.",
+    "Why you tend to trust people who look similar to you, explaining in group bias and familiarity.",
+    "Why you tend to choose the middle option when presented with three choices, explaining the compromise effect.",
+    "Why you feel more alert after a short nap, explaining the sleep cycle stages and adenosine.",
+    "Why you can focus on one conversation in a noisy room, explaining the cocktail party effect.",
+    "Why you feel a boost of energy after eating chocolate, explaining the release of serotonin and endorphins.",
+    "Why you remember faces better than names, explaining the fusiform face area and memory encoding.",
+    "Why your perception of taste changes when you have a cold, explaining the role of smell in flavour perception.",
+    "Why you sometimes feel less motivated to achieve a goal if it seems too easy, explaining optimal challenge theory."
   ],
   "insight_published": [
     "why you can't tickle yourself",
@@ -201,6 +212,7 @@
     "Why performing a task in a slightly different way can sometimes break a bad habit, explaining context dependent memory.",
     "Why you sometimes 'space out' during routine tasks, explaining the brain's default mode network.",
     "Why you feel a boost of confidence after standing in a 'power pose', explaining embodied cognition.",
-    "Why you remember stories better than facts, explaining the narrative bias in memory."
+    "Why you remember stories better than facts, explaining the narrative bias in memory.",
+    "Why you often adopt the mood of people around you, explaining emotional contagion."
   ]
 }
