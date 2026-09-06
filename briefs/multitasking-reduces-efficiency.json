@@ -1,0 +1,54 @@
+{
+  "slug": "multitasking-reduces-efficiency",
+  "title": "Why multitasking actually makes you less productive",
+  "hook": "Still struggling to finish multiple tasks at once?",
+  "narration": [
+    {
+      "text": "Your brain cannot truly multitask, it just switches rapidly between tasks.",
+      "broll": "person thinking deeply"
+    },
+    {
+      "text": "This switching comes with a hidden cost, called 'attention residue'.",
+      "broll": "brain scanning image"
+    },
+    {
+      "text": "Each time you switch, a part of your attention stays on the previous task.",
+      "broll": "light bulb filament"
+    },
+    {
+      "text": "This makes it harder to focus fully on the new task at hand.",
+      "broll": "blurred city street"
+    },
+    {
+      "text": "It means every interruption, like a notification, slows down your progress.",
+      "broll": "smartphone notification icon"
+    },
+    {
+      "text": "Focusing on one task until completion boosts both speed and accuracy.",
+      "broll": "person writing notes"
+    },
+    {
+      "text": "Do you find yourself constantly switching tasks throughout your day?",
+      "broll": "desk with laptop"
+    }
+  ],
+  "description": "Discover why trying to do too many things at once often backfires. We explain the concept of attention switching costs and how it impacts your daily productivity. Learn how focusing on one task can actually make you more efficient.",
+  "links": [],
+  "tags": [
+    "multitasking",
+    "productivity tips",
+    "focus",
+    "attention span",
+    "brain science",
+    "time management",
+    "work efficiency",
+    "cognitive psychology",
+    "deep work",
+    "concentration"
+  ],
+  "thumbnail_text": "Stop Multitasking Now",
+  "format": "insight",
+  "topic": "Why multitasking is often less efficient than focusing on one task, explaining attention switching costs.",
+  "date": "2026-09-06",
+  "hook_type": "pain_point"
+}
