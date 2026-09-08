@@ -1,0 +1,62 @@
+{
+  "slug": "desert-oasis-mirage-explained",
+  "title": "Why You See Mirages in the Desert",
+  "hook": "Desert travellers sometimes see an oasis, but it is not there.",
+  "narration": [
+    {
+      "text": "Desert travellers sometimes see an oasis, but it is not there.",
+      "broll": "desert vast landscape"
+    },
+    {
+      "text": "This optical illusion is called a mirage.",
+      "broll": "heat haze desert"
+    },
+    {
+      "text": "It happens when light bends as it passes through air layers of different temperatures.",
+      "broll": "light bending science"
+    },
+    {
+      "text": "Hot ground heats the air above it, creating a layer of much warmer, less dense air.",
+      "broll": "desert ground heat"
+    },
+    {
+      "text": "Light from the sky travels down and bends upwards when it hits this hot air.",
+      "broll": "light rays bending"
+    },
+    {
+      "text": "Our brains interpret this bent light as if it came from the ground itself.",
+      "broll": "brain thinking light"
+    },
+    {
+      "text": "This makes the sky's blue light look like a pool of water reflecting the sky.",
+      "broll": "blue sky reflection"
+    },
+    {
+      "text": "It is a trick of light, not a hallucination.",
+      "broll": "optical illusion eyes"
+    },
+    {
+      "text": "Have you ever seen a mirage on a hot road?",
+      "broll": "hot road shimmer"
+    }
+  ],
+  "description": "Ever wondered why you sometimes see what looks like water in the distance when it is really hot? This video explains the science behind desert mirages. It is all about how light interacts with different air temperatures.",
+  "links": [],
+  "tags": [
+    "mirage",
+    "desert",
+    "optical illusion",
+    "light refraction",
+    "physics",
+    "atmospheric conditions",
+    "science explained",
+    "natural phenomena",
+    "hot weather",
+    "vision"
+  ],
+  "thumbnail_text": "Desert Mirage Explained",
+  "format": "insight",
+  "topic": "Why you sometimes see an oasis in the desert, explaining the physics of light refraction and atmospheric conditions.",
+  "date": "2026-09-08",
+  "hook_type": "conflict_tease"
+}
