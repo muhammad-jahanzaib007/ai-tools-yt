@@ -1,1 +1,1 @@
-2026-09-09T20:11:20Z why-crying-brings-relief.mp4 ig=fail:IG container error: {'status_code': 'ERROR', 'id': '18155205922522902'} fb=ok:1054676787480974 tt=skip
+2026-09-10T11:09:24Z why-we-trust-similar-people.mp4 ig=ok:18124855987831829 fb=ok:1404447071791322 tt=skip
