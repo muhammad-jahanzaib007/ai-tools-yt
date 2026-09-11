@@ -108,11 +108,21 @@
     "5 AI Tools That Beat ChatGPT for Creative Writing"
   ],
   "insight_queue": [
-    "Why you can focus on one conversation in a noisy room, explaining the cocktail party effect.",
     "Why you feel a boost of energy after eating chocolate, explaining the release of serotonin and endorphins.",
     "Why you remember faces better than names, explaining the fusiform face area and memory encoding.",
     "Why your perception of taste changes when you have a cold, explaining the role of smell in flavour perception.",
-    "Why you sometimes feel less motivated to achieve a goal if it seems too easy, explaining optimal challenge theory."
+    "Why you sometimes feel less motivated to achieve a goal if it seems too easy, explaining optimal challenge theory.",
+    "Why you sometimes 'see' movement in a static image, explaining the Illusory Motion phenomenon.",
+    "Why your perception of an object's size changes depending on its surroundings, explaining the Ebbinghaus illusion.",
+    "Why you sometimes struggle to recall a word, but feel like it is 'on the tip of your tongue', explaining the Tip of the Tongue phenomenon.",
+    "Why you often remember incomplete tasks better than completed ones, explaining the Zeigarnik effect.",
+    "Why your hand might involuntarily reach for a biscuit even when you are on a diet, explaining automaticity in habit formation.",
+    "Why you tend to prefer things you have seen before, explaining the mere exposure effect.",
+    "Why your pupils dilate when you are interested in something, explaining the physiological response to attention.",
+    "Why you feel more satisfied after earning a reward than just receiving it, explaining the effort justification effect.",
+    "Why you can ride a bicycle without consciously thinking about every movement, explaining procedural memory.",
+    "Why your dreams often feel fragmented and strange, explaining the Activation Synthesis theory of dreaming.",
+    "Why you often adopt the mannerisms of people you admire, explaining observational learning and mirror neurons."
   ],
   "insight_published": [
     "why you can't tickle yourself",
@@ -213,6 +223,7 @@
     "Why you feel a sense of relief after crying, explaining the release of stress hormones.",
     "Why you tend to trust people who look similar to you, explaining in group bias and familiarity.",
     "Why you tend to choose the middle option when presented with three choices, explaining the compromise effect.",
-    "Why you feel more alert after a short nap, explaining the sleep cycle stages and adenosine."
+    "Why you feel more alert after a short nap, explaining the sleep cycle stages and adenosine.",
+    "Why you can focus on one conversation in a noisy room, explaining the cocktail party effect."
   ]
 }
