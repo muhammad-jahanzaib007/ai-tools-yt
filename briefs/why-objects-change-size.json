@@ -1,0 +1,59 @@
+{
+  "slug": "why-objects-change-size",
+  "title": "Why a Small Circle Can Look Huge: The Ebbinghaus Illusion Explained",
+  "hook": "A small circle can look much bigger, just by changing its neighbours.",
+  "narration": [
+    {
+      "text": "A small circle can look much bigger, just by changing its neighbours.",
+      "broll": "Two circles comparison"
+    },
+    {
+      "text": "This is the Ebbinghaus illusion, a trick of visual perception.",
+      "broll": "Optical illusion circles"
+    },
+    {
+      "text": "Your brain uses surrounding context to judge the size of an object.",
+      "broll": "Brain processing information"
+    },
+    {
+      "text": "When a circle is surrounded by smaller circles, it appears larger.",
+      "broll": "Small circles surrounding"
+    },
+    {
+      "text": "Surround it with larger circles, and it seems much smaller.",
+      "broll": "Large circles surrounding"
+    },
+    {
+      "text": "This happens automatically, you cannot consciously override it.",
+      "broll": "Brain thinking process"
+    },
+    {
+      "text": "It shows how easily our perception can be influenced by context.",
+      "broll": "Person observing art"
+    },
+    {
+      "text": "Have you noticed similar visual deceptions in everyday life?",
+      "broll": "Question mark animation"
+    }
+  ],
+  "description": "The Ebbinghaus illusion demonstrates how our perception of an object's size changes depending on its surroundings. Your brain uses context clues, making identical objects appear different sizes. This short video explains the fascinating mechanism behind this common visual trick.",
+  "links": [],
+  "tags": [
+    "ebbinghaus illusion",
+    "optical illusion",
+    "visual perception",
+    "brain tricks",
+    "cognitive bias",
+    "psychology facts",
+    "human brain",
+    "mind blown",
+    "size perception",
+    "context clues",
+    "visual science"
+  ],
+  "thumbnail_text": "Circles Trick Your Brain",
+  "format": "insight",
+  "topic": "Why your perception of an object's size changes depending on its surroundings, explaining the Ebbinghaus illusion.",
+  "date": "2026-09-14",
+  "hook_type": "result_first"
+}
