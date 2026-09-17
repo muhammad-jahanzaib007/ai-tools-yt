@@ -1,0 +1,60 @@
+name: Voice clone benchmark (preview only, no publish)
+
+# Answers one question before any engine swap: can Chatterbox (MIT, clones a
+# voice from a few seconds of reference) synthesise fast enough on a CPU-only
+# GitHub runner to sit inside the insight render budget?
+#
+# Kokoro, the current engine, cannot clone at all, so narrating in the owner's
+# own voice means replacing the engine. This measures speed and produces a wav
+# to listen to. It publishes nothing and is not imported by the pipeline.
+#
+# With no reference audio it uses Chatterbox's built-in voice, which is enough
+# for the speed answer. To test the owner's actual voice, add the clip as
+# described in the "reference" input below.
+on:
+  workflow_dispatch:
+    inputs:
+      reference_url:
+        description: "Optional URL to a reference recording (wav/mp3, 10-60s). Leave blank for the built-in voice."
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    # Model download is ~2GB on a cold runner; the synthesis itself is the part
+    # being measured.
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Chatterbox (CPU torch)
+        run: |
+          python -m pip install --upgrade pip
+          # CPU wheels only: the runner has no GPU and the default CUDA build
+          # is a multi-GB download for nothing.
+          pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+          pip install chatterbox-tts
+
+      - name: Fetch reference audio
+        if: inputs.reference_url != ''
+        run: |
+          curl -fsSL "${{ inputs.reference_url }}" -o reference.wav
+          ls -la reference.wav
+
+      - name: Benchmark
+        env:
+          REFERENCE_AUDIO: ${{ inputs.reference_url != '' && 'reference.wav' || '' }}
+        run: python automation/voice_clone_bench.py
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: voice-bench
+          path: voice-bench/
+          retention-days: 14

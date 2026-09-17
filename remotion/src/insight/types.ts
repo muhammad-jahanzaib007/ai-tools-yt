@@ -21,6 +21,10 @@ export type InsightProps = {
   accentSeed: string; // hashed into an accent color, one per video (see pickAccent)
   durationInFrames: number; // computed in render_video.py from the real audio length
   keywordImages?: KeywordImage[]; // 2026-07-23: one photo per stand-out keyword chunk
+  // 2026-09-18: frames of subscribe end card at the very end (0 = none). It
+  // sits AFTER the narration finishes, inside an extended tail, so it cannot
+  // cost retention within the content itself. Set from render_video.py.
+  endCardFrames?: number;
 };
 
 // One saturated accent per video, hashed from the slug — same idea the

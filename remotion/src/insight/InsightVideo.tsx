@@ -1,5 +1,6 @@
 import React from "react";
 import { AbsoluteFill, Img, OffthreadVideo, staticFile, useCurrentFrame, useVideoConfig, interpolate, spring, Sequence } from "remotion";
+import { CookieGlyph } from "../brand/Cookie";
 import { loadFont as loadAnton } from "@remotion/google-fonts/Anton";
 import { loadFont as loadMontserrat } from "@remotion/google-fonts/Montserrat";
 import { InsightProps, KeywordImage, FPS, chunkWords, pickAccent } from "./types";
@@ -195,7 +196,39 @@ function KeywordCard({ file, accent, startFrame, durFrames, position }: { file: 
   );
 }
 
-export const InsightVideo: React.FC<InsightProps> = ({ hook, words, accentSeed, keywordImages }) => {
+
+// Subscribe end card. Added 2026-09-18 after the first real analytics read:
+// 4,600 views in 28 days converted +2 subscribers, because the insight format
+// asked for a subscribe NOWHERE - not spoken (the brief prompt forbids the
+// nudge) and not on screen (there was no outro at all). The follow nudge was
+// stripped from battles on 2026-07-10 as a retention cost, which was right
+// when nothing was being watched; with 40-85% average view it is now just a
+// missed ask. This sits in the extended tail AFTER the narration ends, so the
+// content's retention is untouched.
+function EndCard({ accent, durFrames }: { accent: string; durFrames: number }) {
+  const frame = useCurrentFrame();
+  const pop = spring({ frame, fps: FPS, config: { damping: 14, stiffness: 160 }, durationInFrames: 12 });
+  const fade = interpolate(frame, [0, 6], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const out = interpolate(frame, [durFrames - 5, durFrames], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  return (
+    <AbsoluteFill style={{ backgroundColor: "#0b0a0d", alignItems: "center", justifyContent: "center", opacity: fade * out }}>
+      <div style={{ transform: `scale(${0.8 + pop * 0.2})`, display: "flex", flexDirection: "column", alignItems: "center", gap: 40 }}>
+        <CookieGlyph size={300} />
+        <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 900, fontSize: 86, color: "#f6f1e8", letterSpacing: -2 }}>
+          Subscribe
+        </div>
+        <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 46, color: accent }}>
+          @snackbytehuman
+        </div>
+        <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 500, fontSize: 38, color: "#9a938a" }}>
+          Why your mind and body do that
+        </div>
+      </div>
+    </AbsoluteFill>
+  );
+}
+
+export const InsightVideo: React.FC<InsightProps> = ({ hook, words, accentSeed, keywordImages, endCardFrames }) => {
   const accent = pickAccent(accentSeed);
   const chunks = chunkWords(words);
   const hookFrames = 27; // ~0.9s hard-cut hook card, then straight into captions
@@ -261,6 +294,12 @@ export const InsightVideo: React.FC<InsightProps> = ({ hook, words, accentSeed, 
           return seqs;
         });
       })()}
+
+      {endCardFrames && endCardFrames > 0 ? (
+        <Sequence from={durationInFrames - endCardFrames} durationInFrames={endCardFrames}>
+          <EndCard accent={accent} durFrames={endCardFrames} />
+        </Sequence>
+      ) : null}
     </AbsoluteFill>
   );
 };

@@ -54,6 +54,9 @@ jobs:
           # cards). Production stays on stills until the owner approves it;
           # see INSIGHT_MEDIA in automation/render_video.py.
           INSIGHT_MEDIA: ${{ inputs.media || 'video' }}
+          # Previews also show the subscribe end card; production stays off
+          # until approved (INSIGHT_ENDCARD in automation/render_video.py).
+          INSIGHT_ENDCARD: "1"
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           CLAUDE_MODEL: ${{ vars.CLAUDE_MODEL || 'claude-sonnet-5' }}
           VOICE_PROVIDER: edge

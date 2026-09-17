@@ -74,6 +74,11 @@ PX_KEY = os.environ.get("PEXELS_API_KEY")
 # visual states. demo-insight.yml renders previews with INSIGHT_MEDIA=video;
 # flip this default to "video" once the owner signs off on the look.
 INSIGHT_MEDIA = os.environ.get("INSIGHT_MEDIA", "photo").strip().lower()
+# Subscribe end card on the insight format. Same preview-gating as
+# INSIGHT_MEDIA: "0" in production until the owner has watched it. Added after
+# the 2026-09-17 analytics read showed 4,600 views converting +2 subscribers
+# because nothing in the format ever asks for a subscribe.
+INSIGHT_ENDCARD = os.environ.get("INSIGHT_ENDCARD", "0").strip() not in ("", "0", "no", "false")
 # Key pool: two free-tier keys (separate Google accounts) double the daily
 # TTS quota; rotation happens automatically on quota errors.
 GEM_KEYS = [k for k in (os.environ.get("GEMINI_API_KEY"),
@@ -1017,7 +1022,10 @@ def render_insight(brief):
     if not words:
         raise RuntimeError("no word timings for insight narration")
     dur = probe_duration(audio)
-    tail = 1.0
+    # The end card lives in an EXTENDED tail, after the narration has finished,
+    # so the content itself is never shortened or interrupted by it.
+    end_frames = int(round(1.8 * FPS)) if INSIGHT_ENDCARD else 0
+    tail = 2.2 if INSIGHT_ENDCARD else 1.0
     total_frames = int(round((dur + tail) * FPS))
     keyword_images = _stage_insight_images(segs, words)
 
@@ -1027,6 +1035,7 @@ def render_insight(brief):
         "accentSeed": slug,
         "durationInFrames": total_frames,
         "keywordImages": keyword_images,
+        "endCardFrames": end_frames,
     }
     props_file = WORK / "props.json"
     props_file.write_text(json.dumps(props, ensure_ascii=False), encoding="utf-8")
