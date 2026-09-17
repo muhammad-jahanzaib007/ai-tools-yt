@@ -63,6 +63,18 @@ jobs:
           - last cross-post left a platform failed (retries exhausted): $xp"
           fi
 
+          # 4) Did the weekly analytics report fail? The Analytics report step
+          #    is continue-on-error (a dead token must not block trend data),
+          #    so its failure is otherwise invisible: it crashed every Sunday
+          #    from 2026-07-05 to 2026-09-17 while the run reported success.
+          an=$(gh api "repos/$GITHUB_REPOSITORY/contents/.github/last-analytics.txt"                --jq '.content' 2>/dev/null | base64 -d 2>/dev/null || echo "")
+          echo "last analytics: $(echo "$an" | head -1)"
+          if echo "$an" | grep -q 'FAIL'; then
+            problems="$problems
+          - the weekly analytics report is failing: $(echo "$an" | head -2 | tr '
+' ' ')"
+          fi
+
           if [ -z "$problems" ]; then
             echo "pipeline healthy"
             # Self-clean: a lingering resolved issue would mask the next real

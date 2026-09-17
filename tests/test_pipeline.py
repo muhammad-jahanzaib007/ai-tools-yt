@@ -489,7 +489,13 @@ def test_chunk_words_py_matches_ts_grouping():
     assert chunks[0]["start"] == 1.0 and chunks[0]["end"] == 1.85
 
 
-def test_stage_insight_images_filters_stopwords_and_short_words(monkeypatch, tmp_path):
+def test_stage_insight_images_uses_each_segment_broll_term(monkeypatch, tmp_path):
+    """2026-07-23 contract: one image PAIR per narration segment, queried by
+    that segment's own LLM-chosen `broll` term (relevant to the sentence),
+    timed to the segment via the 1:1 script-word alignment. This replaced the
+    older "longest non-stopword in each 3-word caption chunk" behaviour; the
+    tests asserting that were left behind and had the Tests workflow red from
+    2026-08-08 to 2026-09-17."""
     monkeypatch.setattr(rv, "REMOTION_DIR", tmp_path)
     monkeypatch.setattr(rv, "PX_KEY", "fake")
     fetched = []
@@ -501,23 +507,51 @@ def test_stage_insight_images_filters_stopwords_and_short_words(monkeypatch, tmp
         return True, True
 
     monkeypatch.setattr(rv, "fetch_pexels_photo_pair", fake_fetch_pair)
-    # v5: back to one KEYWORD per MAIN word (3-word chunk emphasis), not
-    # per-word - but each keyword now stages a top/bottom PAIR of different
-    # photos. chunk1 ["it","is","a"] -> longest is still a stopword/short
-    # -> filtered; chunk2 ["quiet","old","memory"] -> "memory" wins.
+    segs = [{"text": "it is a", "broll": "library shelves"},
+            {"text": "quiet old memory", "broll": "memory"}]
     words = [("it", 0.0, 0.1), ("is", 0.1, 0.2), ("a", 0.2, 0.3),
              ("quiet", 0.3, 0.6), ("old", 0.6, 0.7), ("memory", 0.7, 1.1)]
-    staged = rv._stage_insight_images(words)
-    assert fetched == ["memory"]
-    assert len(staged) == 1
+    staged = rv._stage_insight_images(segs, words)
+
+    assert fetched == ["library shelves", "memory"]
+    assert len(staged) == 2
     assert staged[0]["file"] == "kw0a.jpg" and staged[0]["file2"] == "kw0b.jpg"
+    # Timing comes from the segment's word span, not from the whole script.
+    assert staged[0]["start"] == 0.0 and staged[0]["end"] == 0.3
+    assert staged[1]["start"] == 0.3 and staged[1]["end"] == 1.1
+
+
+def test_stage_insight_images_skips_unsafe_queries(monkeypatch, tmp_path):
+    """Brand safety: an unsafe broll term stages nothing for that segment and
+    must not abort the safe ones."""
+    monkeypatch.setattr(rv, "REMOTION_DIR", tmp_path)
+    monkeypatch.setattr(rv, "PX_KEY", "fake")
+    fetched = []
+
+    def fake_fetch_pair(query, dest_a, dest_b):
+        fetched.append(query)
+        dest_a.write_bytes(b"x" * 6000)
+        dest_b.write_bytes(b"y" * 6000)
+        return True, True
+
+    monkeypatch.setattr(rv, "fetch_pexels_photo_pair", fake_fetch_pair)
+    monkeypatch.setattr(rv, "_is_unsafe", lambda q: q == "unsafe term")
+    segs = [{"text": "one two", "broll": "unsafe term"},
+            {"text": "three four", "broll": "calm lake"}]
+    words = [("one", 0.0, 0.2), ("two", 0.2, 0.4),
+             ("three", 0.4, 0.6), ("four", 0.6, 0.9)]
+    staged = rv._stage_insight_images(segs, words)
+
+    assert fetched == ["calm lake"]
+    assert len(staged) == 1
 
 
 def test_stage_insight_images_no_key_returns_empty(monkeypatch, tmp_path):
     monkeypatch.setattr(rv, "REMOTION_DIR", tmp_path)
     monkeypatch.setattr(rv, "PX_KEY", None)
+    segs = [{"text": "memory", "broll": "memory"}]
     words = [("memory", 0.0, 0.5)]
-    assert rv._stage_insight_images(words) == []
+    assert rv._stage_insight_images(segs, words) == []
 
 
 def test_brief_format_recognises_insight():
