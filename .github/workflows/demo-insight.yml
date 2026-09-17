@@ -11,6 +11,11 @@ on:
       count:
         description: "How many demo videos to render"
         default: "3"
+      media:
+        description: "Keyword-card media: video (new look) or photo (current production look)"
+        default: "video"
+        type: choice
+        options: ["video", "photo"]
 
 # GitHub Models (the old free script fallback) is being retired (410 brownout
 # 2026-07-23), so briefs use Claude here instead. contents:read is for checkout.
@@ -45,6 +50,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          # Previews show the NEW look (moving Pexels clips in the keyword
+          # cards). Production stays on stills until the owner approves it;
+          # see INSIGHT_MEDIA in automation/render_video.py.
+          INSIGHT_MEDIA: ${{ inputs.media || 'video' }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           CLAUDE_MODEL: ${{ vars.CLAUDE_MODEL || 'claude-sonnet-5' }}
           VOICE_PROVIDER: edge

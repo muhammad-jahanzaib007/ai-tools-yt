@@ -563,3 +563,82 @@ def test_brief_format_recognises_insight():
     assert uv.brief_format({"battle": {"a": 1}}) == "battle"
     assert uv.brief_format({"ranking": {"a": 1}}) == "ranking"
     assert uv.brief_format({}) == "battle"
+
+
+def test_stage_insight_images_prefers_video_clips(monkeypatch, tmp_path):
+    """2026-09-17: keyword cards default to MOVING Pexels clips (INSIGHT_MEDIA
+    ="video"). Staged filenames must be .mp4 so InsightVideo.tsx picks
+    OffthreadVideo over Img."""
+    monkeypatch.setattr(rv, "REMOTION_DIR", tmp_path)
+    monkeypatch.setattr(rv, "PX_KEY", "fake")
+    monkeypatch.setattr(rv, "INSIGHT_MEDIA", "video")
+
+    def fake_clip_pair(query, dest_a, dest_b):
+        dest_a.write_bytes(b"v" * 20000)
+        dest_b.write_bytes(b"w" * 20000)
+        return True, True
+
+    def boom(*a, **k):
+        raise AssertionError("photo path must not run when clips succeed")
+
+    monkeypatch.setattr(rv, "fetch_pexels_clip_pair", fake_clip_pair)
+    monkeypatch.setattr(rv, "fetch_pexels_photo_pair", boom)
+    segs = [{"text": "one two", "broll": "calm lake"}]
+    words = [("one", 0.0, 0.2), ("two", 0.2, 0.5)]
+    staged = rv._stage_insight_images(segs, words)
+
+    assert len(staged) == 1
+    assert staged[0]["file"] == "kw0a.mp4" and staged[0]["file2"] == "kw0b.mp4"
+
+
+def test_stage_insight_images_falls_back_to_photos_per_segment(monkeypatch, tmp_path):
+    """A keyword with no safe clip must still get its stills rather than going
+    bare, and must not abort the segments that did find clips."""
+    monkeypatch.setattr(rv, "REMOTION_DIR", tmp_path)
+    monkeypatch.setattr(rv, "PX_KEY", "fake")
+    monkeypatch.setattr(rv, "INSIGHT_MEDIA", "video")
+
+    def clip_pair(query, dest_a, dest_b):
+        if query == "no clips here":
+            return False, False
+        dest_a.write_bytes(b"v" * 20000)
+        dest_b.write_bytes(b"w" * 20000)
+        return True, True
+
+    def photo_pair(query, dest_a, dest_b):
+        dest_a.write_bytes(b"x" * 6000)
+        dest_b.write_bytes(b"y" * 6000)
+        return True, True
+
+    monkeypatch.setattr(rv, "fetch_pexels_clip_pair", clip_pair)
+    monkeypatch.setattr(rv, "fetch_pexels_photo_pair", photo_pair)
+    segs = [{"text": "one two", "broll": "no clips here"},
+            {"text": "three four", "broll": "calm lake"}]
+    words = [("one", 0.0, 0.2), ("two", 0.2, 0.4),
+             ("three", 0.4, 0.6), ("four", 0.6, 0.9)]
+    staged = rv._stage_insight_images(segs, words)
+
+    assert [e["file"] for e in staged] == ["kw0a.jpg", "kw1a.mp4"]
+
+
+def test_stage_insight_images_photo_mode_skips_clips(monkeypatch, tmp_path):
+    """INSIGHT_MEDIA=photo is the documented revert path for the stills look."""
+    monkeypatch.setattr(rv, "REMOTION_DIR", tmp_path)
+    monkeypatch.setattr(rv, "PX_KEY", "fake")
+    monkeypatch.setattr(rv, "INSIGHT_MEDIA", "photo")
+
+    def boom(*a, **k):
+        raise AssertionError("clip path must not run in photo mode")
+
+    def photo_pair(query, dest_a, dest_b):
+        dest_a.write_bytes(b"x" * 6000)
+        dest_b.write_bytes(b"y" * 6000)
+        return True, True
+
+    monkeypatch.setattr(rv, "fetch_pexels_clip_pair", boom)
+    monkeypatch.setattr(rv, "fetch_pexels_photo_pair", photo_pair)
+    segs = [{"text": "one two", "broll": "calm lake"}]
+    words = [("one", 0.0, 0.2), ("two", 0.2, 0.5)]
+    staged = rv._stage_insight_images(segs, words)
+
+    assert staged[0]["file"] == "kw0a.jpg"

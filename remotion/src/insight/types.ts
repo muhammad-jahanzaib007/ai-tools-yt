@@ -11,8 +11,8 @@ export type Word = {
 export type KeywordImage = {
   start: number; // seconds
   end: number;
-  file: string; // top card image, filename under public/insight/
-  file2?: string; // bottom card - a DIFFERENT photo of the same keyword
+  file: string; // top card media under public/insight/ - .mp4 (clip) or .jpg (still)
+  file2?: string; // bottom card - a DIFFERENT clip/photo of the same keyword
 };
 
 export type InsightProps = {

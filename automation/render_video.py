@@ -63,6 +63,17 @@ def pick_music(vibe="battle"):
 
 EL_KEY = os.environ.get("ELEVENLABS_API_KEY")
 PX_KEY = os.environ.get("PEXELS_API_KEY")
+# Insight keyword cards: "video" fills each card with a MOVING Pexels clip
+# (falling back to a still per-card when no safe clip is found), "photo" keeps
+# the stills. Pexels permits commercial use with no attribution, so this stays
+# inside the free-services rule, unlike any AI video tier.
+#
+# DEFAULT IS "photo" ON PURPOSE (2026-09-17): the owner watches visual changes
+# before they ship, a standing rule since 2026-07-23 when a concurrent session
+# flipped publish.yml's format default and real videos went out in unapproved
+# visual states. demo-insight.yml renders previews with INSIGHT_MEDIA=video;
+# flip this default to "video" once the owner signs off on the look.
+INSIGHT_MEDIA = os.environ.get("INSIGHT_MEDIA", "photo").strip().lower()
 # Key pool: two free-tier keys (separate Google accounts) double the daily
 # TTS quota; rotation happens automatically on quota errors.
 GEM_KEYS = [k for k in (os.environ.get("GEMINI_API_KEY"),
@@ -847,19 +858,33 @@ def _stage_insight_images(segs, words, max_images=30):
     for n, (query, start, end) in enumerate(ranges):
         if not query or _is_unsafe(query):
             continue
-        dest_a = pub / f"kw{n}a.jpg"
-        dest_b = pub / f"kw{n}b.jpg"
-        try:
-            ok_a, ok_b = fetch_pexels_photo_pair(query, dest_a, dest_b)
-        except requests.RequestException:
-            continue
-        if not ok_a:
-            continue
-        entry = {"start": start, "end": end, "file": dest_a.name}
-        if ok_b:
-            entry["file2"] = dest_b.name
+        chosen = None
+        if INSIGHT_MEDIA == "video":
+            clip_a, clip_b = pub / f"kw{n}a.mp4", pub / f"kw{n}b.mp4"
+            try:
+                ok_a, ok_b = fetch_pexels_clip_pair(query, clip_a, clip_b)
+            except requests.RequestException:
+                ok_a = ok_b = False
+            if ok_a:
+                chosen = (clip_a, clip_b, ok_b)
+        if chosen is None:
+            # Per-segment fallback, not a whole-video one: a keyword with no safe
+            # clip still gets its stills rather than going bare.
+            dest_a, dest_b = pub / f"kw{n}a.jpg", pub / f"kw{n}b.jpg"
+            try:
+                ok_a, ok_b = fetch_pexels_photo_pair(query, dest_a, dest_b)
+            except requests.RequestException:
+                continue
+            if not ok_a:
+                continue
+            chosen = (dest_a, dest_b, ok_b)
+        entry = {"start": start, "end": end, "file": chosen[0].name}
+        if chosen[2]:
+            entry["file2"] = chosen[1].name
         staged.append(entry)
-    print(f"  insight keyword images: {len(staged)}/{len(ranges)} staged (broll-matched, safe)")
+    clips = sum(1 for e in staged if e["file"].endswith(".mp4"))
+    print(f"  insight keyword media: {len(staged)}/{len(ranges)} staged "
+          f"({clips} video, {len(staged) - clips} photo; broll-matched, safe)")
     return staged
 
 
@@ -871,6 +896,57 @@ def _download_pexels_url(url, dest):
             for chunk in dl.iter_content(1 << 16):
                 f.write(chunk)
     return Path(dest).stat().st_size > 5000
+
+
+def fetch_pexels_clip_pair(query, dest_a, dest_b):
+    """Download TWO different portrait Pexels CLIPS for one keyword - the motion
+    equivalent of fetch_pexels_photo_pair, for the top/bottom keyword cards.
+
+    Cards render at 736px, so this deliberately picks the rendition nearest 720px
+    rather than the largest: a 1280px clip is ~4x the bytes for no visible gain,
+    and 24 downloads per video (12 segments x 2 cards) is already the slowest
+    part of staging. Brand safety screens the page slug, since the videos API
+    returns no alt text to screen. Returns (ok_a, ok_b); ok_a False means the
+    caller should fall back to photos for this segment."""
+    if not PX_KEY:
+        return False, False
+    try:
+        r = requests.get(
+            "https://api.pexels.com/videos/search",
+            params={"query": query, "per_page": 12, "orientation": "portrait",
+                    "size": "medium"},
+            headers={"Authorization": PX_KEY}, timeout=30)
+    except requests.RequestException:
+        return False, False
+    if r.status_code >= 400:
+        return False, False
+    vids = [v for v in r.json().get("videos", [])
+            if not _is_unsafe((v.get("url") or "").replace("-", " "))]
+    if not vids:
+        return False, False
+
+    def best_file(v):
+        mp4s = [f for f in v.get("video_files", [])
+                if f.get("file_type") == "video/mp4" and f.get("height")]
+        if not mp4s:
+            return None
+        tall = [f for f in mp4s if f["height"] >= f.get("width", 0)] or mp4s
+        return min(tall, key=lambda x: abs(x["height"] - 720))
+
+    ok_a = ok_b = False
+    picked = []
+    for v in vids:
+        f = best_file(v)
+        if f:
+            picked.append(f)
+        if len(picked) == 2:
+            break
+    if not picked:
+        return False, False
+    ok_a = _download_pexels_url(picked[0]["link"], dest_a)
+    if len(picked) > 1:
+        ok_b = _download_pexels_url(picked[1]["link"], dest_b)
+    return ok_a, ok_b
 
 
 def fetch_pexels_photo_pair(query, dest_a, dest_b):

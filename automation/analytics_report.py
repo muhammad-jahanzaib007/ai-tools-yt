@@ -30,6 +30,9 @@ from pathlib import Path
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from upload_video import brief_format          # noqa: E402  single source of truth
+
 ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "analytics"
 
@@ -52,8 +55,14 @@ def brief_meta():
             b = json.loads(f.read_text(encoding="utf-8"))
         except Exception:
             continue
-        fmt = "battle" if b.get("battle") else "comic" if b.get("comic") else "classic"
-        meta[b.get("title", "").strip().lower()] = (fmt, b.get("hook_type", "?"))
+        # Reuse upload_video's classifier instead of a second copy. This line
+        # WAS a copy, and it had drifted: it predated ranking, news and
+        # insight, so every video since the 2026-07-24 pivot reported
+        # Format=classic and the per-format comparison the report exists for
+        # was meaningless. upload_video.brief_format() is the one that also
+        # decides the playlist, so it cannot silently disagree with reality.
+        meta[b.get("title", "").strip().lower()] = (
+            brief_format(b), b.get("hook_type", "?"))
     return meta
 
 

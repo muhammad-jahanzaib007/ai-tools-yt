@@ -1,5 +1,5 @@
 import React from "react";
-import { AbsoluteFill, Img, staticFile, useCurrentFrame, useVideoConfig, interpolate, spring, Sequence } from "remotion";
+import { AbsoluteFill, Img, OffthreadVideo, staticFile, useCurrentFrame, useVideoConfig, interpolate, spring, Sequence } from "remotion";
 import { loadFont as loadAnton } from "@remotion/google-fonts/Anton";
 import { loadFont as loadMontserrat } from "@remotion/google-fonts/Montserrat";
 import { InsightProps, KeywordImage, FPS, chunkWords, pickAccent } from "./types";
@@ -173,7 +173,23 @@ function KeywordCard({ file, accent, startFrame, durFrames, position }: { file: 
           opacity: Math.min(pop, 1) * fadeOut,
         }}
       >
-        <Img src={staticFile(`insight/${file}`)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        {file.endsWith(".mp4") ? (
+          // 2026-09-17: keyword cards carry MOTION. muted because the card is a
+          // visual layer only - narration is muxed in ffmpeg afterwards and a
+          // stock clip's own audio would fight it. No loop: OffthreadVideo has
+          // no `loop` prop on 4.0.484, and looping would need each clip's
+          // duration plumbed through from ffprobe. A card runs ~2-4s (it holds
+          // until the next keyword) against Pexels clips of 5s+, so running
+          // past the end is rare; if freezes ever show up, pass a per-clip
+          // duration in KeywordImage and wrap this in <Loop>.
+          <OffthreadVideo
+            src={staticFile(`insight/${file}`)}
+            muted
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        ) : (
+          <Img src={staticFile(`insight/${file}`)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        )}
       </div>
     </AbsoluteFill>
   );
