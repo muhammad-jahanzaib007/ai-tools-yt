@@ -108,11 +108,22 @@
     "5 AI Tools That Beat ChatGPT for Creative Writing"
   ],
   "insight_queue": [
-    "Why your pupils dilate when you are interested in something, explaining the physiological response to attention.",
     "Why you feel more satisfied after earning a reward than just receiving it, explaining the effort justification effect.",
     "Why you can ride a bicycle without consciously thinking about every movement, explaining procedural memory.",
     "Why your dreams often feel fragmented and strange, explaining the Activation Synthesis theory of dreaming.",
-    "Why you often adopt the mannerisms of people you admire, explaining observational learning and mirror neurons."
+    "Why you often adopt the mannerisms of people you admire, explaining observational learning and mirror neurons.",
+    "Why you sometimes 'hear' voices or sounds that are not there when you are alone, explaining auditory hallucinations and expectation.",
+    "Why you feel a jolt of fear when you nearly trip or fall, explaining the startle reflex and brainstem response.",
+    "Why you sometimes struggle to learn new things when you are stressed, explaining how cortisol affects the hippocampus.",
+    "Why your perception of time changes during a crisis, explaining the role of heightened arousal and memory encoding.",
+    "Why you might feel more creative or think differently when you are tired, explaining the default mode network's activity.",
+    "Why you might find it hard to resist checking your phone for notifications, explaining variable ratio reinforcement.",
+    "Why you sometimes see an afterimage when you look away from a bright light, explaining retinal fatigue.",
+    "Why you can remember how to ride a bike years after last doing it, explaining procedural memory consolidation.",
+    "Why you often feel a wave of hunger at a specific time each day, explaining conditioned hunger responses.",
+    "Why you tend to be more trusting of people who look like you, explaining in-group bias.",
+    "Why you often make quicker decisions when you have fewer options, explaining paradox of choice.",
+    "Why your body feels heavy and you struggle to move after waking from deep sleep, explaining sleep inertia."
   ],
   "insight_published": [
     "why you can't tickle yourself",
@@ -224,6 +235,7 @@
     "Why you sometimes struggle to recall a word, but feel like it is 'on the tip of your tongue', explaining the Tip of the Tongue phenomenon.",
     "Why you often remember incomplete tasks better than completed ones, explaining the Zeigarnik effect.",
     "Why your hand might involuntarily reach for a biscuit even when you are on a diet, explaining automaticity in habit formation.",
-    "Why you tend to prefer things you have seen before, explaining the mere exposure effect."
+    "Why you tend to prefer things you have seen before, explaining the mere exposure effect.",
+    "Why your pupils dilate when you are interested in something, explaining the physiological response to attention."
   ]
 }
