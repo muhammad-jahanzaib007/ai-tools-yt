@@ -71,8 +71,7 @@ jobs:
           echo "last analytics: $(echo "$an" | head -1)"
           if echo "$an" | grep -q 'FAIL'; then
             problems="$problems
-          - the weekly analytics report is failing: $(echo "$an" | head -2 | tr '
-' ' ')"
+          - the weekly analytics report is failing: $(echo "$an" | head -1)"
           fi
 
           if [ -z "$problems" ]; then
