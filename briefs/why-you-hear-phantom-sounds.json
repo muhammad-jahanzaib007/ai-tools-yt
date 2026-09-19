@@ -1,0 +1,62 @@
+{
+  "slug": "why-you-hear-phantom-sounds",
+  "title": "Why You Hear Voices When Nobody Is There",
+  "hook": "You sometimes hear phantom sounds, even when completely alone.",
+  "narration": [
+    {
+      "text": "You sometimes hear phantom sounds, even when completely alone.",
+      "broll": "empty room"
+    },
+    {
+      "text": "This is often your brain trying to make sense of silence.",
+      "broll": "brain scanning"
+    },
+    {
+      "text": "It anticipates sounds, based on past experiences and expectations.",
+      "broll": "person thinking"
+    },
+    {
+      "text": "Sometimes, these expectations create a sound that is not really there.",
+      "broll": "ear close-up"
+    },
+    {
+      "text": "Your brain fills the void with a \"best guess\" sound.",
+      "broll": "brain activity"
+    },
+    {
+      "text": "It could be a faint voice, a doorbell, or footsteps nearby.",
+      "broll": "doorbell ringing"
+    },
+    {
+      "text": "This happens more when you are tired or highly focused.",
+      "broll": "person tired"
+    },
+    {
+      "text": "It is a normal brain function, not a cause for concern.",
+      "broll": "calm person"
+    },
+    {
+      "text": "Have you ever heard a sound that was not there?",
+      "broll": "person questioning"
+    }
+  ],
+  "description": "Ever heard a faint sound or voice when you are completely alone? It is not spooky, it is your brain playing tricks. Your mind anticipates sounds, sometimes creating phantom noises out of silence.",
+  "links": [],
+  "tags": [
+    "auditory hallucinations",
+    "phantom sounds",
+    "brain science",
+    "psychology facts",
+    "human brain",
+    "mind tricks",
+    "hearing things",
+    "why we hear things",
+    "alone sounds",
+    "expectation bias"
+  ],
+  "thumbnail_text": "Sounds out of nowhere",
+  "format": "insight",
+  "topic": "Why you sometimes 'hear' voices or sounds that are not there when you are alone, explaining auditory hallucinations and expectation.",
+  "date": "2026-09-19",
+  "hook_type": "result_first"
+}
