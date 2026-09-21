@@ -288,7 +288,27 @@ def _align_script_to_timings(text, whisper_words):
             for k, si in enumerate(range(i1, i2)):
                 out.append((script[si], t0 + k * step, t0 + (k + 1) * step))
         elif tag == "delete":
-            prev_end = out[-1][2] if out else whisper_words[0][1]
+            # Script words Whisper did not transcribe. ROOT CAUSE OF THE BLANK
+            # OPENING (2026-09-21): when the miss is at the START, `out` is
+            # empty and this used to anchor at whisper_words[0][1] - the time
+            # of the first word Whisper DID hear - then walk forward. So if
+            # Whisper skipped the opening sentence and first heard a word at
+            # 5.5s, the script's opening words were captioned from 5.5s
+            # onward, on top of the words actually being spoken there, and
+            # nothing at all rendered before 5.5s. tiny.en drops quiet
+            # sentence openings fairly often, which is why the fault was
+            # intermittent rather than constant.
+            #
+            # Those words ARE in the audio, before the anchor, so back-fill
+            # them across [0, anchor] instead of forward from it.
+            if not out:
+                anchor = whisper_words[j1][1] if j1 < len(whisper_words) else whisper_words[0][1]
+                n = i2 - i1
+                step = anchor / n if n else 0
+                for k, si in enumerate(range(i1, i2)):
+                    out.append((script[si], k * step, (k + 1) * step))
+                continue
+            prev_end = out[-1][2]
             nxt = whisper_words[j2][1] if j2 < len(whisper_words) else prev_end + 0.3 * (i2 - i1)
             n = i2 - i1
             if nxt <= prev_end:

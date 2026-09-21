@@ -665,3 +665,38 @@ def test_timing_drift_leaves_a_normal_start_alone(monkeypatch):
 def test_timing_drift_handles_no_words(monkeypatch):
     monkeypatch.setattr(rv, "probe_duration", lambda p: 30.0)
     assert rv._correct_timing_drift([], "x.mp3") == []
+
+
+def test_align_backfills_words_whisper_missed_at_the_start():
+    """ROOT CAUSE of the blank opening (2026-09-21). When Whisper drops the
+    opening words, they must be placed BEFORE its first recognised word, not
+    stacked on top of it. The old code anchored at whisper_words[0][1], so a
+    video whose first recognised word landed at 5.5s rendered nothing at all
+    for its first 5.5 seconds while the narration played."""
+    script = "During a crisis time often appears to stretch out"
+    ww = [("appears", 5.5, 5.9), ("to", 5.9, 6.1),
+          ("stretch", 6.1, 6.6), ("out", 6.6, 6.9)]
+    out = rv._align_script_to_timings(script, ww)
+
+    assert out[0][0] == "During"
+    assert out[0][1] == 0.0, "first script word must start at the top of the audio"
+    # the five missed words share [0, 5.5] and stay in order
+    assert [w for w, _, _ in out[:5]] == ["During", "a", "crisis", "time", "often"]
+    assert out[4][2] <= 5.5 + 1e-9
+    starts = [st for _, st, _ in out]
+    assert starts == sorted(starts), "timings must stay monotonic"
+    # the words Whisper DID hear keep their real times
+    assert out[5] == ("appears", 5.5, 5.9)
+
+
+def test_align_midstream_gap_still_walks_forward():
+    """A miss in the MIDDLE still fills forward from the previous word: only
+    the leading case changes."""
+    script = "one two three four"
+    ww = [("one", 0.0, 0.4), ("four", 2.0, 2.4)]
+    out = rv._align_script_to_timings(script, ww)
+    assert out[0] == ("one", 0.0, 0.4)
+    assert out[1][1] >= 0.4
+    assert out[-1] == ("four", 2.0, 2.4)
+    starts = [st for _, st, _ in out]
+    assert starts == sorted(starts)
