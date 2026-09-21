@@ -62,6 +62,11 @@ def pick_music(vibe="battle"):
     return MUSIC_FILE if MUSIC_FILE.exists() else None
 
 EL_KEY = os.environ.get("ELEVENLABS_API_KEY")
+# A first word later than this means the visual timeline has drifted off the
+# audio: captions and keyword cards are driven entirely by word timings, so a
+# late start renders a blank opening over live narration. See
+# _correct_timing_drift.
+LEAD_MAX_S = float(os.environ.get("LEAD_MAX_S", "1.5"))
 PX_KEY = os.environ.get("PEXELS_API_KEY")
 # Insight keyword cards: "video" fills each card with a MOVING Pexels clip
 # (falling back to a still per-card when no safe clip is found), "photo" keeps
@@ -348,13 +353,51 @@ def tts(text, dest, voice=None, style=None):
     dest.write_bytes(_el_tts(text, dest, timestamps=False).content)
 
 
+def _correct_timing_drift(words, audio_path):
+    """Pull word timings back onto the audio when Whisper puts the first word
+    implausibly late, and report the coverage either way.
+
+    Found 2026-09-21 by pulling a published video apart frame by frame:
+    time-perception-crisis.mp4 showed NOTHING for its first 5.5 seconds while
+    the narration played from 0.0s at full level. The script is 91 words over
+    ~30.5s of speech (~3.0 wps), so "lasting much longer" belongs at ~3.5s; the
+    caption carrying it appeared at 8.0s. Every caption and keyword card is
+    driven by these timings, so a late first word blanks the opening of the
+    video - which is exactly the window that decides whether a Short is
+    watched. The owner spotted it as videos "with just audio in them".
+
+    A leading offset is only ever wrong: TTS output starts speaking within a
+    few hundred ms, so a first word at 5s means the timeline, not the speech,
+    is displaced. Shifting the whole track back by that offset restores sync
+    without discarding the render. Coverage (last word end vs audio length) is
+    reported rather than corrected, because a short tail is normal (the render
+    appends one) while a *long* one indicates a different fault worth seeing.
+    """
+    if not words:
+        return words
+    first = words[0][1]
+    last = words[-1][2]
+    dur = probe_duration(audio_path) or 0
+    cover = (last / dur) if dur else 0
+    print(f"    timings: first word {first:.2f}s, last {last:.2f}s, "
+          f"audio {dur:.1f}s, coverage {cover:.0%}")
+
+    if first <= LEAD_MAX_S:
+        return words
+    # Leave a small natural lead-in rather than snapping to exactly zero.
+    shift = first - 0.25
+    print(f"    TIMING DRIFT: first word at {first:.2f}s (max {LEAD_MAX_S}s); "
+          f"shifting all timings back {shift:.2f}s so the opening is not blank")
+    return [(w, max(0.0, st - shift), max(0.0, en - shift)) for (w, st, en) in words]
+
+
 def _whisper_timed(text, dest):
     """Word timings for `dest` via Whisper, captioned with the SCRIPT's spelling
     (so 'ChatGPT' is never captioned as Whisper's 'Chachi Pt'). Raises if none."""
     words = _whisper_words(dest, prompt=text)
     if not words:
         raise RuntimeError("no word timings recoverable from audio")
-    return _align_script_to_timings(text, words)
+    return _correct_timing_drift(_align_script_to_timings(text, words), dest)
 
 
 def tts_timed(text, dest, voice=None, style=None):

@@ -25,8 +25,6 @@ NOT touch the pipeline: nothing here is imported by render_video.py.
 import os
 import sys
 import time
-import wave
-import contextlib
 from pathlib import Path
 
 TEXT = os.environ.get(
@@ -38,11 +36,6 @@ TEXT = os.environ.get(
 )
 REFERENCE = os.environ.get("REFERENCE_AUDIO", "").strip()
 OUT = Path(os.environ.get("BENCH_OUT", "voice-bench"))
-
-
-def wav_seconds(path):
-    with contextlib.closing(wave.open(str(path), "rb")) as w:
-        return w.getnframes() / float(w.getframerate())
 
 
 def main():
@@ -77,7 +70,10 @@ def main():
     import torchaudio
     torchaudio.save(str(dest), wav, model.sr)
 
-    audio_s = wav_seconds(dest)
+    # From the tensor, not python's `wave`: torchaudio writes float32 WAVs
+    # (format tag 3) and `wave` raises "unknown format: 3" on those. That is
+    # what failed run 35285729364 AFTER synthesis had already succeeded.
+    audio_s = wav.shape[-1] / float(model.sr)
     ratio = audio_s / gen_s if gen_s else 0
     print(f"generated {audio_s:.1f}s of audio in {gen_s:.1f}s -> {ratio:.2f}x realtime")
 

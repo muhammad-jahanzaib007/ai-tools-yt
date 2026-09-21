@@ -642,3 +642,26 @@ def test_stage_insight_images_photo_mode_skips_clips(monkeypatch, tmp_path):
     staged = rv._stage_insight_images(segs, words)
 
     assert staged[0]["file"] == "kw0a.jpg"
+
+
+def test_timing_drift_shifts_late_first_word(monkeypatch):
+    """A first word 5.5s in blanks the whole opening of the Short (found in
+    the published time-perception-crisis.mp4). Correct it back onto the audio."""
+    monkeypatch.setattr(rv, "probe_duration", lambda p: 31.5)
+    words = [("During", 5.5, 5.8), ("a", 5.8, 6.0), ("crisis", 6.0, 6.5)]
+    out = rv._correct_timing_drift(words, "x.mp3")
+    assert abs(out[0][1] - 0.25) < 1e-9
+    # relative spacing must survive the shift
+    assert abs((out[2][1] - out[0][1]) - 0.5) < 1e-9
+    assert all(st >= 0 and en >= 0 for _, st, en in out)
+
+
+def test_timing_drift_leaves_a_normal_start_alone(monkeypatch):
+    monkeypatch.setattr(rv, "probe_duration", lambda p: 30.0)
+    words = [("During", 0.3, 0.6), ("a", 0.6, 0.8)]
+    assert rv._correct_timing_drift(words, "x.mp3") == words
+
+
+def test_timing_drift_handles_no_words(monkeypatch):
+    monkeypatch.setattr(rv, "probe_duration", lambda p: 30.0)
+    assert rv._correct_timing_drift([], "x.mp3") == []
