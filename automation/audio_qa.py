@@ -15,6 +15,7 @@ unless invoked with --gate.
 """
 import re
 import subprocess
+import tempfile
 import sys
 from pathlib import Path
 
@@ -119,6 +120,48 @@ def black_spans(path):
         p.stderr)]
 
 
+def opening_density(path, early=1.2, mid=None):
+    """Ratio of visual detail in the opening second to mid-video, via JPEG size.
+
+    Added 2026-09-21 after a published Short was found rendering NOTHING for
+    its first 5.5 seconds while the narration played: captions and keyword
+    cards are driven by word timings, and a timing fault blanked the opening.
+    blackdetect never fired because the background is a dark GRADIENT, not
+    black, so the existing gate passed it straight through to upload.
+
+    A compressed frame's byte size tracks how much detail is in it, which is
+    exactly how the fault was spotted by hand: 18KB opening frames against
+    149KB once content appeared. Comparing the opening to this video's own
+    mid-point keeps it self-calibrating, so a legitimately minimal style does
+    not trip it.
+
+    Returns (ratio, early_bytes, mid_bytes), or None if frames cannot be read.
+    """
+    dur = None
+    p = subprocess.run(["ffmpeg", "-i", str(path)], capture_output=True, text=True)
+    m = re.search(r"Duration: (\d+):(\d+):([\d.]+)", p.stderr)
+    if m:
+        dur = int(m.group(1)) * 3600 + int(m.group(2)) * 60 + float(m.group(3))
+    if mid is None:
+        mid = (dur / 2) if dur else 8.0
+
+    def frame_bytes(t):
+        with tempfile.TemporaryDirectory() as td:
+            out = Path(td) / "f.jpg"
+            r = subprocess.run(
+                ["ffmpeg", "-v", "error", "-ss", str(t), "-i", str(path),
+                 "-frames:v", "1", "-q:v", "3", str(out)],
+                capture_output=True, text=True)
+            if r.returncode != 0 or not out.exists():
+                return None
+            return out.stat().st_size
+
+    a, b = frame_bytes(early), frame_bytes(mid)
+    if not a or not b:
+        return None
+    return (a / b, a, b)
+
+
 def main():
     # --gate: exit non-zero on UNAMBIGUOUS failures so the publish job aborts
     # BEFORE uploading. Kept deliberately narrow to avoid false positives:
@@ -128,6 +171,9 @@ def main():
     #    that long means a broken render, not a stylistic fade)
     #  - duration outside 15-178s (>3min loses Shorts eligibility and the
     #    video dies as a regular upload; <15s means the render broke)
+    #  - a BLANK OPENING: the first second carrying under 35% of the visual
+    #    detail of mid-video, which is what a timing fault looks like and what
+    #    blackdetect cannot see on a dark gradient
     # Fuzzy signals (monotone pitch, mp4 peak) stay advisory only: the mp4 peak
     # is measured from lossy AAC, which overshoots slightly past 1.0 even when
     # the pre-encode mix was limited to 0.89, so it is NOT a reliable clip gate.
@@ -173,6 +219,16 @@ def main():
             spans = black_spans(outs[-1])
             worst = max(spans, key=lambda s: s[1]) if spans else None
             parts.append("black=" + (f"{worst[1]:.1f}s@{worst[0]:.0f}s" if worst else "none"))
+            dens = opening_density(outs[-1])
+            if dens:
+                ratio, a, b = dens
+                verdict = "BLANK" if ratio < 0.35 else ("thin" if ratio < 0.55 else "ok")
+                parts.append(f"open_density={ratio:.2f}({verdict})")
+                if ratio < 0.35:
+                    failures.append(
+                        f"blank opening: first second has {ratio:.0%} of mid-video "
+                        f"detail ({a}B vs {b}B) - captions/images are probably "
+                        f"mistimed, see _correct_timing_drift")
             if worst and worst[1] >= 3:
                 failures.append(f"black screen {worst[1]:.1f}s at {worst[0]:.0f}s")
         except Exception as e:
