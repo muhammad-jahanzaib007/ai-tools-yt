@@ -222,6 +222,29 @@ jobs:
       - name: Audio QA gate
         run: python automation/audio_qa.py --gate
 
+      # A contact sheet of every published video. The blank-opening fault of
+      # 2026-07-24..09-21 survived months of green receipts because nothing
+      # ever looked at a frame: "8/8 images staged" and "black=none" were both
+      # true of a video that showed nothing for five seconds. The per-frame
+      # detail profile goes to the log (greppable for 90 days) and the sheet
+      # itself is an artifact, so a visual regression can be reviewed as
+      # easily as reading a test failure. if: always() so a gated/failed run
+      # still produces the evidence for why.
+      - name: Contact sheet
+        if: always()
+        continue-on-error: true
+        run: |
+          vid=$(ls -t output/*.mp4 2>/dev/null | head -1)
+          [ -n "$vid" ] && python automation/filmstrip.py "$vid" --out review || echo "no video to sheet"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        continue-on-error: true
+        with:
+          name: contact-sheet
+          path: review/
+          retention-days: 30
+
       - name: Upload to YouTube
         env:
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
