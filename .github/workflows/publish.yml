@@ -96,7 +96,9 @@ jobs:
     runs-on: ubuntu-latest
     # A hung API call must not hold the yt-publish concurrency group for
     # GitHub's 6h default and starve the next cron slot.
-    timeout-minutes: 60
+    # Up to 3 renders at ~10 min each (visual QA can reject and re-render),
+    # plus brief generation, upload and crosspost.
+    timeout-minutes: 95
     steps:
       - uses: actions/checkout@v4
 
@@ -205,7 +207,18 @@ jobs:
             [ -n "$ok" ] || { echo "brief push failed after 5 attempts"; exit 1; }
           fi
 
-      - name: Render video
+      # Render, LOOK AT IT, re-render if the frame is empty when it should not
+      # be. Added 2026-09-21: a timing fault shipped videos that played
+      # narration over an empty gradient for seconds at a time, and every
+      # existing check passed them because none of them inspected a frame.
+      #
+      # Re-rendering is a real fix rather than a retry-and-hope: TTS and the
+      # Whisper alignment that drives every caption and card are both
+      # non-deterministic, so a fresh take usually lands clean. Three attempts
+      # at ~10 min each fits the 60 min job budget alongside brief and upload;
+      # if all three fail the step exits non-zero and NOTHING is published,
+      # which is the right outcome for a broken render.
+      - name: Render video (re-render until the frame is populated)
         env:
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
@@ -215,7 +228,26 @@ jobs:
           GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
           VOICE_PROVIDER: ${{ vars.VOICE_PROVIDER }}
           GEMINI_VOICE: ${{ vars.GEMINI_VOICE }}
-        run: python automation/render_video.py
+        run: |
+          set -o pipefail
+          ok=""
+          for attempt in 1 2 3; do
+            echo "::group::render attempt $attempt"
+            if ! python automation/render_video.py; then
+              echo "render attempt $attempt failed outright"
+              echo "::endgroup::"
+              continue
+            fi
+            echo "::endgroup::"
+            if python automation/video_qa.py --gate; then
+              echo "visual QA passed on attempt $attempt"
+              ok=1
+              break
+            fi
+            echo "visual QA rejected attempt $attempt; re-rendering"
+            rm -f output/*.mp4
+          done
+          [ -n "$ok" ] || { echo "3 renders failed visual QA; refusing to publish"; exit 1; }
 
       # Gate BEFORE publishing: abort on silent/garbled audio so a broken video
       # never reaches YouTube/IG/FB/TikTok. Peak + monotone stay advisory.

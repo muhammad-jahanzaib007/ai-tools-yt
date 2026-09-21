@@ -700,3 +700,44 @@ def test_align_midstream_gap_still_walks_forward():
     assert out[-1] == ("four", 2.0, 2.4)
     starts = [st for _, st, _ in out]
     assert starts == sorted(starts)
+
+
+def _profile(pairs):
+    return list(pairs)
+
+
+def test_video_qa_flags_a_blank_opening():
+    """The real failure: narration plays while the frame is empty. Numbers are
+    the measured profile of the published time-perception-crisis.mp4."""
+    import video_qa
+    prof = [(0.0, 6377), (1.0, 2144), (2.0, 2170), (3.0, 2193), (4.0, 2204)] +            [(float(t), 10800) for t in range(5, 31)]
+    ok, reasons, stats = video_qa.analyse(prof)
+    assert ok is False
+    assert any("blank opening" in r for r in reasons)
+    assert stats["open_ratio"] < 0.35
+
+
+def test_video_qa_passes_a_healthy_video():
+    """A momentary dip between the hook card and the first caption is normal
+    and must NOT be rejected: a single unlucky frame is what made the earlier
+    single-frame check unusable."""
+    import video_qa
+    prof = [(0.0, 15670), (1.0, 10036), (2.0, 13641), (3.0, 10850)] +            [(float(t), 10000) for t in range(4, 30)]
+    prof.insert(12, (12.0, 1928))          # one empty frame mid-video
+    ok, reasons, stats = video_qa.analyse(prof)
+    assert ok is True, reasons
+
+
+def test_video_qa_flags_a_long_empty_stretch():
+    import video_qa
+    prof = [(float(t), 10000) for t in range(0, 10)] +            [(float(t), 900) for t in range(10, 15)] +            [(float(t), 10000) for t in range(15, 30)]
+    ok, reasons, stats = video_qa.analyse(prof)
+    assert ok is False
+    assert any("empty stretch" in r for r in reasons)
+
+
+def test_video_qa_does_not_block_when_frames_are_unreadable():
+    """A frame-extraction failure must not stop a publish: unknown is not bad."""
+    import video_qa
+    ok, reasons, _ = video_qa.analyse([])
+    assert ok is True and reasons == []
