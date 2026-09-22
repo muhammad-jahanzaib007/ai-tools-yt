@@ -1,0 +1,62 @@
+{
+  "slug": "retinal-fatigue-afterimages",
+  "title": "Why Afterimages Appear After Bright Lights: It's Not What You Think",
+  "hook": "Your eyes get tired, just like your muscles.",
+  "narration": [
+    {
+      "text": "Your eyes get tired, just like your muscles.",
+      "broll": "person blinking eyes"
+    },
+    {
+      "text": "When you stare at a bright light, the photoreceptors in your retina work hard.",
+      "broll": "bright light flash"
+    },
+    {
+      "text": "These cells become overstimulated, especially the ones detecting that specific colour.",
+      "broll": "abstract light colours"
+    },
+    {
+      "text": "This overstimulation leads to something called retinal fatigue.",
+      "broll": "tired eyes close"
+    },
+    {
+      "text": "When you look away, those fatigued cells respond less to new light.",
+      "broll": "person looking away"
+    },
+    {
+      "text": "Other, rested cells take over, creating an inverted, phantom afterimage.",
+      "broll": "colour negative photo"
+    },
+    {
+      "text": "This is why a bright red light leaves a green afterimage, for instance.",
+      "broll": "red light green"
+    },
+    {
+      "text": "It is your brain trying to balance out the visual input.",
+      "broll": "brain scan abstract"
+    },
+    {
+      "text": "Have you ever noticed strong afterimages after looking at a screen?",
+      "broll": "person on phone"
+    }
+  ],
+  "description": "Ever wondered why you see strange colours after looking at a bright light? It's all about how your eyes' photoreceptors get tired. Learn about retinal fatigue and the fascinating way your brain balances visual information.",
+  "links": [],
+  "tags": [
+    "retinal fatigue",
+    "afterimage",
+    "eye science",
+    "vision explained",
+    "how eyes work",
+    "optic illusion",
+    "brain perception",
+    "human body facts",
+    "sensory experience",
+    "light reaction"
+  ],
+  "thumbnail_text": "Eyes Get Tired",
+  "format": "insight",
+  "topic": "Why you sometimes see an afterimage when you look away from a bright light, explaining retinal fatigue.",
+  "date": "2026-09-22",
+  "hook_type": "bold_claim"
+}
