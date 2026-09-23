@@ -108,11 +108,22 @@
     "5 AI Tools That Beat ChatGPT for Creative Writing"
   ],
   "insight_queue": [
-    "Why you can remember how to ride a bike years after last doing it, explaining procedural memory consolidation.",
     "Why you often feel a wave of hunger at a specific time each day, explaining conditioned hunger responses.",
     "Why you tend to be more trusting of people who look like you, explaining in-group bias.",
     "Why you often make quicker decisions when you have fewer options, explaining paradox of choice.",
-    "Why your body feels heavy and you struggle to move after waking from deep sleep, explaining sleep inertia."
+    "Why your body feels heavy and you struggle to move after waking from deep sleep, explaining sleep inertia.",
+    "Why you sometimes think you heard your name called when no one spoke, explaining the brain's top down processing of sound.",
+    "Why smells can strongly trigger old memories, explaining the direct link between the olfactory bulb and the limbic system.",
+    "Why you often remember vivid but inaccurate details of highly emotional events, explaining flashbulb memories and reconstructive memory.",
+    "Why your pupils get bigger when you see something you like, explaining the link between arousal and autonomic nervous system responses.",
+    "Why you feel restless and agitated after too much caffeine, explaining its effect on adenosine receptors and the central nervous system.",
+    "Why you sometimes struggle to make a decision when faced with too many similar choices, explaining choice overload and decision fatigue.",
+    "Why you tend to imitate the facial expressions of people you are talking to, explaining emotional contagion and mirror neurons.",
+    "Why you often feel a sense of 'flow' when deeply engrossed in an activity, explaining the psychology of optimal experience and focused attention.",
+    "Why you might suddenly wake up after hearing a specific sound, explaining the reticular activating system's role in selective attention.",
+    "Why you sometimes doubt a decision immediately after making it, explaining post decision regret and cognitive dissonance.",
+    "Why you can feel pain from a limb that has been amputated, explaining phantom limb syndrome and brain remapping.",
+    "Why you tend to focus on negative information more than positive, explaining negativity bias and its evolutionary roots."
   ],
   "insight_published": [
     "why you can't tickle yourself",
@@ -236,6 +247,7 @@
     "Why your perception of time changes during a crisis, explaining the role of heightened arousal and memory encoding.",
     "Why you might feel more creative or think differently when you are tired, explaining the default mode network's activity.",
     "Why you might find it hard to resist checking your phone for notifications, explaining variable ratio reinforcement.",
-    "Why you sometimes see an afterimage when you look away from a bright light, explaining retinal fatigue."
+    "Why you sometimes see an afterimage when you look away from a bright light, explaining retinal fatigue.",
+    "Why you can remember how to ride a bike years after last doing it, explaining procedural memory consolidation."
   ]
 }
