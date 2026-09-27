@@ -741,3 +741,42 @@ def test_video_qa_does_not_block_when_frames_are_unreadable():
     import video_qa
     ok, reasons, _ = video_qa.analyse([])
     assert ok is True and reasons == []
+
+
+def test_near_duplicate_catches_real_paraphrases():
+    """Measured 2026-09-27: three of seven queued ideas were re-writes of
+    already-published videos, which the old exact-string check let through."""
+    published = [
+        "Why you tend to focus on negative information more than positive, explaining negativity bias",
+        "Why you might struggle to make a decision when faced with too many choices",
+        "Why you sometimes doubt a decision immediately after making it, known as post decision dissonance",
+    ]
+    # the actual queued paraphrases
+    assert gb.is_near_duplicate(
+        "Why you tend to focus on negative information more than positive, explaining the negativity bias",
+        published)
+    assert gb.is_near_duplicate(
+        "Why you sometimes struggle to make a decision when faced with too many similar choices",
+        published)
+    assert gb.is_near_duplicate(
+        "Why you sometimes doubt a decision immediately after making it, explaining post decision regret",
+        published)
+
+
+def test_near_duplicate_allows_genuinely_different_ideas():
+    """A shared domain word must not suppress a distinct idea: these scored
+    0.27 and below against the same published set and were kept."""
+    published = [
+        "Why you tend to focus on negative information more than positive, explaining negativity bias",
+        "Why your pupils dilate when you find someone interesting",
+    ]
+    assert not gb.is_near_duplicate(
+        "Why you tend to imitate the facial expressions of people you are talking to", published)
+    assert not gb.is_near_duplicate(
+        "Why you can feel pain from a limb that has been amputated", published)
+    assert not gb.is_near_duplicate(
+        "Why you often feel a sense of flow when deeply engrossed in an activity", published)
+
+
+def test_near_duplicate_rejects_empty():
+    assert gb.is_near_duplicate("", ["anything at all"])

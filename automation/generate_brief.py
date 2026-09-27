@@ -673,12 +673,12 @@ def replenish_rankings(topics, want=12):
             + '\nReturn a single JSON object: {"topics": ["idea 1", ...]}. No em dashes.'
         )
         data = chat_json(user, max_tokens=1200)
-        existing = {t.lower() for t in used}
+        existing = list(used)
         for t in data.get("topics", []):
             t = strip_em(str(t)).strip()
-            if t and t.lower() not in existing:
+            if t and not is_near_duplicate(t, existing):
                 topics.setdefault("ranking_queue", []).append(t)
-                existing.add(t.lower())
+                existing.append(t)
     except SystemExit:
         raise
     except Exception as e:
@@ -700,8 +700,19 @@ INSIGHT_BULLETS = (
     "isolated fact.\n"
     "  3. STAKES (1-2 segments): why this matters day to day - a concrete way to notice it or "
     "use it.\n"
-    "  4. CTA (final segment): one short natural question inviting a comment (e.g. 'Have you "
-    "noticed this in yourself?'), max 20 words, no generic subscribe nudge.\n"
+    "  4. CTA (final segment): max 20 words, no generic subscribe nudge. If the effect is "
+    "something the viewer can try on the spot, TELL THEM TO TRY IT AND REPORT BACK ('try it "
+    "right now and tell me if it worked on you'). A test someone just performed is far more "
+    "likely to produce a comment than an opinion question. Otherwise ask one short natural "
+    "question inviting a comment about their own experience.\n"
+    # 2026-09-27: participation beat. The highest-retention video on the channel (86%) is
+    # the one where the viewer can test the effect while watching. Where the topic allows
+    # it, invite the test EARLY rather than only at the end, so the viewer has a reason to
+    # keep watching rather than just a reason to comment at the end.
+    "  PARTICIPATION: if the viewer can experience the effect themselves, invite them to do "
+    "it during the MECHANISM section, not only in the CTA. 'Look at the edge of your vision "
+    "while you listen' keeps someone watching in a way that a described fact does not. Do "
+    "not force this onto topics where it does not honestly apply.\n"
     "Write it like explaining something fascinating to a friend: confident, a little surprised, "
     "never like a listicle or textbook. Never invent a specific study, statistic, or citation "
     "you cannot be sure is real - describe the mechanism in accurate general terms instead of a "
@@ -716,7 +727,14 @@ def generate_insight_brief(topic, hook_style):
         "- slug: kebab-case, 3-6 words, no dates\n"
         "- title: a clear, honest, curiosity-driven YouTube title, <=70 chars, states the surprising "
         "claim or the myth being corrected (e.g. 'Why You Can't Remember Being a Baby', "
-        "'The Real Reason Fear Is Contagious'). No clickbait lies, no year.\n"
+        "'The Real Reason Fear Is Contagious'). No clickbait lies, no year. "
+        # Measured 2026-09-27: every title in the channel's top five is second person, and the
+        # top two are about the viewer's relationship to OTHER people. The bottom of the table
+        # is dominated by titles naming an academic effect.
+        "Always second person. Where the topic genuinely involves other people, put them in "
+        "the title: 'The Real Reason You Mimic People You Admire' outperformed every "
+        "internally-framed title on this channel. Never lead with the academic name of the "
+        "effect.\n"
         "- hook: the spoken opening line (<=12 words). It must be a scroll-stopping "
         f"pattern-interrupt of this exact style: {HOOK_STYLES[hook_style]}. "
         "It MUST contain one concrete specific detail, never a generic line that fits any topic.\n"
@@ -741,30 +759,93 @@ def generate_insight_brief(topic, hook_style):
     return b
 
 
+# Words that carry no topic meaning, so two ideas sharing only these are not
+# actually related.
+_TOPIC_STOP = {
+    "why", "you", "your", "the", "and", "that", "this", "with", "from", "about",
+    "when", "what", "how", "explaining", "known", "called", "effect", "sometimes",
+    "often", "tend", "might", "can", "feel", "felt", "have", "been", "after",
+    "their", "them", "more", "than", "into", "some", "even", "just", "does",
+}
+
+
+def _topic_key(text):
+    """Content words of a topic idea, for near-duplicate detection."""
+    return {w for w in re.findall(r"[a-z]{3,}", (text or "").lower())
+            if w not in _TOPIC_STOP}
+
+
+def is_near_duplicate(candidate, existing, threshold=0.30):
+    """True if `candidate` covers the same ground as anything in `existing`.
+
+    The old check was `candidate.lower() not in existing`, an exact match, which
+    a paraphrase walks straight past. On 2026-09-27 three of the seven queued
+    ideas turned out to be re-writes of already-published videos ("Why you tend
+    to focus on negative information more than positive" against the same
+    sentence published in August, Jaccard 0.75), so roughly two weeks of the
+    schedule was set to re-publish existing content. YouTube reads repetition as
+    a quality signal, so this was costing more than the wasted slots.
+
+    Jaccard over content words. 0.30 catches the observed paraphrases (0.67 to
+    0.80) while leaving genuinely different ideas that share a domain word
+    (0.27 and below) alone.
+    """
+    k = _topic_key(candidate)
+    if not k:
+        return True
+    for e in existing:
+        ke = _topic_key(e)
+        if not ke:
+            continue
+        if len(k & ke) / len(k | ke) >= threshold:
+            return True
+    return False
+
+
 def replenish_insights(topics, want=12):
     try:
         used = topics.get("insight_published", []) + topics.get("insight_queue", [])
         user = (
             f"Suggest {want} distinct, specific video ideas for a faceless YouTube Shorts channel "
             "that explains genuine psychology/neuroscience/body-mechanism insights - real "
-            "'why does this happen' explanations, not isolated trivia. Cover memory, perception, "
-            "habit formation, emotion, social behaviour, decision-making, sleep, attention, and "
-            "motivation. Each idea must name the SPECIFIC phenomenon or mechanism (e.g. 'why "
-            "you can't tickle yourself', 'why a song gets stuck in your head', 'why we misremember "
-            "arguments in our own favour'), never a vague 'psychology facts' catch-all. Prefer "
-            "phenomena with a real, explainable mechanism over pure trivia. Do NOT suggest medical, "
-            "therapy, or mental-health-treatment advice - stick to how the healthy mind/body works.\n"
+            "'why does this happen' explanations, not isolated trivia. Each idea must name the "
+            "SPECIFIC phenomenon or mechanism, never a vague 'psychology facts' catch-all, and "
+            "must have a real explainable cause rather than being pure trivia. Do NOT suggest "
+            "medical, therapy, or mental-health-treatment advice - stick to how the healthy "
+            "mind/body works.\n"
+            # 2026-09-27: topic selection is now driven by measured performance, not by
+            # covering the field evenly. Across 25 videos of identical format, length and
+            # voice, views ranged 66 to 952 and two traits separate the top from the bottom.
+            "SELECT HARD FOR THESE TWO TRAITS. They are measured, not assumed:\n"
+            "  A. ABOUT OTHER PEOPLE (aim for at least half the list). Ideas that explain "
+            "someone else's behaviour, or what the viewer unconsciously signals to others, "
+            "massively outperform ideas about private internal experience. The two best "
+            "performing videos on this channel were about copying people you admire (952 "
+            "views) and what your pupils reveal when you find someone interesting (670), "
+            "against 66 to 92 views for internal-only topics like filtering one voice in a "
+            "crowd or a word stuck on the tip of your tongue. People share what explains "
+            "the people around them.\n"
+            "  B. TESTABLE WHILE WATCHING (aim for at least a third). If the viewer can try "
+            "the effect on themselves in the next ten seconds, say so. The single highest "
+            "retention video on the channel, 86 percent, is one where the viewer can hear a "
+            "different word by watching a mouth move. Prefer illusions, reflexes, "
+            "after-effects and body responses the viewer can trigger on the spot over "
+            "concepts that can only be described.\n"
+            "AVOID textbook-named effects as the subject line (the cocktail-party effect, "
+            "mere exposure, effort justification). Those were the bottom of the table: a "
+            "title that has to teach the concept before the viewer can care loses them "
+            "first. Describe the experience, not the academic name for it.\n"
             + _trend_lines()
             + "Avoid overlapping these existing ideas:\n- " + "\n- ".join(used or ["(none)"])
             + '\nReturn a single JSON object: {"topics": ["idea 1", ...]}. No em dashes.'
         )
         data = chat_json(user, max_tokens=1200)
-        existing = {t.lower() for t in used}
+        existing = list(used)
         for t in data.get("topics", []):
             t = strip_em(str(t)).strip()
-            if t and t.lower() not in existing:
+            if t and not is_near_duplicate(t, existing):
                 topics.setdefault("insight_queue", []).append(t)
-                existing.add(t.lower())
+                existing.append(t)
     except SystemExit:
         raise
     except Exception as e:
