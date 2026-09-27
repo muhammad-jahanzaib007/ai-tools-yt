@@ -1,0 +1,64 @@
+{
+  "slug": "caffeine-restlessness-explained",
+  "title": "Why Caffeine Makes You Restless and Agitated",
+  "hook": "Caffeine does not give you energy, it only blocks tiredness.",
+  "narration": [
+    {
+      "text": "Caffeine does not give you energy, it only blocks tiredness.",
+      "broll": "coffee cup steam"
+    },
+    {
+      "text": "It does this by binding to your brain's adenosine receptors.",
+      "broll": "brain scan diagram"
+    },
+    {
+      "text": "Adenosine is a natural chemical that makes you feel drowsy.",
+      "broll": "sleepy person yawning"
+    },
+    {
+      "text": "When caffeine blocks these receptors, adenosine cannot do its job.",
+      "broll": "molecules connecting diagram"
+    },
+    {
+      "text": "Your central nervous system then becomes overstimulated.",
+      "broll": "nervous system animation"
+    },
+    {
+      "text": "This overstimulation creates the familiar feeling of restlessness and agitation.",
+      "broll": "person tapping fingers"
+    },
+    {
+      "text": "It is not extra energy, but a lack of normal inhibitory signals.",
+      "broll": "brain activity waves"
+    },
+    {
+      "text": "Understanding this can help you manage your caffeine intake.",
+      "broll": "person holding clock"
+    },
+    {
+      "text": "Have you noticed this restless feeling after too much coffee?",
+      "broll": "person drinking coffee"
+    }
+  ],
+  "description": "Ever wondered why too much coffee leaves you feeling wired and jittery, instead of just awake? It is all down to how caffeine interacts with your brain's natural systems, specifically adenosine. Discover the science behind that restless feeling.",
+  "links": [],
+  "tags": [
+    "caffeine",
+    "adenosine",
+    "brain science",
+    "nervous system",
+    "restlessness",
+    "agitation",
+    "coffee effects",
+    "health facts",
+    "body facts",
+    "science explained",
+    "how coffee works",
+    "caffeine crash"
+  ],
+  "thumbnail_text": "Caffeine: Not Energy",
+  "format": "insight",
+  "topic": "Why you feel restless and agitated after too much caffeine, explaining its effect on adenosine receptors and the central nervous system.",
+  "date": "2026-09-27",
+  "hook_type": "bold_claim"
+}
