@@ -258,7 +258,12 @@ export const InsightVideo: React.FC<InsightProps> = ({ hook, words, accentSeed, 
           const rawStart = Math.round(c.start * FPS);
           const startFrame = Math.max(prevEnd, rawStart);
           if (startFrame >= durationInFrames - 2) return null;
-          const endFrame = Math.min(durationInFrames, Math.max(startFrame + 3, Math.round(c.end * FPS)));
+          // 8 frames (~0.27s) minimum, not 3. At 3 a chunk whose start was
+          // pushed by the clamp collapsed into a 0.1s FLASH, which is what
+          // read as "subtitles faster than the voice" (2026-09-28). Narration
+          // now starts after the hook card, so the clamp should rarely bite at
+          // all, but a chunk must never be unreadable when it does.
+          const endFrame = Math.min(durationInFrames, Math.max(startFrame + 8, Math.round(c.end * FPS)));
           const durFrames = endFrame - startFrame;
           prevEnd = endFrame;
           return (

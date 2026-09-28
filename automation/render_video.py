@@ -489,6 +489,22 @@ MAX_WER = 0.35       # word error rate above this = garbled take, worth one retr
 PACE_MAX = 3.05
 PACE_MIN_WORDS = 12
 
+# Delivery target for the insight format, and the hook-card lead-in.
+#
+# 2026-09-28, both from a published video (pupil-dilation-attraction):
+#   * It shipped at 3.21 words/sec. The gate HAD flagged the first take as
+#     rushed at 3.13 and re-taken it, and the retake came back FASTER and won
+#     on clarity. Re-rolling a non-deterministic voice cannot fix a systematic
+#     rate problem, so pace is now corrected deterministically with atempo
+#     after the take, and the gate is only a backstop.
+#   * The hook card owns frames 0-27 while the narration is already speaking
+#     from 0.00s, so the opening words play uncaptioned and their caption chunk
+#     collapses into a ~0.1s flash as the clamp pushes it past the card. The
+#     narration now starts AFTER the card instead.
+PACE_TARGET = float(os.environ.get("PACE_TARGET", "2.75"))
+PACE_MIN_FACTOR = 0.82          # never slow a take by more than this; below it the take is wrong, not fast
+HOOK_LEAD_S = 27 / 30           # must match hookFrames in remotion/src/insight/InsightVideo.tsx
+
 
 def _pace(text, words):
     """Words-per-second of a take: script word count over spoken time from
@@ -1067,6 +1083,48 @@ def fetch_pexels_photo(query, dest):
     return Path(dest).stat().st_size > 5000
 
 
+def pace_factor(words, target=None, min_factor=None):
+    """atempo factor that brings a take's delivery down to `target` wps.
+
+    Returns 1.0 when the take is already at or under target (never speeds a
+    take up: a slow delivery is a stylistic choice, a fast one is the fault the
+    owner reported). Clamped so a wildly mistimed take is not stretched into
+    a drawl; at that point the timings are wrong, not the speed.
+    """
+    target = PACE_TARGET if target is None else target
+    min_factor = PACE_MIN_FACTOR if min_factor is None else min_factor
+    if not words:
+        return 1.0
+    span = words[-1][2] - words[0][1]
+    if span <= 0:
+        return 1.0
+    wps = len(words) / span
+    if wps <= target:
+        return 1.0
+    return max(min_factor, target / wps)
+
+
+def retime_words(words, factor=1.0, offset=0.0):
+    """Scale word timings by 1/factor (atempo slows audio, so times stretch)
+    and then shift by `offset`. Both transforms are linear, so captions stay
+    exactly aligned with the audio they describe."""
+    if not words:
+        return words
+    scale = 1.0 / factor if factor else 1.0
+    return [(w, st * scale + offset, en * scale + offset) for (w, st, en) in words]
+
+
+def _apply_atempo(src, factor):
+    """Re-encode `src` at `factor` speed in place. No-op at 1.0."""
+    if abs(factor - 1.0) < 1e-3:
+        return src
+    out = src.with_suffix(".paced.mp3")
+    run(["ffmpeg", "-y", "-i", str(src), "-filter:a", f"atempo={factor:.4f}",
+         "-b:a", "192k", str(out)])
+    shutil.move(str(out), str(src))
+    return src
+
+
 def render_insight(brief):
     """Insight format: pure kinetic-typography Remotion composition
     (InsightShort) - NO stock b-roll (2026-07-23: owner rejected the old
@@ -1084,7 +1142,20 @@ def render_insight(brief):
     words, _ps = tts_take(text, audio)
     if not words:
         raise RuntimeError("no word timings for insight narration")
-    dur = probe_duration(audio)
+    # Deterministic pace correction, before anything is timed against the audio.
+    factor = pace_factor(words)
+    if factor < 1.0:
+        before = len(words) / (words[-1][2] - words[0][1])
+        _apply_atempo(audio, factor)
+        words = retime_words(words, factor=factor)
+        after = len(words) / (words[-1][2] - words[0][1])
+        print(f"    pace: {before:.2f} -> {after:.2f} wps (atempo {factor:.3f})")
+
+    # The hook card owns the opening; narration starts after it so no words are
+    # spoken over it, and every caption lines up with the audio underneath it.
+    words = retime_words(words, offset=HOOK_LEAD_S)
+
+    dur = probe_duration(audio) + HOOK_LEAD_S
     # The end card lives in an EXTENDED tail, after the narration has finished,
     # so the content itself is never shortened or interrupted by it.
     end_frames = int(round(1.8 * FPS)) if INSIGHT_ENDCARD else 0
@@ -1108,7 +1179,10 @@ def render_insight(brief):
 
     music = pick_music()
     inputs = ["-i", str(graphics.resolve()), "-i", str(audio.resolve())]
-    filters, alabels = [], ["[1:a]"]
+    # Hold the narration back by the hook card's length. Without this the voice
+    # starts at 0.00s underneath a card showing different words.
+    lead_ms = int(round(HOOK_LEAD_S * 1000))
+    filters, alabels = [f"[1:a]adelay={lead_ms}|{lead_ms}[nar]"], ["[nar]"]
     if music:
         print(f"music: {music.name}")
         inputs += ["-stream_loop", "-1", "-i", str(music.resolve())]

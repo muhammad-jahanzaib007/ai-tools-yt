@@ -713,6 +713,8 @@ INSIGHT_BULLETS = (
     "it during the MECHANISM section, not only in the CTA. 'Look at the edge of your vision "
     "while you listen' keeps someone watching in a way that a described fact does not. Do "
     "not force this onto topics where it does not honestly apply.\n"
+    "LENGTH: the whole script must be 60-75 words TOTAL across all segments. Delivery is about 2.75 words per second, so 75 words is already a 27 second video before the hook card and outro. Going over does not add information, it just makes the voice sprint and the captions flicker. Cut adjectives before you cut ideas.
+"
     "Write it like explaining something fascinating to a friend: confident, a little surprised, "
     "never like a listicle or textbook. Never invent a specific study, statistic, or citation "
     "you cannot be sure is real - describe the mechanism in accurate general terms instead of a "

@@ -780,3 +780,39 @@ def test_near_duplicate_allows_genuinely_different_ideas():
 
 def test_near_duplicate_rejects_empty():
     assert gb.is_near_duplicate("", ["anything at all"])
+
+
+def test_pace_factor_slows_a_rushed_take():
+    """Measured on the published pupil-dilation-attraction: 86 words over
+    26.78s = 3.21 wps. Target 2.75 means slowing to ~0.857 speed."""
+    words = [(f"w{i}", i * (26.78 / 86), (i + 1) * (26.78 / 86)) for i in range(86)]
+    f = rv.pace_factor(words, target=2.75)
+    assert 0.84 < f < 0.87, f
+    # and the retimed track actually lands on target
+    out = rv.retime_words(words, factor=f)
+    wps = len(out) / (out[-1][2] - out[0][1])
+    assert abs(wps - 2.75) < 0.05, wps
+
+
+def test_pace_factor_leaves_a_calm_take_alone():
+    """Never speed a take up: slow is a choice, fast is the fault."""
+    words = [(f"w{i}", i * 0.5, (i + 1) * 0.5) for i in range(40)]   # 2.0 wps
+    assert rv.pace_factor(words, target=2.75) == 1.0
+
+
+def test_pace_factor_clamps_absurd_corrections():
+    """A take timed at 8 wps is broken, not fast. Do not stretch it into a drawl."""
+    words = [(f"w{i}", i * 0.125, (i + 1) * 0.125) for i in range(80)]
+    assert rv.pace_factor(words, target=2.75, min_factor=0.82) == 0.82
+
+
+def test_retime_words_offset_keeps_gaps_exact():
+    """The hook-card lead-in must shift captions without distorting them."""
+    words = [("a", 0.0, 0.4), ("b", 0.5, 0.9)]
+    out = rv.retime_words(words, offset=0.9)
+    assert out[0][1] == 0.9 and out[1][1] == 1.4
+    assert abs((out[1][1] - out[0][2]) - (words[1][1] - words[0][2])) < 1e-9
+
+
+def test_retime_words_handles_empty():
+    assert rv.retime_words([], factor=0.9, offset=1.0) == []
