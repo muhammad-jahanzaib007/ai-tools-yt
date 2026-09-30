@@ -73,17 +73,15 @@ PX_KEY = os.environ.get("PEXELS_API_KEY")
 # the stills. Pexels permits commercial use with no attribution, so this stays
 # inside the free-services rule, unlike any AI video tier.
 #
-# DEFAULT IS "photo" ON PURPOSE (2026-09-17): the owner watches visual changes
-# before they ship, a standing rule since 2026-07-23 when a concurrent session
-# flipped publish.yml's format default and real videos went out in unapproved
-# visual states. demo-insight.yml renders previews with INSIGHT_MEDIA=video;
-# flip this default to "video" once the owner signs off on the look.
-INSIGHT_MEDIA = os.environ.get("INSIGHT_MEDIA", "photo").strip().lower()
-# Subscribe end card on the insight format. Same preview-gating as
-# INSIGHT_MEDIA: "0" in production until the owner has watched it. Added after
-# the 2026-09-17 analytics read showed 4,600 views converting +2 subscribers
-# because nothing in the format ever asks for a subscribe.
-INSIGHT_ENDCARD = os.environ.get("INSIGHT_ENDCARD", "0").strip() not in ("", "0", "no", "false")
+# Default "video" since 2026-09-30: the owner reviewed a preview and approved
+# both the motion clips and the end card. Set INSIGHT_MEDIA=photo to fall back
+# to stills. The preview-first rule still stands for the NEXT visual change.
+INSIGHT_MEDIA = os.environ.get("INSIGHT_MEDIA", "video").strip().lower()
+# Subscribe end card on the insight format. ON by default since 2026-09-30
+# (owner watched it and approved). It exists because 6,476 views in 28 days
+# converted +2 subscribers while the format asked for a subscribe nowhere.
+# Set INSIGHT_ENDCARD=0 to turn it off.
+INSIGHT_ENDCARD = os.environ.get("INSIGHT_ENDCARD", "1").strip() not in ("", "0", "no", "false")
 # Key pool: two free-tier keys (separate Google accounts) double the daily
 # TTS quota; rotation happens automatically on quota errors.
 GEM_KEYS = [k for k in (os.environ.get("GEMINI_API_KEY"),
