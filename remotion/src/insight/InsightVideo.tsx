@@ -220,6 +220,25 @@ function EndCard({ accent, durFrames }: { accent: string; durFrames: number }) {
         <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 46, color: accent }}>
           @snackbytehuman
         </div>
+        {/* 2026-09-30: the three cheaper asks live here rather than in the
+            narration. Spoken, all four requests cost ~6s of a 30s video; on
+            the card they cost nothing and are still on screen while the
+            viewer decides. The narration keeps only the comment and like
+            asks, which are the ones a voice actually helps with. */}
+        <div style={{ display: "flex", gap: 28, alignItems: "center", marginTop: 4 }}>
+          {["Like", "Comment", "Share"].map((label) => (
+            <div
+              key={label}
+              style={{
+                fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 34,
+                color: "#f6f1e8", border: `2px solid ${accent}88`, borderRadius: 999,
+                padding: "10px 24px",
+              }}
+            >
+              {label}
+            </div>
+          ))}
+        </div>
         <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 500, fontSize: 38, color: "#9a938a" }}>
           Why your mind and body do that
         </div>

@@ -816,3 +816,24 @@ def test_retime_words_offset_keeps_gaps_exact():
 
 def test_retime_words_handles_empty():
     assert rv.retime_words([], factor=0.9, offset=1.0) == []
+
+
+def test_take_coverage_measures_span_against_audio():
+    words = [("a", 0.0, 1.0), ("b", 17.0, 18.4)]
+    assert abs(rv.take_coverage(words, 31.8) - 0.5786) < 1e-3
+    assert rv.take_coverage([], 30) is None
+    assert rv.take_coverage(words, 0) is None
+
+
+def test_short_coverage_take_loses_to_a_complete_one():
+    """The real 2026-09-28 case: a take whose timings stopped at 58% of its
+    audio was rejected only by luck, because nothing in the score saw it.
+    Note the truncated take here has the BETTER word error rate, so coverage
+    has to outweigh clarity for this to work."""
+    complete = rv._take_score(ps=3.0, wer=0.10, leaked=False, pace=2.8, coverage=0.99)
+    truncated = rv._take_score(ps=3.0, wer=0.05, leaked=False, pace=2.8, coverage=0.58)
+    assert truncated < complete, (truncated, complete)
+
+
+def test_full_coverage_is_not_penalised():
+    assert rv._take_score(ps=3.0, wer=0.1, coverage=0.99) == rv._take_score(ps=3.0, wer=0.1)

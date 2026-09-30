@@ -503,6 +503,7 @@ PACE_MIN_WORDS = 12
 #     narration now starts AFTER the card instead.
 PACE_TARGET = float(os.environ.get("PACE_TARGET", "2.75"))
 PACE_MIN_FACTOR = 0.82          # never slow a take by more than this; below it the take is wrong, not fast
+MIN_COVERAGE = 0.85             # word timings must span at least this much of the take
 HOOK_LEAD_S = 27 / 30           # must match hookFrames in remotion/src/insight/InsightVideo.tsx
 
 
@@ -575,14 +576,34 @@ def _style_leaked(style, text, hyp):
     return hits >= 2
 
 
-def _take_score(ps, wer, leaked=False, pace=None):
+def take_coverage(words, audio_seconds):
+    """Fraction of the audio the word timings actually span.
+
+    Low coverage means the aligner lost the back of the take. The words look
+    fine in isolation, so nothing downstream notices, but captions stop early
+    while the voice keeps going, and any pace calculation divides by a span
+    shorter than the real one. None when it cannot be judged.
+    """
+    if not words or not audio_seconds:
+        return None
+    return max(0.0, min(1.0, words[-1][2] / audio_seconds))
+
+
+def _take_score(ps, wer, leaked=False, pace=None, coverage=None):
     """Rank takes: intelligibility dominates, liveliness breaks ties.
     A take that spoke its style prompt aloud is heavily penalised; a rushed
-    take loses up to 3 points so an in-pace take of similar clarity wins."""
+    take loses up to 3 points so an in-pace take of similar clarity wins.
+
+    2026-09-29: coverage joined the score after a take whose timings stopped at
+    58% of its audio was rejected only by luck. Nothing here looked at it, so
+    it could as easily have won and shipped a video whose captions die 40% of
+    the way through while the narration continues.
+    """
     w = (1.0 - min(wer, 1.0)) if wer is not None else 0.6
     p = min((ps or 0) / 3.0, 1.0)
     rush = min((pace - PACE_MAX) * 4.0, 3.0) if pace is not None and pace > PACE_MAX else 0.0
-    return w * 10 + p - (8 if leaked else 0) - rush
+    short = (1.0 - coverage) * 8.0 if coverage is not None and coverage < MIN_COVERAGE else 0.0
+    return w * 10 + p - (8 if leaked else 0) - rush - short
 
 
 def tts_take(text, dest, voice=None, style=None):
@@ -604,19 +625,22 @@ def tts_take(text, dest, voice=None, style=None):
         ps, (wer, hyp) = _pitch_std(f), _wer(text, f)
         leaked = _style_leaked(eff_style, text, hyp)
         pace = _pace(text, words)
-        takes.append((f, words, ps, wer, leaked, pace))
+        cov = take_coverage(words, probe_duration(f))
+        takes.append((f, words, ps, wer, leaked, pace, cov))
         garbled = wer is not None and wer > MAX_WER
         flat = ps is not None and ps < FLAT_TAKE
         rushed = pace is not None and pace > PACE_MAX
-        if not garbled and not flat and not leaked and not rushed:
+        short = cov is not None and cov < MIN_COVERAGE
+        if not garbled and not flat and not leaked and not rushed and not short:
             break
         if attempt == 0:
             why = ("style prompt spoken aloud" if leaked
                    else f"wer={wer:.2f}" if garbled
                    else f"pitch={ps:.2f}st" if flat
-                   else f"pace={pace:.2f}wps")
+                   else f"pace={pace:.2f}wps" if rushed
+                   else f"timings cover only {cov:.0%} of the audio")
             print(f"    weak take ({why}); re-taking")
-    best = max(takes, key=lambda t: _take_score(t[2], t[3], t[4], t[5]))
+    best = max(takes, key=lambda t: _take_score(t[2], t[3], t[4], t[5], t[6]))
     if best[0] != dest:
         shutil.move(str(best[0]), str(dest))
         print(f"    retake wins (wer={best[3]}, pitch={best[2]})")
@@ -1143,7 +1167,12 @@ def render_insight(brief):
     if not words:
         raise RuntimeError("no word timings for insight narration")
     # Deterministic pace correction, before anything is timed against the audio.
-    factor = pace_factor(words)
+    # Skipped when the timings do not span the take: dividing by a short span
+    # invents a high wps and would slow audio that is already calm.
+    cov = take_coverage(words, probe_duration(audio))
+    if cov is not None and cov < MIN_COVERAGE:
+        print(f"    pace correction skipped: timings cover only {cov:.0%} of the audio")
+    factor = pace_factor(words) if (cov is None or cov >= MIN_COVERAGE) else 1.0
     if factor < 1.0:
         before = len(words) / (words[-1][2] - words[0][1])
         _apply_atempo(audio, factor)
