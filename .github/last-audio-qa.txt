@@ -1,1 +1,1 @@
-mix_rms=0.158 peak=1.00 dur=34s black=none
+mix_rms=0.174 peak=0.95 dur=45s black=none
