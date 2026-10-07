@@ -1,0 +1,54 @@
+{
+  "slug": "uncanny-valley-explained",
+  "title": "Why you feel uneasy looking at realistic CGI people",
+  "hook": "Why do realistic robots often feel so creepy?",
+  "narration": [
+    {
+      "text": "Your brain is incredibly sensitive to human faces and expressions.",
+      "broll": "Human face close-up"
+    },
+    {
+      "text": "When something looks almost human, but not quite, it triggers an alarm.",
+      "broll": "Robot face expressionless"
+    },
+    {
+      "text": "Our minds expect perfect human features, or clearly non-human ones.",
+      "broll": "Abstract human shapes"
+    },
+    {
+      "text": "That small imperfection suggests illness, danger, or something unnatural.",
+      "broll": "Unsettling empty corridor"
+    },
+    {
+      "text": "This mismatch between expectation and reality causes the unsettling feeling.",
+      "broll": "Brain scan abstract"
+    },
+    {
+      "text": "It is why early CGI characters often felt more disturbing than cartoons.",
+      "broll": "Early CGI character"
+    },
+    {
+      "text": "Comment with a robot that gives you the creeps, like if this surprised you, and subscribe for more brain insights.",
+      "broll": "Typing on keyboard"
+    }
+  ],
+  "description": "Ever wondered why some highly realistic robots or CGI characters make you feel uneasy? It is not just you; it is a fascinating psychological phenomenon. This short explains the \"uncanny valley\" effect and why our brains react the way they do to near-human figures.",
+  "links": [],
+  "tags": [
+    "uncanny valley",
+    "robots",
+    "cgi",
+    "artificial intelligence",
+    "psychology",
+    "human perception",
+    "brain science",
+    "ai explained",
+    "tech news",
+    "science facts"
+  ],
+  "thumbnail_text": "Creepy Robots Explained",
+  "format": "insight",
+  "topic": "Why you often feel a sense of unease or 'the uncanny valley' when looking at very realistic robots or CGI people.",
+  "date": "2026-10-07",
+  "hook_type": "question"
+}
