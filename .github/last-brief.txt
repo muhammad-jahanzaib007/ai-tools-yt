@@ -1,5 +1,15 @@
-2026-09-12T20:00:55Z failure (publish run)
+2026-10-17T20:01:44Z failure (publish run)
 --- log tail ---
-Hook style: bold_claim
-Generating insight brief for: Why you remember faces better than names, explaining the fusiform face area and memory encoding.
-brief missing narration segments
+model output unparseable (Expecting ',' delimiter: line 9 column 6 (char 315)): {
+  "slug": "why-colours-disappear",
+  "title": "Why ; requesting a fresh completion
+Hook style: result_first
+Generating insight brief for: Why you sometimes see colours change or disappear when staring at a central point. You can test this right now with a simple dot pattern.
+model did not return usable JSON twice: unparseable (Expecting ',' delimiter: line 9 column 6 (char 329)): {
+  "slug": "why-colours-disappear-staring",
+  "title": "Why Colours Disappear When You Stare at Them",
+  "hook": "Colours disappear right before your eyes, just by staring.",
+  "narration": [
+    {
+      "text": "Stare at a dot, and the colours around it can change or vanish completely.",
+      "br
