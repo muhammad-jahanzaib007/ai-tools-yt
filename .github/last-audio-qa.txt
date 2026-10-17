@@ -1,1 +1,1 @@
-no audio found
+mix_rms=0.185 peak=1.00 dur=42s black=none
