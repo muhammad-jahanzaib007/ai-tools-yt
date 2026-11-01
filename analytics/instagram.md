@@ -1,4 +1,4 @@
-# Instagram Reels analytics (2026-10-25 13:16 UTC)
+# Instagram Reels analytics (2026-11-01 15:21 UTC)
 
 Account IG user 17841415687050517. Last 25 media via Graph API.
 
@@ -6,36 +6,36 @@ avg_watch_time is IG's retention signal (higher = fewer scroll-aways). IG's API 
 
 | Date | Reach | Views | AvgWatch s | Likes | Cmt | Saved | Shares | Title |
 |---|---|---|---|---|---|---|---|---|
-| 2026-10-25 | 119 | 147 | 4.7 | 2 | 0 | 0 | 0 | Why Your Eyes Make Still Objects Appear to Move |
-| 2026-10-24 | 120 | 147 | 3.7 | 0 | 0 | 0 | 0 | Why You Feel Closer to Someone After Sharing a Secret |
-| 2026-10-24 | 126 | 174 | 5.3 | 1 | 0 | 0 | 0 | Why Your Hand Pulls Away Before You Feel Pain |
-| 2026-10-23 | 124 | 129 | 3.1 | 0 | 0 | 0 | 0 | Why You See Movement That Isn't There |
-| 2026-10-23 | 117 | 140 | 4.6 | 0 | 0 | 0 | 0 | Why You Feel Confident After Changing Your Posture |
-| 2026-10-22 | 129 | 168 | 5.6 | 0 | 0 | 0 | 0 | Why Your Reaction Time Is Faster When You Expect It |
-| 2026-10-22 | 122 | 144 | 4.0 | 0 | 0 | 0 | 0 | Why You Laugh More When Others Are Laughing |
-| 2026-10-21 | 58 | 76 | 2.3 | 0 | 0 | 0 | 0 | The Real Reason You Clean When You're Stressed |
-| 2026-10-21 | 162 | 202 | 3.6 | 2 | 0 | 0 | 0 | Why You Instantly Correct Other People's Small Mistakes |
-| 2026-10-20 | 126 | 164 | 6.3 | 3 | 0 | 0 | 0 | Why Your Balance Is Worse When You Close Your Eyes |
-| 2026-10-20 | 117 | 147 | 4.1 | 1 | 0 | 1 | 0 | Why You Automatically Trust People Who Look You in the Eye |
-| 2026-10-19 | 124 | 143 | 4.2 | 0 | 0 | 0 | 0 | Why You Feel an Urgent Need to Escape Imagined Threats |
-| 2026-10-19 | 126 | 143 | 5.6 | 0 | 0 | 0 | 0 | Why an Object's Colour Changes How Heavy You Think It Is |
-| 2026-10-18 | 34 | 42 | 2.3 | 0 | 0 | 0 | 0 | Why You Feel Forced to Return Favours and Gifts |
-| 2026-10-18 | 126 | 157 | 6.2 | 1 | 0 | 0 | 0 | Why Your Brain Prioritises a Baby's Cry Over Other Sounds |
-| 2026-10-17 | 133 | 155 | 4.7 | 1 | 0 | 1 | 0 | Why Colours Change When You Stare at a Spot |
-| 2026-10-17 | 123 | 160 | 3.6 | 3 | 0 | 0 | 0 | Why You Believe Information If It Is Repeated Often |
-| 2026-10-16 | 137 | 177 | 4.7 | 1 | 0 | 0 | 0 | Why You Tense Your Muscles When Anticipating Pain |
-| 2026-10-16 | 66 | 89 | 4.6 | 2 | 0 | 0 | 0 | The Real Reason You See Lights Chasing Each Other |
-| 2026-10-15 | 86 | 116 | 3.3 | 1 | 0 | 0 | 0 | The Real Reason You Crave Sweets After Stress |
-| 2026-10-15 | 118 | 146 | 4.0 | 1 | 0 | 0 | 0 | Why You Break Eye Contact With Strangers |
-| 2026-10-14 | 81 | 92 | 4.0 | 0 | 0 | 0 | 0 | Why You See Names Hidden in Other Words |
-| 2026-10-14 | 58 | 76 | 3.5 | 0 | 0 | 0 | 0 | Why You Desperately Need to Finish Every Pattern |
-| 2026-10-13 | 39 | 69 | 4.2 | 2 | 0 | 0 | 0 | Why You Jolt When Someone Appears In Your Peripheral Vision |
-| 2026-10-13 | 89 | 101 | 3.7 | 0 | 0 | 0 | 0 | Why Your Voice Changes When You Talk to Babies or Pets |
+| 2026-11-01 | 24 | 41 | 4.8 | 0 | 0 | 0 | 0 | Why You Suddenly Feel Hungry When Others Eat |
+| 2026-10-31 | 367 | 427 | 6.8 | 1 | 0 | 0 | 0 | Why You Instantly Know Where Sounds Come From |
+| 2026-10-31 | 233 | 273 | 6.0 | 0 | 0 | 0 | 0 | Why You Always Feel The Need To Return A Favour |
+| 2026-10-30 | 113 | 134 | 3.6 | 0 | 0 | 0 | 0 | The Real Reason You Mimic People You Admire |
+| 2026-10-30 | 323 | 371 | 7.0 | 3 | 0 | 0 | 0 | Why You Jolt When Someone Gets Too Close |
+| 2026-10-29 | 119 | 149 | 7.2 | 0 | 0 | 1 | 0 | Why Your Pupils Get Bigger Around People You Like |
+| 2026-10-29 | 117 | 146 | 4.9 | 0 | 0 | 0 | 0 | Why You Suddenly See Your Nose, Even Though It's Always Ther |
+| 2026-10-28 | 123 | 160 | 6.2 | 0 | 0 | 0 | 0 | Why Your Eyes Trick You Into Seeing Movement In Still Images |
+| 2026-10-28 | 120 | 144 | 4.0 | 0 | 0 | 0 | 0 | The Surprising Reason You Lean In During Conversations |
+| 2026-10-27 | 74 | 91 | 6.0 | 0 | 0 | 0 | 0 | Why You Can Instantly Spot a Fake Smile |
+| 2026-10-27 | 121 | 152 | 4.8 | 1 | 0 | 0 | 0 | Why You Feel Uneasy When People Avoid Your Gaze |
+| 2026-10-26 | 122 | 150 | 4.6 | 0 | 0 | 0 | 0 | Why You Agree More With a Light Touch |
+| 2026-10-26 | 123 | 142 | 6.7 | 0 | 0 | 0 | 0 | Why You See Flashes When You Rub Your Eyes |
+| 2026-10-25 | 127 | 153 | 2.7 | 1 | 0 | 0 | 0 | Why You Feel Forced to Finish What You Start |
+| 2026-10-25 | 158 | 200 | 4.3 | 2 | 0 | 0 | 0 | Why Your Eyes Make Still Objects Appear to Move |
+| 2026-10-24 | 130 | 162 | 3.9 | 1 | 0 | 0 | 0 | Why You Feel Closer to Someone After Sharing a Secret |
+| 2026-10-24 | 133 | 187 | 5.2 | 1 | 0 | 0 | 0 | Why Your Hand Pulls Away Before You Feel Pain |
+| 2026-10-23 | 133 | 141 | 3.0 | 0 | 0 | 0 | 0 | Why You See Movement That Isn't There |
+| 2026-10-23 | 123 | 153 | 4.8 | 0 | 0 | 0 | 0 | Why You Feel Confident After Changing Your Posture |
+| 2026-10-22 | 133 | 173 | 5.5 | 0 | 0 | 0 | 0 | Why Your Reaction Time Is Faster When You Expect It |
+| 2026-10-22 | 126 | 152 | 4.0 | 0 | 0 | 0 | 0 | Why You Laugh More When Others Are Laughing |
+| 2026-10-21 | 61 | 82 | 2.2 | 0 | 0 | 0 | 0 | The Real Reason You Clean When You're Stressed |
+| 2026-10-21 | 164 | 206 | 3.6 | 2 | 0 | 0 | 0 | Why You Instantly Correct Other People's Small Mistakes |
+| 2026-10-20 | 128 | 166 | 6.2 | 3 | 0 | 0 | 0 | Why Your Balance Is Worse When You Close Your Eyes |
+| 2026-10-20 | 121 | 152 | 4.0 | 1 | 0 | 1 | 0 | Why You Automatically Trust People Who Look You in the Eye |
 
 ## Summary
 - Media: 25
-- Median reach: 120
-- Max reach: 162
-- Median avg watch time: 4.1s
-- Likes (median / max): 1 / 3
+- Median reach: 123
+- Max reach: 367
+- Median avg watch time: 4.8s
+- Likes (median / max): 0 / 3
 
