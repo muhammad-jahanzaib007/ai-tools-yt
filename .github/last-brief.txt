@@ -1,4 +1,4 @@
-2026-11-07T11:01:41Z failure (publish run)
+2026-11-07T11:03:16Z failure (publish run)
 --- log tail ---
 Hook style: conflict_tease
 no insight topics available and replenish failed
