@@ -1,4 +1,4 @@
-2026-11-15T11:03:37Z failure (publish run)
+2026-11-15T20:01:24Z failure (publish run)
 --- log tail ---
 Hook style: result_first
 no insight topics available and replenish failed
