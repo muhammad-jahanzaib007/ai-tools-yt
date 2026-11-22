@@ -1,4 +1,4 @@
-# Instagram Reels analytics (2026-11-15 15:45 UTC)
+# Instagram Reels analytics (2026-11-22 16:30 UTC)
 
 Account IG user 17841415687050517. Last 25 media via Graph API.
 
@@ -6,12 +6,19 @@ avg_watch_time is IG's retention signal (higher = fewer scroll-aways). IG's API 
 
 | Date | Reach | Views | AvgWatch s | Likes | Cmt | Saved | Shares | Title |
 |---|---|---|---|---|---|---|---|---|
-| 2026-11-11 | 124 | 171 | 6.2 | 4 | 0 | 0 | 0 | Why You Struggle With Eye Contact More With Strangers |
-| 2026-11-09 | 124 | 157 | 5.5 | 1 | 0 | 0 | 0 | Why You Trust People With Brief Eye Contact |
-| 2026-11-09 | 129 | 171 | 4.9 | 0 | 0 | 0 | 0 | Why You Tense Up Expecting a Loud Noise |
-| 2026-11-02 | 131 | 176 | 4.8 | 2 | 0 | 0 | 0 | Why You Hear a Different Word Based on Mouth Shape |
-| 2026-11-01 | 123 | 145 | 4.8 | 1 | 0 | 0 | 0 | The Real Reason You Nod When Others Speak |
-| 2026-11-01 | 93 | 129 | 4.0 | 0 | 0 | 0 | 0 | Why You Suddenly Feel Hungry When Others Eat |
+| 2026-11-20 | 55 | 75 | 3.2 | 0 | 0 | 0 | 0 | The Real Reason You Mimic People You're Close To |
+| 2026-11-20 | 107 | 132 | 5.0 | 1 | 0 | 0 | 0 | Why Your Brain Sees Faces in Clouds |
+| 2026-11-19 | 31 | 45 | 3.4 | 0 | 0 | 0 | 0 | Why Your Food Tastes Different When You Hold Your Nose |
+| 2026-11-19 | 72 | 101 | 4.7 | 1 | 0 | 0 | 0 | Why Your Body Jerks Awake Right Before You Fall Asleep |
+| 2026-11-18 | 45 | 83 | 3.9 | 0 | 0 | 0 | 0 | The Real Reason You Feel Stronger With Hands On Hips |
+| 2026-11-17 | 122 | 140 | 4.4 | 0 | 0 | 0 | 0 | Why Your Voice Changes When You Talk To Babies Or Pets |
+| 2026-11-17 | 58 | 74 | 3.6 | 1 | 0 | 0 | 0 | Why You See Moving Dots After Staring at Bright Colours |
+| 2026-11-11 | 129 | 177 | 6.0 | 4 | 0 | 0 | 0 | Why You Struggle With Eye Contact More With Strangers |
+| 2026-11-09 | 127 | 162 | 5.4 | 1 | 0 | 0 | 0 | Why You Trust People With Brief Eye Contact |
+| 2026-11-09 | 129 | 172 | 4.9 | 0 | 0 | 0 | 0 | Why You Tense Up Expecting a Loud Noise |
+| 2026-11-02 | 132 | 177 | 4.7 | 2 | 0 | 0 | 0 | Why You Hear a Different Word Based on Mouth Shape |
+| 2026-11-01 | 124 | 145 | 4.8 | 1 | 0 | 0 | 0 | The Real Reason You Nod When Others Speak |
+| 2026-11-01 | 93 | 129 | 3.9 | 0 | 0 | 0 | 0 | Why You Suddenly Feel Hungry When Others Eat |
 | 2026-10-31 | 433 | 509 | 6.7 | 1 | 0 | 0 | 0 | Why You Instantly Know Where Sounds Come From |
 | 2026-10-31 | 244 | 285 | 5.9 | 0 | 0 | 0 | 0 | Why You Always Feel The Need To Return A Favour |
 | 2026-10-30 | 127 | 155 | 3.8 | 0 | 0 | 0 | 0 | The Real Reason You Mimic People You Admire |
@@ -24,18 +31,11 @@ avg_watch_time is IG's retention signal (higher = fewer scroll-aways). IG's API 
 | 2026-10-27 | 128 | 171 | 4.7 | 1 | 0 | 0 | 0 | Why You Feel Uneasy When People Avoid Your Gaze |
 | 2026-10-26 | 128 | 158 | 4.5 | 0 | 0 | 0 | 0 | Why You Agree More With a Light Touch |
 | 2026-10-26 | 125 | 144 | 6.7 | 0 | 0 | 0 | 0 | Why You See Flashes When You Rub Your Eyes |
-| 2026-10-25 | 129 | 156 | 2.7 | 1 | 0 | 0 | 0 | Why You Feel Forced to Finish What You Start |
-| 2026-10-25 | 161 | 207 | 4.3 | 2 | 0 | 0 | 0 | Why Your Eyes Make Still Objects Appear to Move |
-| 2026-10-24 | 131 | 163 | 3.8 | 1 | 0 | 0 | 0 | Why You Feel Closer to Someone After Sharing a Secret |
-| 2026-10-24 | 136 | 194 | 5.2 | 1 | 0 | 0 | 0 | Why Your Hand Pulls Away Before You Feel Pain |
-| 2026-10-23 | 133 | 141 | 3.0 | 0 | 0 | 0 | 0 | Why You See Movement That Isn't There |
-| 2026-10-23 | 124 | 158 | 4.8 | 0 | 0 | 0 | 0 | Why You Feel Confident After Changing Your Posture |
-| 2026-10-22 | 134 | 173 | 5.5 | 0 | 0 | 0 | 0 | Why Your Reaction Time Is Faster When You Expect It |
 
 ## Summary
 - Media: 25
-- Median reach: 129
+- Median reach: 127
 - Max reach: 433
-- Median avg watch time: 4.9s
+- Median avg watch time: 4.8s
 - Likes (median / max): 0 / 4
 
