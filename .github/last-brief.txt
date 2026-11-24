@@ -1,4 +1,4 @@
-2026-11-24T20:02:15Z failure (publish run)
+2026-11-24T20:04:19Z failure (publish run)
 --- log tail ---
 Hook style: pain_point
 no insight topics available and replenish failed
